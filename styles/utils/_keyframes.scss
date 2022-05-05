@@ -1,0 +1,67 @@
+@keyframes glasium-shape {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        filter: brightness(var(--max-brightness));
+    }
+
+    40% {
+        filter: brightness(var(--min-brightness));
+    }
+
+    50% {
+        filter: brightness(var(--max-brightness));
+    }
+
+    60% {
+        filter: brightness(var(--min-brightness));
+    }
+
+    100% {
+        transform: translateY(calc(var(--moving-size) * -1)) rotate(var(--rotation));
+        filter: brightness(var(--max-brightness));
+    }
+}
+
+@keyframes tooltip-blink {
+    0% {
+        background-color: rgba(92, 92, 92, 0.4);
+    }
+
+    100% {
+        background-color: rgba(10, 10, 10, 0.4);
+    }
+}
+
+@keyframes rotate360 {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes rotate90 {
+    to {
+        transform: rotate(90deg);
+    }
+}
+
+@keyframes gelatine {
+    0% {
+        transform: scale(1, 1);
+    }
+
+    25% {
+        transform: scale(0.85, 1.15);
+    }
+
+    50% {
+        transform: scale(1.15, 0.85);
+    }
+
+    75% {
+        transform: scale(0.85, 1.15);
+    }
+
+    100% {
+        transform: scale(1, 1);
+    }
+}

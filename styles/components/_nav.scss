@@ -1,0 +1,349 @@
+body {
+    --nav-height: clamp(40px, 5.25vh, 50px);
+}
+
+.nav {
+    position: sticky;
+    inset: 0 0 auto 0;
+
+    display: flex;
+    place-items: center;
+    place-content: center space-between;
+
+    width: 100vw;
+    max-width: 100vw;
+    height: var(--nav-height);
+
+    background: var(--nav-bg, white);
+
+    z-index: 10;
+
+    transition: box-shadow 0.2s ease-out;
+
+    &--left,
+    &--right {
+        display: flex;
+
+        place-items: center;
+        place-content: center;
+        height: 100%;
+    }
+
+    &__component {
+        display: flex;
+        flex-direction: row;
+
+        place-items: center;
+        place-content: center;
+        height: 100%;
+
+        background-color: var(--nav-component-bg, white);
+        cursor: pointer;
+
+        transition: all 0.2s ease;
+
+        .nav {
+            &__link {
+                display: table;
+
+                width: 3.4em;
+                height: 100%;
+
+                text-align: center;
+
+                color: var(--nav-link-bg, var(--flat-color-black));
+
+                transition: background-color 0.2s ease;
+
+                * {
+                    display: table-cell;
+                    vertical-align: middle;
+
+                    max-height: var(--nav-height);
+
+                    font-size: 1.125em;
+
+                    pointer-events: none;
+                }
+
+                &:hover {
+                    background-color: var(--nav-link-bg-hover, #ebebeb);
+                }
+            }
+
+            &__logo {
+                display: flex;
+                place-items: center;
+                place-content: center;
+
+                width: auto;
+                height: 100%;
+
+                padding: 0 0.5em;
+
+                background: var(--nav-bg, white);
+
+                transition: background-color 0.2s ease;
+
+                &__icon {
+                    height: 1.9rem;
+                    width: 1.9rem;
+
+                    border-radius: 50%;
+
+                    object-fit: cover;
+                    background-position: center;
+
+                    pointer-events: none;
+                }
+
+                &__title {
+                    padding: 0.12em 0 0 0.4em;
+
+                    font-family: var(--font-secondary);
+                    font-weight: bold;
+                    font-size: 1rem;
+                    color: var(--nav-logo-title-clr, black);
+
+                    pointer-events: none;
+                }
+
+                &:hover {
+                    background-color: var(--nav-link-bg-hover, #ebebeb);
+                }
+            }
+
+            &__btn {
+                display: table;
+
+                height: 100%;
+                width: 3.4em;
+
+                color: var(--nav-btn-clr, rgb(42, 42, 42));
+                text-align: center;
+
+                transition: all 150ms ease-out;
+
+                &__icon {
+                    display: table-cell;
+                    vertical-align: middle;
+
+                    font-size: 1.25em;
+                }
+
+                &:hover {
+                    filter: brightness(1.1);
+                }
+
+                &[data-disabled],
+                &[disabled] {
+                    filter: brightness(0.9);
+                }
+
+                &:active {
+                    filter: brightness(1.15);
+                    transform: scale(0.9);
+                }
+            }
+
+            &__subwindow {
+                display: flex;
+                place-content: center;
+                place-items: center;
+
+                min-width: 3.4em;
+                height: 100%;
+
+                padding: 0 1em;
+
+                img {
+                    height: 1.9rem;
+                    width: 1.9rem;
+
+                    border-radius: 50%;
+
+                    object-fit: cover;
+                    background-position: center;
+
+                    pointer-events: none;
+                    user-select: none;
+                }
+
+                &__icon {
+                    font-size: 1.1em;
+
+                    pointer-events: none;
+                    user-select: none;
+                }
+
+                &__text {
+                    font-weight: bold;
+                    font-family: var(--font-secondary);
+
+                    padding-left: 0.5em;
+
+                    pointer-events: none;
+                    user-select: none;
+                }
+
+                &__container {
+                    position: absolute;
+                    top: 100%;
+
+                    max-width: 100vw;
+                    height: 0;
+                    max-height: calc(100vh - var(--nav-height));
+
+                    border-bottom: 5px solid blue;
+
+                    overflow: auto;
+
+                    &--show {
+                        height: unset;
+                    }
+                }
+
+                &:hover {
+                    filter: brightness(1.05);
+                }
+
+                &:active {
+                    filter: brightness(1.15);
+                }
+            }
+        }
+    }
+
+    &__indicator {
+        position: absolute;
+        top: 100%;
+
+        height: 3px;
+        width: 0;
+
+        background-color: var(--nav-indicator-bg, var(--flat-color-black));
+        box-shadow: 0 0 7px 0.5px var(--nav-indicator-bg, rgba(0, 0, 0, 0.4));
+
+        pointer-events: none;
+        z-index: 100;
+
+        transition: width 0.3s ease, all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    &__tip {
+        position: absolute;
+        top: 100%;
+
+        padding: 0.5em;
+
+        opacity: 0;
+
+        pointer-events: none;
+
+        transition: 100ms opacity ease-out;
+
+        &__title {
+            font-family: var(--font-secondary);
+            font-weight: 900;
+            font-size: 18px;
+            line-height: 20px;
+
+            pointer-events: none;
+        }
+
+        &__des {
+            font-family: var(--font-secondary);
+            font-size: 14px;
+            font-weight: 500;
+            margin-block-start: 0.25em;
+
+            pointer-events: none;
+        }
+
+        &--active {
+            opacity: 1;
+        }
+    }
+
+    &__underlay {
+        position: fixed;
+        inset: var(--nav-height) 0 0 0;
+
+        background-color: hsla(246, 25%, 8%, 0.47);
+        backdrop-filter: blur(2px);
+
+        opacity: 0;
+        pointer-events: none;
+        user-select: none;
+        z-index: 4;
+
+        transition: all 150ms ease-out;
+
+        &--shown {
+            opacity: 1;
+            pointer-events: auto;
+        }
+    }
+
+    #nav {
+        &-button {
+            order: 1;
+        }
+
+        &-subwindow {
+            order: 2;
+        }
+
+        &-hamburger {
+            order: 3;
+        }
+    }
+}
+
+@media (hover: hover) {
+    .nav:hover {
+        box-shadow: 0 40px 100px 30px var(--nav-hover-shadow, rgba(255, 255, 255, 90%));
+    }
+}
+
+@media (max-width: 540px) {
+    .nav {
+        .nav__component {
+            .nav__logo {
+                &__title {
+                    display: none;
+                }
+            }
+
+            .nav__subwindow {
+                &__text {
+                    display: none;
+                }
+            }
+        }
+    }
+}
+
+body[data-theme="dark"],
+body[theme="dark"] {
+    --nav-bg: #212121;
+    --nav-hover-shadow: rgba(16, 16, 16, 90%);
+
+    --nav-logo-title-clr: white;
+
+    --nav-component-bg: #212121;
+    --nav-component-hover-bg: #313131;
+
+    --nav-link-bg: var(--color-blue);
+    --nav-link-bg-hover: hsl(0, 0%, 25%);
+
+    --nav-btn-clr: hsl(0, 0%, 90%);
+
+    --nav-indicator-bg: rgba(255, 255, 255);
+
+    .nav__link[aria-current="page"],
+    .nav__link[data-current="page"],
+    .nav__link--active {
+        color: white;
+    }
+}

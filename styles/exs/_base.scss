@@ -1,0 +1,15 @@
+*,
+*:after,
+*:before {
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    box-sizing: border-box;
+
+    z-index: 0;
+}
+
+body {
+    background-color: whitesmoke;
+}

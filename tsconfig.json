@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "baseUrl": "./ts",
+        "paths": {},
+        "lib": [
+            "dom",
+            "es7",
+        ],
+        "strict": true,
+        "target": "ES2022",
+        "watch": true,
+        "outDir": "./js",
+        "moduleResolution": "node"
+    },
+    "exclude": [
+        "_build",
+        "dist",
+        "node_modules"
+    ]
+}

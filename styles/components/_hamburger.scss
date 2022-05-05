@@ -1,0 +1,122 @@
+:root {
+    --hamburger-size: 23px;
+    --bar-height: 3.15px;
+}
+
+.hamburger {
+    display: flex;
+    place-items: center;
+    place-content: center;
+
+    width: 100%;
+    min-width: 50px;
+    height: 100%;
+    min-height: 40px;
+
+    background-color: var(--ham-bg);
+
+    transition: background-color 200ms ease-out;
+
+    &:hover {
+        background-color: var(--ham-hover-bg);
+    }
+}
+
+.hamburger__content {
+    position: relative;
+
+    width: var(--hamburger-size);
+    height: var(--hamburger-size);
+
+    pointer-events: none;
+
+    &__first-line,
+    &__second-line,
+    &__third-line {
+        position: absolute;
+
+        width: 100%;
+        height: var(--bar-height);
+
+        border-radius: 22px;
+        background-color: var(--ham-bar-bg, black);
+
+        will-change: background-image, top, left, right, bottom, transform;
+        transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1) 0.05s, background-color 200ms ease-out;
+    }
+
+    &__first-line {
+        top: 0;
+        left: 0;
+        transform-origin: right center;
+    }
+
+    &__second-line {
+        top: calc(50% - var(--bar-height) / 2);
+        transform-origin: center center;
+    }
+
+    &__third-line {
+        bottom: 0;
+        right: 0;
+        transform-origin: left center;
+    }
+}
+
+.hamburger--activated.hamburger {
+    .hamburger__content__first-line,
+    .hamburger__content__second-line,
+    .hamburger__content__third-line {
+        background-color: deeppink;
+    }
+
+    .hamburger__content__first-line,
+    .hamburger__content__third-line {
+        width: 50%;
+        transform: rotate(45deg);
+    }
+
+    .hamburger__content__first-line {
+        top: calc(50% - var(--bar-height) / 2);
+    }
+
+    .hamburger__content__second-line {
+        transform: rotate(-45deg);
+    }
+
+    .hamburger__content__third-line {
+        bottom: calc(50% - var(--bar-height) / 2);
+    }
+}
+
+@media (hover: hover) {
+    .hamburger:hover {
+        .hamburger__content__first-line,
+        .hamburger__content__third-line {
+            width: 50%;
+        }
+    }
+
+    .hamburger--activated.hamburger:hover {
+        .hamburger__content__first-line,
+        .hamburger__content__third-line {
+            transform: rotate(0deg);
+        }
+
+        .hamburger__content__second-line {
+            transform: rotate(0deg);
+        }
+    }
+}
+
+body {
+    --ham-bg: white;
+    --ham-hover-bg: #ebebeb;
+}
+
+body[data-theme="dark"] {
+    --ham-bg: #212121;
+    --ham-hover-bg: hsl(0, 0%, 25%);
+
+    --ham-bar-bg: white;
+}
