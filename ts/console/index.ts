@@ -224,7 +224,7 @@ class Console {
                         'error__description',
                         'error__description--small'
                     ],
-                    child: smallMessage as string
+                    child: smallMessage
                 })
             ]
         })
