@@ -1,7 +1,7 @@
-import StopClock from './../stopclock';
-import magicDOM from './../magic-dom';
-import zalib from './../lib';
-import { $ } from './../jquery';
+import StopClock from '../stopclock';
+import magicDOM from '../magic-dom';
+import zalib from '../lib';
+import { $ } from '../jquery';
 const starterSC = new StopClock();
 class Console {
     background;
