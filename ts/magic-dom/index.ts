@@ -1,6 +1,6 @@
-import Console from '../console'
-import { $ } from '../jquery'
-import lib, { debounce } from '../lib'
+import Console from '../console/index.js'
+import { $ } from '../jquery/index.js'
+import lib, { debounce } from '../lib/index.js'
 
 
 type QuerySelector = null | Element | HTMLElement

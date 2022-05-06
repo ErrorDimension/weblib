@@ -1,8 +1,8 @@
-import lib, { throttle } from '../lib';
-import modCase from '../case';
-import cursor from '../cursor';
-import { $ } from '../jquery';
-import Console from '../console';
+import lib, { throttle } from '../lib/index.js';
+import modCase from '../case/index.js';
+import cursor from '../cursor/index.js';
+import { $ } from '../jquery/index.js';
+import Console from '../console/index.js';
 customElements.define('tooltip-container', class HTMLTooltipContainer extends HTMLDivElement {
     constructor() {
         super();
