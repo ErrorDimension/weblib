@@ -5,12 +5,14 @@
         "lib": [
             "dom",
             "es7",
+            "dom.iterable"
         ],
         "strict": true,
-        "target": "ES2022",
+        "target": "es2022",
         "watch": true,
         "outDir": "./js",
-        "moduleResolution": "node"
+        "moduleResolution": "node",
+        "module": "es2022"
     },
     "exclude": [
         "_build",

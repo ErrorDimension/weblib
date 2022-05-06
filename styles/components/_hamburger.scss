@@ -9,7 +9,7 @@
     place-content: center;
 
     width: 100%;
-    min-width: 50px;
+    min-width: 60px;
     height: 100%;
     min-height: 40px;
 
@@ -17,8 +17,8 @@
 
     transition: background-color 200ms ease-out;
 
-    &:hover {
-        background-color: var(--ham-hover-bg);
+    &:active {
+        background-color: var(--ham-bg-a);
     }
 }
 
@@ -107,15 +107,21 @@
             transform: rotate(0deg);
         }
     }
+
+    .hamburger:hover {
+        background-color: var(--ham-hover-bg);
+    }
 }
 
 body {
     --ham-bg: white;
-    --ham-hover-bg: #ebebeb;
+    --ham-bg-a: hsl(0, 0%, 85%);
+    --ham-hover-bg: hsl(0, 0%, 95%);
 }
 
 body[data-theme="dark"] {
     --ham-bg: #212121;
+    --ham-bg-a: hsl(0, 0%, 32%);
     --ham-hover-bg: hsl(0, 0%, 25%);
 
     --ham-bar-bg: white;
