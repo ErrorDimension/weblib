@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "baseUrl": "./ts",
+        "baseUrl": "/ts",
         "paths": {},
         "lib": [
             "dom",
@@ -10,9 +10,9 @@
         "strict": true,
         "target": "es2022",
         "watch": true,
-        "outDir": "./js",
+        "outDir": "/js",
         "moduleResolution": "node",
-        "module": "es2022"
+        "module": "es2020"
     },
     "exclude": [
         "_build",
