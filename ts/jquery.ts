@@ -48,6 +48,14 @@ class JHTMLElement extends Array<HTMLElement> {
     }
 
 
+    each(func: (index: keyof this & number) => any): JHTMLElement {
+        if (typeof func !== 'function') throw new Error('"jquery.each()" : "func" is not a function')
+
+        this.forEach((element, index) => func.call(element, index))
+        return this
+    }
+
+
     setdata(
         keyOrObj: string | { [key: string]: string | null },
         val: OptionalString = undefined
@@ -163,34 +171,54 @@ type QuerySelector = null | Element | HTMLElement
 
 
 export function $$(query: string): QuerySelector
-export function $$(element: QuerySelector, query: string): QuerySelector
-export function $$(conOrQuery: any, query?: string): QuerySelector {
-    const array_ = query ? $(conOrQuery, query) : $(conOrQuery)
+export function $$(query: string, element: HTMLElement): QuerySelector
+export function $$(query: string, containerQuery: string): QuerySelector
+export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): QuerySelector {
+    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
+        const container = document.querySelector(queryOrElement)
 
-    if (array_.length) return array_[0]
-    return null
+        if (container !== null)
+            return container.querySelector(queryOrObj)
+
+        return null
+    }
+
+    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
+        return queryOrElement.querySelector(queryOrObj)
+
+    return document.querySelector(queryOrObj)
 }
 
 
+export function $(query: string, element: HTMLElement): JHTMLElement
+export function $(query: string, containerQuery: string): JHTMLElement
 export function $(query: string): JHTMLElement
 export function $(elements: NodeList): JHTMLElement
-export function $(element: QuerySelector, query: string): JHTMLElement
-export function $(element: QuerySelector): JHTMLElement
+export function $(element: HTMLElement): JHTMLElement
 export function $(global: Window | Document): JHTMLElement
-export function $(queryOrContainer: any, query?: string): JHTMLElement {
-    if (typeof queryOrContainer === 'string')
-        return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrContainer))
+export function $(queryOrObj: any, queryOrElement?: HTMLElement | string): JHTMLElement {
+    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
+        return new JHTMLElement(...queryOrElement.querySelectorAll<HTMLElement>(queryOrObj))
 
-    if (queryOrContainer instanceof NodeList)
-        return new JHTMLElement(...queryOrContainer as NodeListOf<any>)
+    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
+        const container = document.querySelector(queryOrElement)
 
-    if (queryOrContainer instanceof HTMLElement && typeof query === 'string')
-        return new JHTMLElement(...queryOrContainer.querySelectorAll<HTMLElement>(query))
+        if (container !== null)
+            return new JHTMLElement(...container.querySelectorAll<HTMLElement>(queryOrObj))
 
-    if (queryOrContainer instanceof HTMLElement)
-        return new JHTMLElement(queryOrContainer)
+        return new JHTMLElement()
+    }
 
-    return new JHTMLElement(queryOrContainer)
+    if (typeof queryOrObj === 'string')
+        return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrObj))
+
+    if (queryOrObj instanceof NodeList)
+        return new JHTMLElement(...queryOrObj as NodeListOf<any>)
+
+    if (queryOrObj instanceof HTMLElement)
+        return new JHTMLElement(queryOrObj)
+
+    return new JHTMLElement(queryOrObj)
 }
 
 

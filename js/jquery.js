@@ -29,6 +29,12 @@ class JHTMLElement extends Array {
         });
         return this;
     }
+    each(func) {
+        if (typeof func !== 'function')
+            throw new Error('"jquery.each()" : "func" is not a function');
+        this.forEach((element, index) => func.call(element, index));
+        return this;
+    }
     setdata(keyOrObj, val = undefined) {
         this.forEach(element => {
             if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined)
@@ -86,22 +92,33 @@ class JHTMLElement extends Array {
         return this;
     }
 }
-export function $$(conOrQuery, query) {
-    const array_ = query ? $(conOrQuery, query) : $(conOrQuery);
-    if (array_.length)
-        return array_[0];
-    return null;
+export function $$(queryOrObj, queryOrElement) {
+    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
+        const container = document.querySelector(queryOrElement);
+        if (container !== null)
+            return container.querySelector(queryOrObj);
+        return null;
+    }
+    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
+        return queryOrElement.querySelector(queryOrObj);
+    return document.querySelector(queryOrObj);
 }
-export function $(queryOrContainer, query) {
-    if (typeof queryOrContainer === 'string')
-        return new JHTMLElement(...document.querySelectorAll(queryOrContainer));
-    if (queryOrContainer instanceof NodeList)
-        return new JHTMLElement(...queryOrContainer);
-    if (queryOrContainer instanceof HTMLElement && typeof query === 'string')
-        return new JHTMLElement(...queryOrContainer.querySelectorAll(query));
-    if (queryOrContainer instanceof HTMLElement)
-        return new JHTMLElement(queryOrContainer);
-    return new JHTMLElement(queryOrContainer);
+export function $(queryOrObj, queryOrElement) {
+    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
+        return new JHTMLElement(...queryOrElement.querySelectorAll(queryOrObj));
+    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
+        const container = document.querySelector(queryOrElement);
+        if (container !== null)
+            return new JHTMLElement(...container.querySelectorAll(queryOrObj));
+        return new JHTMLElement();
+    }
+    if (typeof queryOrObj === 'string')
+        return new JHTMLElement(...document.querySelectorAll(queryOrObj));
+    if (queryOrObj instanceof NodeList)
+        return new JHTMLElement(...queryOrObj);
+    if (queryOrObj instanceof HTMLElement)
+        return new JHTMLElement(queryOrObj);
+    return new JHTMLElement(queryOrObj);
 }
 const jquery = { $$, $ };
 export default jquery;

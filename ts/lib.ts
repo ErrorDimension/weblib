@@ -47,7 +47,9 @@ const lib = {
         let weekday = time.getDay()
 
         function zero(timeKind: number): string { return (timeKind < 10 ? '0' + timeKind : timeKind).toString() }
-        function postFix(lastIdx: number): string { return ['St', 'Nd', 'Rd', 'Th'][lastIdx - 1 >= 3 || lastIdx === 0 ? 3 : lastIdx - 1] }
+        function postFix(lastIdx: number): string {
+            return ['St', 'Nd', 'Rd', 'Th'][(lastIdx - 1 >= 3 || lastIdx === 0) ? 3 : lastIdx - 1]
+        }
         function shortMonth() {
             return [
                 'Jan', 'Feb', 'Mar',

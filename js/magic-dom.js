@@ -23,11 +23,15 @@ const magicDOM = {
             element.setAttribute(key, attribute[key].toString());
         if (child === undefined || child === null)
             return element;
-        if (child instanceof HTMLElement)
+        if (child instanceof HTMLElement) {
             element.append(child);
-        if (typeof child === 'string')
+            return element;
+        }
+        if (typeof child === 'string') {
             element.innerText = child;
-        if (child instanceof NodeList)
+            return element;
+        }
+        if (child.length)
             element.append(...child);
         return element;
     },

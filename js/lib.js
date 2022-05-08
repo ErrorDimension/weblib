@@ -40,7 +40,9 @@ const lib = {
         let year = time.getFullYear();
         let weekday = time.getDay();
         function zero(timeKind) { return (timeKind < 10 ? '0' + timeKind : timeKind).toString(); }
-        function postFix(lastIdx) { return ['St', 'Nd', 'Rd', 'Th'][lastIdx - 1 >= 3 || lastIdx === 0 ? 3 : lastIdx - 1]; }
+        function postFix(lastIdx) {
+            return ['St', 'Nd', 'Rd', 'Th'][(lastIdx - 1 >= 3 || lastIdx === 0) ? 3 : lastIdx - 1];
+        }
         function shortMonth() {
             return [
                 'Jan', 'Feb', 'Mar',

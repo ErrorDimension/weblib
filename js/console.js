@@ -1,14 +1,13 @@
 import StopClock from './stopclock';
 import magicDOM from './magic-dom';
 import zalib from './lib';
-import { $ } from './jquery';
+import { $, $$ } from './jquery';
 const starterSC = new StopClock();
 class Console {
-    background;
-    color;
     text;
-    displayTo;
-    constructor(text, { color = 'white', background = 'rgb(255, 255, 255)', opacity = 0.55, displayTo = null } = {}) {
+    color;
+    background;
+    constructor(text, { color = 'white', background = 'rgb(255, 255, 255)', opacity = 0.55 } = {}) {
         function toRgba(clr) {
             if (clr.startsWith('rgba'))
                 return clr;
@@ -21,11 +20,9 @@ class Console {
             let rgb = zalib.hexToRgb(zalib.hexCodeColor(clr));
             return `rgba(${rgb.red}, ${rgb.green}, ${rgb.blue}, ${opacity})`;
         }
-        this.background = toRgba(background);
         this.text = text;
         this.color = color;
-        if (typeof displayTo === 'string')
-            this.displayTo = displayTo;
+        this.background = toRgba(background);
     }
     static get #padding() {
         let userAgent = navigator.userAgent.toLowerCase();
@@ -140,40 +137,33 @@ class Console {
         background: '#2b2a2a',
         opacity: 1
     });
-    static display(query, { code = -1, description = 'Unknown', message = (cd, des) => `[${cd}] >>> ${des}`, title = (cd = '', des = '') => `💣 Oh shit, it's an ERROR !!!` } = {}) {
-        let container = $(query)[0];
-        if (!(container instanceof HTMLElement)) {
-            this.warn('`throw` : `logTo` is not a correct query/element');
-            return;
-        }
+    static display(queryOrElement, { code = -1, title = `💣 Oh shit, it's an ERROR !!!`, message = `Unknown`, description = 'Reload the page or maybe try reaching out to the creator', } = {}) {
+        let container = typeof queryOrElement === 'string'
+            ? $$(queryOrElement)
+            : $(queryOrElement)[0];
+        if (!(container instanceof HTMLElement))
+            throw new Error(`'Console.display()' : 'queryOrElement' is not valid`);
         magicDOM.emptyNode(container);
-        let msg = message(code, description);
-        let bigMessage = msg;
-        let smallMessage = 'Reload the page or maybe try reaching out to the creator';
-        if (msg instanceof Object) {
-            bigMessage = msg.bigMessage;
-            smallMessage = msg.smallMessage;
-        }
         const errorBlock = magicDOM.createElement('div', {
             classList: 'error',
             child: [
                 magicDOM.createElement('div', {
                     classList: 'error__title',
-                    child: title(code, JSON.stringify(message))
+                    child: title
                 }),
                 magicDOM.createElement('div', {
                     classList: [
                         'error__description',
                         'error__description--big'
                     ],
-                    child: bigMessage
+                    child: `[${code}] >>> ${message}`
                 }),
                 magicDOM.createElement('div', {
                     classList: [
                         'error__description',
                         'error__description--small'
                     ],
-                    child: smallMessage
+                    child: description
                 })
             ]
         });

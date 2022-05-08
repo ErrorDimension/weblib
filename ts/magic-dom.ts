@@ -33,29 +33,37 @@ const magicDOM = {
         id?: string,
         classList?: string | string[],
         attribute?: Record<string, string | number>
-        child?: string | QuerySelector | NodeList | QuerySelector[]
+        child?: string | HTMLElement | Array<HTMLElement>
     } = {}) {
         const element = document.createElement(type)
 
 
         if (typeof id === 'string') element.id = id
 
+
         if (typeof classList === 'string') element.classList.add(classList)
         else if (classList.length) element.classList.add(...classList)
+
 
         for (let key in attribute)
             element.setAttribute(key, attribute[key].toString())
 
+
         if (child === undefined || child === null) return element
 
-        if (child instanceof HTMLElement)
+        if (child instanceof HTMLElement) {
             element.append(child)
+            return element
+        }
 
-        if (typeof child === 'string')
+        if (typeof child === 'string') {
             element.innerText = child
+            return element
+        }
 
-        if (child instanceof NodeList)
+        if (child.length)
             element.append(...child)
+
 
         return element
     },
