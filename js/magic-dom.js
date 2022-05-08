@@ -1,6 +1,6 @@
-import Console from '../console/index.js';
-import { $ } from '../jquery/index.js';
-import lib, { debounce } from '../lib/index.js';
+import Console from './console.js';
+import { $ } from './jquery.js';
+import lib, { debounce } from './lib.js';
 const magicDOM = {
     /**
      * Create a HTMLElement the easy way
@@ -138,7 +138,7 @@ const magicDOM = {
                     background: 'pink', opacity: 0.9
                 });
                 Console.info(log, 'zatooltip will be ready to be displayed');
-                import('./../tooltip').then(obj => {
+                import('./tooltip').then(obj => {
                     this.usedTooltip = true;
                     obj.default.addHook({
                         on: 'dataset',

@@ -1,8 +1,8 @@
-import lib, { throttle } from '../lib/index.js';
-import modCase from '../case/index.js';
-import cursor from '../cursor/index.js';
-import { $ } from '../jquery/index.js';
-import Console from '../console/index.js';
+import lib, { throttle } from './lib';
+import modCase from './modcase';
+import cursor from './cursor';
+import { $ } from './jquery';
+import Console from './console';
 customElements.define('tooltip-container', class HTMLTooltipContainer extends HTMLDivElement {
     constructor() {
         super();
@@ -55,13 +55,13 @@ const tooltip = {
             .observe(this.content);
         new MutationObserver(() => this.scan())
             .observe(document.body, { childList: true, subtree: true });
-        this.initialized = true;
         cursor.watch(true);
+        this.initialized = true;
         Console.okay(this.tooltipLog, 'Successfully initialized');
     },
     scan() { this.hooks.forEach(hook => this.processor[hook.on].attach(hook)); },
     getValue(target, hook) {
-        if (typeof target !== 'object')
+        if (!(target instanceof HTMLElement))
             return;
         return this.processor[hook.on].process(target, hook.key);
     },
@@ -127,7 +127,7 @@ const tooltip = {
                 '--padding': '0px',
                 'transition': 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1), padding 0s linear'
             });
-        if (content || typeof content === 'boolean')
+        if (content)
             this.show(content);
     },
     mouseleave(hook) {
@@ -164,8 +164,9 @@ const tooltip = {
         let yPos = (isMoreOuterY || isLargerThanScreenY)
             ? positionY - clientHeight - 25
             : positionY + 25;
-        lib.cssFrame(() => $(container)
-            .css({ 'transform': `translate(${xPos}px, ${yPos}px)` }));
+        lib.cssFrame(() => $(container).css({
+            'transform': `translate(${xPos}px, ${yPos}px)`
+        }));
     }, 55),
     hide() {
         this.hideTimeout = setTimeout(() => {

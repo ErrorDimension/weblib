@@ -1,4 +1,4 @@
-import modCase from '../case/index.js'
+import modCase from './modcase.js'
 
 
 type OptionalString = undefined | string | null

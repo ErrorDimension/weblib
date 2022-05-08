@@ -1,6 +1,6 @@
-import Console from '../console/index.js'
-import { $ } from '../jquery/index.js'
-import lib, { debounce } from '../lib/index.js'
+import Console from './console.js'
+import { $ } from './jquery.js'
+import lib, { debounce } from './lib.js'
 
 
 type QuerySelector = null | Element | HTMLElement
@@ -214,7 +214,7 @@ const magicDOM = {
                 })
                 Console.info(log, 'zatooltip will be ready to be displayed')
 
-                import('./../tooltip').then(obj => {
+                import('./tooltip').then(obj => {
                     this.usedTooltip = true
 
                     obj.default.addHook({

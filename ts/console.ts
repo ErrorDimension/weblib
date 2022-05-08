@@ -1,7 +1,7 @@
-import StopClock from '../stopclock/index.js'
-import magicDOM from '../magic-dom/index.js'
-import zalib from '../lib/index.js'
-import { $ } from '../jquery/index.js'
+import StopClock from './stopclock'
+import magicDOM from './magic-dom'
+import zalib from './lib'
+import { $ } from './jquery'
 
 
 const starterSC = new StopClock()

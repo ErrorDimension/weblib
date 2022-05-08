@@ -1,8 +1,8 @@
-import lib, { throttle } from '../lib/index.js'
-import modCase from '../case/index.js'
-import cursor from '../cursor/index.js'
-import { $ } from '../jquery/index.js'
-import Console from '../console/index.js'
+import lib, { throttle } from './lib'
+import modCase from './modcase'
+import cursor from './cursor'
+import { $ } from './jquery'
+import Console from './console'
 
 
 customElements.define(
@@ -106,8 +106,9 @@ const tooltip = {
         new MutationObserver(() => this.scan())
             .observe(document.body, { childList: true, subtree: true })
 
-        this.initialized = true
         cursor.watch(true)
+
+        this.initialized = true
         Console.okay(this.tooltipLog, 'Successfully initialized')
     },
 
@@ -116,7 +117,7 @@ const tooltip = {
 
 
     getValue(target: HTMLElement, hook: Hook): string | undefined {
-        if (typeof target !== 'object') return
+        if (!(target instanceof HTMLElement)) return
         return this.processor[hook.on].process(target, hook.key)
     },
 
@@ -207,7 +208,7 @@ const tooltip = {
                 'transition': 'all 0.3s cubic-bezier(0.22, 1, 0.36, 1), padding 0s linear'
             })
 
-        if (content || typeof content === 'boolean') this.show(content)
+        if (content) this.show(content)
     },
 
 
@@ -258,9 +259,9 @@ const tooltip = {
             ? positionY - clientHeight - 25
             : positionY + 25
 
-        lib.cssFrame(() =>
-            $(container)!
-                .css({ 'transform': `translate(${xPos}px, ${yPos}px)` }))
+        lib.cssFrame(() => $(container).css({
+            'transform': `translate(${xPos}px, ${yPos}px)`
+        }))
     }, 55) as (this: object, ev?: MouseEvent) => void,
 
 
