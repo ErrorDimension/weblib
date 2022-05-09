@@ -2,17 +2,22 @@ import modCase from './modcase.js'
 
 
 type ELoELO = EventListenerOrEventListenerObject
-type EventOptions = boolean | AddEventListenerOptions
-type EventType<Type> =
+type EOp = boolean | AddEventListenerOptions
+type E<Type> =
     Type extends Window ? WindowEventMap :
     Type extends Document ? DocumentEventMap :
-    HTMLElementEventMap
+    Type extends HTMLElement ? HTMLElementEventMap : never
+type K<Type> = keyof E<Type>
+type F<Type, Key extends K<Type>> = (this: Type, ev: E<Type>[Key]) => any
 
-class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends Array<T> {
+type Ev<Key> = Key | string
+type Fn<Type, Key extends K<Type>> = ((this: Type, ev: E<Type>[Key] | Event) => any) | ELoELO
+
+class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extends Array<Type> {
     css(
         property: string | Record<string, string | null>,
         val?: string | null
-    ): JHTMLElement<T> {
+    ): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {
@@ -36,7 +41,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     attr(
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
-    ): JHTMLElement<T> {
+    ): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {
@@ -69,7 +74,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     dataset(
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
-    ): JHTMLElement<T> {
+    ): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {
@@ -94,7 +99,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
-    each(func: (index: number) => any): JHTMLElement<T> {
+    each(func: (index: number) => any): JHTMLElement<Type> {
         if (typeof func !== 'function') throw new Error('"jquery.each()" : "func" is not a function')
 
         this.forEach((element, index) => func.call(element, index))
@@ -102,32 +107,15 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
+    on<Key extends K<Type>>(event: Key, listener: F<Type, Key>, option?: EOp): JHTMLElement<Type>
+    on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
-     * add event listener onto a list of object
-     * @param       event               event type
-     * @param       listener            callback listener
-     * @param       option              options
-     */
-    on<K extends keyof EventType<T>>
-        (event: K, listener: (this: T, ev: EventType<T>[K]) => any, option?: EventOptions): JHTMLElement<T>
-    /**
-    * add event listener onto a list of object
-    * @param        event               event type
-    * @param        listener            callback listener
-    * @param        option              options
+    * add an event listener onto a list of object
+    * @param        { Event }                   event           event type
+    * @param        { Function }                listener        callback listener
+    * @param        { Boolean | object }        option          options
     */
-    on(event: string, listener: ELoELO, option?: EventOptions): JHTMLElement<T>
-    /**
-    * add event listener onto a list of object
-    * @param        event               event type
-    * @param        listener            callback listener
-    * @param        option              options
-    */
-    on<K extends keyof EventType<T>>(
-        event: K | string,
-        listener: ((this: T, ev: EventType<T>[K] | Event) => void) | ELoELO,
-        option?: EventOptions
-    ): JHTMLElement<T> {
+    on<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
@@ -137,14 +125,15 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
-    off<K extends keyof EventType<T>>
-        (event: K, listener: (this: T, ev: EventType<T>[K]) => any, option?: EventOptions): JHTMLElement<T>
-    off(event: string, listener: ELoELO, option?: EventOptions): JHTMLElement<T>
-    off<K extends keyof EventType<T>>(
-        event: K | string,
-        listener: ((this: T, ev: EventType<T>[K] | Event) => void) | ELoELO,
-        option?: EventOptions
-    ): JHTMLElement<T> {
+    off<Key extends K<Type>>(event: Key, listener: F<Type, Key>, option?: EOp): JHTMLElement<Type>
+    off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
+    /**
+    * remove an event listener that attached onto a list of object
+    * @param        { Event }                   event           event type
+    * @param        { Function }                listener        callback listener
+    * @param        { Boolean | object }        option          options
+    */
+    off<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
@@ -154,7 +143,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
-    addClass(...className: string[]): JHTMLElement<T> {
+    addClass(...className: string[]): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {
@@ -166,7 +155,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
-    removeClass(...className: string[]): JHTMLElement<T> {
+    removeClass(...className: string[]): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {
@@ -178,7 +167,7 @@ class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends A
     }
 
 
-    toggleClass(className: string): JHTMLElement<T> {
+    toggleClass(className: string): JHTMLElement<Type> {
         const self = this
 
         this.forEach(element => {

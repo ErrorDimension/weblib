@@ -68,10 +68,10 @@ class JHTMLElement extends Array {
         return this;
     }
     /**
-    * add event listener onto a list of object
-    * @param        event               event type
-    * @param        listener            callback listener
-    * @param        option              options
+    * add an event listener onto a list of object
+    * @param        { Event }                   event           event type
+    * @param        { Function }                listener        callback listener
+    * @param        { Boolean | object }        option          options
     */
     on(event, listener, option) {
         if (typeof event !== 'string')
@@ -81,6 +81,12 @@ class JHTMLElement extends Array {
         this.forEach(element => element.addEventListener(event, listener, option));
         return this;
     }
+    /**
+    * remove an event listener that attached onto a list of object
+    * @param        { Event }                   event           event type
+    * @param        { Function }                listener        callback listener
+    * @param        { Boolean | object }        option          options
+    */
     off(event, listener, option) {
         if (typeof event !== 'string')
             throw new Error(`'JQuery.on() : 'event' is not valid`);

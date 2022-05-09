@@ -215,6 +215,47 @@ const lib = {
     max: (...args) => Math.max(...args),
     /** this function returns the clamped number */
     clamp(min, dynamic, max) { return this.min(this.max(min, dynamic), max); },
+    /** this function parses cookie */
+    parseCookie(name) {
+        const cookies = document.cookie.split(';');
+        const cookie = cookies.find(c => c.trim().startsWith(name + '='));
+        if (!cookie)
+            return undefined;
+        return cookie.split('=')[1];
+    },
+    preferDarkColorScheme: () => window &&
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches,
+    preferLightColorScheme: () => window &&
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: light)').matches,
+};
+/** this function return the recording of an animation frame callback */
+export const recordAnimationFrame = (callback, autoStart = true) => {
+    let running = false;
+    let raf = -1;
+    const stop = () => {
+        if (!running)
+            return;
+        running = false;
+        cancelAnimationFrame(raf);
+    };
+    const run = () => {
+        raf = requestAnimationFrame(() => {
+            callback();
+            if (running)
+                run();
+        });
+    };
+    const start = () => {
+        if (running)
+            return;
+        running = true;
+        run();
+    };
+    if (autoStart)
+        start();
+    return { start, stop };
 };
 /**
  * throttle a function
