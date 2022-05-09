@@ -1,33 +1,65 @@
 import modCase from './modcase.js';
 class JHTMLElement extends Array {
-    css(keyOrObj, val = undefined) {
+    css(property, val) {
+        const self = this;
         this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined)
-                element.style.setProperty(modCase.camel.kebab(keyOrObj), val);
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj) {
+            if (!(element instanceof HTMLElement))
+                return self;
+            if (typeof property === 'string' && val !== undefined)
+                element.style.setProperty(modCase.camel.kebab(property), val);
+            if (property instanceof Object)
+                for (let key in property) {
                     const prop = modCase.camel.kebab(key);
-                    const value = keyOrObj[key];
+                    const value = property[key];
                     element.style.setProperty(prop, value);
                 }
         });
-        return this;
+        return self;
     }
-    attr(keyOrObj, val = undefined) {
+    attr(nameOrProps, val) {
+        const self = this;
         this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined) {
-                element.setAttribute(keyOrObj, val);
-                if (val === null)
-                    element.removeAttribute(keyOrObj);
+            if (!(element instanceof HTMLElement))
+                return self;
+            if (typeof nameOrProps === 'string' && val !== undefined) {
+                if (val === null) {
+                    element.removeAttribute(nameOrProps);
+                    return self;
+                }
+                element.setAttribute(nameOrProps, val);
+                return self;
             }
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj) {
-                    element.setAttribute(key, keyOrObj[key]);
-                    if (keyOrObj[key] === null)
-                        element.removeAttribute(key);
+            if (nameOrProps instanceof Object)
+                for (let key in nameOrProps) {
+                    const name = key;
+                    const value = nameOrProps[key];
+                    if (value !== undefined)
+                        element.removeAttribute(name);
+                    else
+                        element.setAttribute(name, value);
                 }
         });
-        return this;
+        return self;
+    }
+    dataset(nameOrProps, val) {
+        const self = this;
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement))
+                return self;
+            if (typeof nameOrProps === 'string' && val === null)
+                delete element.dataset[nameOrProps];
+            if (typeof nameOrProps === 'string')
+                element.dataset[nameOrProps] = val === null ? undefined : val;
+            if (nameOrProps instanceof Object)
+                for (let key in nameOrProps) {
+                    const value = nameOrProps[key];
+                    if (value === null)
+                        delete element.dataset[key];
+                    else
+                        element.dataset[key] = value;
+                }
+        });
+        return self;
     }
     each(func) {
         if (typeof func !== 'function')
@@ -35,60 +67,53 @@ class JHTMLElement extends Array {
         this.forEach((element, index) => func.call(element, index));
         return this;
     }
-    setdata(keyOrObj, val = undefined) {
+    /**
+    * add event listener onto a list of object
+    * @param        event               event type
+    * @param        listener            callback listener
+    * @param        option              options
+    */
+    on(event, listener, option) {
+        if (typeof event !== 'string')
+            throw new Error(`'JQuery.on() : 'event' is not valid`);
+        if (typeof listener !== 'function')
+            throw new Error(`'JQuery.on() : 'listener' is not valid`);
+        this.forEach(element => element.addEventListener(event, listener, option));
+        return this;
+    }
+    off(event, listener, option) {
+        if (typeof event !== 'string')
+            throw new Error(`'JQuery.on() : 'event' is not valid`);
+        if (typeof listener !== 'function')
+            throw new Error(`'JQuery.on() : 'listener' is not valid`);
+        this.forEach(element => element.removeEventListener(event, listener, option));
+        return this;
+    }
+    addClass(...className) {
+        const self = this;
         this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined)
-                element.dataset[modCase.kebab.camel(keyOrObj)] = val;
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj)
-                    element.dataset[modCase.kebab.camel(key)] = keyOrObj[key];
+            if (!(element instanceof HTMLElement))
+                return self;
+            element.classList.add(...className);
         });
         return this;
     }
-    on(event, cbOrSelector, cbOrOption, option) {
-        if (typeof cbOrSelector === 'function')
-            this.forEach(el => {
-                el.addEventListener(event, cbOrSelector, cbOrOption);
-            });
-        if (typeof cbOrSelector === 'string' && typeof cbOrOption === 'function')
-            this.forEach(el => {
-                if (el.matches(cbOrSelector))
-                    el.addEventListener(event, cbOrOption, option);
-            });
-        return this;
-    }
-    off(event, cbOrSelector, cbOrOption, option) {
-        if (typeof cbOrSelector === 'function')
-            this.forEach(el => {
-                el.removeEventListener(event, cbOrSelector, cbOrOption);
-            });
-        if (typeof cbOrSelector === 'string' && typeof cbOrOption === 'function')
-            this.forEach(el => {
-                if (el.matches(cbOrSelector))
-                    el.removeEventListener(event, cbOrOption, option);
-            });
-        return this;
-    }
-    next() {
-        return this
-            .map(e => e.nextElementSibling)
-            .filter(e => e !== null);
-    }
-    prev() {
-        return this
-            .map(e => e.previousElementSibling)
-            .filter(e => e !== null);
-    }
-    addClass(...className) {
-        this.forEach(e => e.classList.add(...className));
-        return this;
-    }
     removeClass(...className) {
-        this.forEach(e => e.classList.remove(...className));
+        const self = this;
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement))
+                return self;
+            element.classList.remove(...className);
+        });
         return this;
     }
     toggleClass(className) {
-        this.forEach(e => e.classList.toggle(className));
+        const self = this;
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement))
+                return self;
+            element.classList.toggle(className);
+        });
         return this;
     }
 }

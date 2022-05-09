@@ -276,7 +276,7 @@ const magicDOM = {
         }, 100);
         const MINIMIZED = 0.075;
         $(container)
-            .setdata('scrollable', 'true')
+            .dataset('scrollable', 'true')
             .on('wheel', (event) => {
             let { deltaY } = event;
             translate = lib.clamp(-maxPath, translate - deltaY * MINIMIZED, maxPath);

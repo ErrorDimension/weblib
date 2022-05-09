@@ -1,54 +1,100 @@
 import modCase from './modcase.js'
 
 
-type OptionalString = undefined | string | null
+type ELoELO = EventListenerOrEventListenerObject
+type EventOptions = boolean | AddEventListenerOptions
+type EventType<Type> =
+    Type extends Window ? WindowEventMap :
+    Type extends Document ? DocumentEventMap :
+    HTMLElementEventMap
 
-
-class JHTMLElement extends Array<HTMLElement> {
+class JHTMLElement<T extends (Window | Document | HTMLElement | Node)> extends Array<T> {
     css(
-        keyOrObj: string | { [key: string]: string | null },
-        val: OptionalString = undefined
-    ): JHTMLElement {
-        this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined)
-                element.style.setProperty(modCase.camel.kebab(keyOrObj as string), val)
+        property: string | Record<string, string | null>,
+        val?: string | null
+    ): JHTMLElement<T> {
+        const self = this
 
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj) {
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement)) return self
+
+            if (typeof property === 'string' && val !== undefined)
+                element.style.setProperty(modCase.camel.kebab(property), val)
+
+            if (property instanceof Object)
+                for (let key in property) {
                     const prop: string = modCase.camel.kebab(key)
-                    const value: string = keyOrObj[key] as string
+                    const value: string | null = property[key]
                     element.style.setProperty(prop, value)
                 }
         })
 
-        return this
+        return self
     }
 
 
     attr(
-        keyOrObj: string | { [key: string]: string | null },
-        val: OptionalString = undefined
-    ): JHTMLElement {
+        nameOrProps: string | Record<string, string | null>,
+        val?: string | null
+    ): JHTMLElement<T> {
+        const self = this
+
         this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined) {
-                element.setAttribute(keyOrObj as string, val!)
-                if (val === null)
-                    element.removeAttribute(keyOrObj as string)
+            if (!(element instanceof HTMLElement)) return self
+
+            if (typeof nameOrProps === 'string' && val !== undefined) {
+                if (val === null) {
+                    element.removeAttribute(nameOrProps)
+                    return self
+                }
+
+                element.setAttribute(nameOrProps, val)
+                return self
             }
 
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj) {
-                    element.setAttribute(key, keyOrObj[key] as string)
-                    if (keyOrObj[key] === null)
-                        element.removeAttribute(key)
+            if (nameOrProps instanceof Object)
+                for (let key in nameOrProps) {
+                    const name: string = key
+                    const value: string | null = nameOrProps[key]
+
+                    if (value !== undefined) element.removeAttribute(name)
+                    else element.setAttribute(name, value)
                 }
         })
 
-        return this
+        return self
     }
 
 
-    each(func: (index: keyof this & number) => any): JHTMLElement {
+    dataset(
+        nameOrProps: string | Record<string, string | null>,
+        val?: string | null
+    ): JHTMLElement<T> {
+        const self = this
+
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement)) return self
+
+            if (typeof nameOrProps === 'string' && val === null)
+                delete element.dataset[nameOrProps]
+
+            if (typeof nameOrProps === 'string')
+                element.dataset[nameOrProps] = val === null ? undefined : val
+
+            if (nameOrProps instanceof Object)
+                for (let key in nameOrProps) {
+                    const value: string | null = nameOrProps[key]
+
+                    if (value === null) delete element.dataset[key]
+                    else element.dataset[key] = value
+                }
+        })
+
+        return self
+    }
+
+
+    each(func: (index: number) => any): JHTMLElement<T> {
         if (typeof func !== 'function') throw new Error('"jquery.each()" : "func" is not a function')
 
         this.forEach((element, index) => func.call(element, index))
@@ -56,119 +102,96 @@ class JHTMLElement extends Array<HTMLElement> {
     }
 
 
-    setdata(
-        keyOrObj: string | { [key: string]: string | null },
-        val: OptionalString = undefined
-    ): JHTMLElement {
-        this.forEach(element => {
-            if ((typeof keyOrObj === 'string' || keyOrObj instanceof String) && val !== undefined)
-                element.dataset[modCase.kebab.camel(keyOrObj as string)!] = val!
+    /**
+     * add event listener onto a list of object
+     * @param       event               event type
+     * @param       listener            callback listener
+     * @param       option              options
+     */
+    on<K extends keyof EventType<T>>
+        (event: K, listener: (this: T, ev: EventType<T>[K]) => any, option?: EventOptions): JHTMLElement<T>
+    /**
+    * add event listener onto a list of object
+    * @param        event               event type
+    * @param        listener            callback listener
+    * @param        option              options
+    */
+    on(event: string, listener: ELoELO, option?: EventOptions): JHTMLElement<T>
+    /**
+    * add event listener onto a list of object
+    * @param        event               event type
+    * @param        listener            callback listener
+    * @param        option              options
+    */
+    on<K extends keyof EventType<T>>(
+        event: K | string,
+        listener: ((this: T, ev: EventType<T>[K] | Event) => void) | ELoELO,
+        option?: EventOptions
+    ): JHTMLElement<T> {
+        if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
+        if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
-            if (keyOrObj instanceof Object)
-                for (let key in keyOrObj) element.dataset[modCase.kebab.camel(key)] = keyOrObj[key] as string
+        this.forEach(element => element.addEventListener(event, listener, option))
+
+        return this
+    }
+
+
+    off<K extends keyof EventType<T>>
+        (event: K, listener: (this: T, ev: EventType<T>[K]) => any, option?: EventOptions): JHTMLElement<T>
+    off(event: string, listener: ELoELO, option?: EventOptions): JHTMLElement<T>
+    off<K extends keyof EventType<T>>(
+        event: K | string,
+        listener: ((this: T, ev: EventType<T>[K] | Event) => void) | ELoELO,
+        option?: EventOptions
+    ): JHTMLElement<T> {
+        if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
+        if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
+
+        this.forEach(element => element.removeEventListener(event, listener, option))
+
+        return this
+    }
+
+
+    addClass(...className: string[]): JHTMLElement<T> {
+        const self = this
+
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement)) return self
+            element.classList.add(...className)
         })
 
         return this
     }
 
 
-    on(
-        event: keyof HTMLElementEventMap,
-        cbOrSelector: (
-            this: HTMLElement,
-            ev: WheelEvent | HTMLElementEventMap[keyof HTMLElementEventMap]
-        ) => any | EventListenerOrEventListenerObject,
-        cbOrOption?: Function | boolean | AddEventListenerOptions,
-        option?: boolean | AddEventListenerOptions
-    ): JHTMLElement {
-        if (typeof cbOrSelector === 'function')
-            this.forEach(el => {
-                el.addEventListener(
-                    event,
-                    cbOrSelector,
-                    cbOrOption as boolean | AddEventListenerOptions
-                )
-            })
+    removeClass(...className: string[]): JHTMLElement<T> {
+        const self = this
 
-        if (typeof cbOrSelector === 'string' && typeof cbOrOption === 'function')
-            this.forEach(el => {
-                if (el.matches(cbOrSelector))
-                    el.addEventListener(
-                        event,
-                        cbOrOption as (this: HTMLElement, ev: HTMLElementEventMap[keyof HTMLElementEventMap]) => any,
-                        option)
-            })
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement)) return self
+            element.classList.remove(...className)
+        })
 
         return this
     }
 
 
-    off(
-        event: keyof HTMLElementEventMap,
-        cbOrSelector: (
-            this: HTMLElement,
-            ev: WheelEvent | HTMLElementEventMap[keyof HTMLElementEventMap]
-        ) => any | EventListenerOrEventListenerObject,
-        cbOrOption?: Function | boolean | AddEventListenerOptions,
-        option?: boolean | AddEventListenerOptions
-    ): JHTMLElement {
-        if (typeof cbOrSelector === 'function')
-            this.forEach(el => {
-                el.removeEventListener(
-                    event,
-                    cbOrSelector,
-                    cbOrOption as boolean | AddEventListenerOptions
-                )
-            })
+    toggleClass(className: string): JHTMLElement<T> {
+        const self = this
 
-        if (typeof cbOrSelector === 'string' && typeof cbOrOption === 'function')
-            this.forEach(el => {
-                if (el.matches(cbOrSelector))
-                    el.removeEventListener(
-                        event,
-                        cbOrOption as (this: HTMLElement, ev: HTMLElementEventMap[keyof HTMLElementEventMap]) => any,
-                        option)
-            })
+        this.forEach(element => {
+            if (!(element instanceof HTMLElement)) return self
+            element.classList.toggle(className)
+        })
 
-        return this
-    }
-
-
-    next(): (Element | null)[] {
-        return this
-            .map(e => e.nextElementSibling)
-            .filter(e => e !== null)
-    }
-
-
-    prev(): (Element | null)[] {
-        return this
-            .map(e => e.previousElementSibling)
-            .filter(e => e !== null)
-    }
-
-
-    addClass(...className: string[]): JHTMLElement {
-        this.forEach(e => e.classList.add(...className))
-        return this
-    }
-
-
-    removeClass(...className: string[]): JHTMLElement {
-        this.forEach(e => e.classList.remove(...className))
-        return this
-    }
-
-
-    toggleClass(className: string): JHTMLElement {
-        this.forEach(e => e.classList.toggle(className))
         return this
     }
 }
 
 
 type QuerySelector = null | Element | HTMLElement
-
 
 export function $$(query: string): QuerySelector
 export function $$(query: string, element: HTMLElement): QuerySelector
@@ -190,13 +213,17 @@ export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): Q
 }
 
 
-export function $(query: string, element: HTMLElement): JHTMLElement
-export function $(query: string, containerQuery: string): JHTMLElement
-export function $(query: string): JHTMLElement
-export function $(elements: NodeList): JHTMLElement
-export function $(element: HTMLElement): JHTMLElement
-export function $(global: Window | Document): JHTMLElement
-export function $(queryOrObj: any, queryOrElement?: HTMLElement | string): JHTMLElement {
+type JSelection = string | NodeList | HTMLElement | Window | Document
+
+export function $(query: string, element: HTMLElement): JHTMLElement<HTMLElement>
+export function $(query: string, containerQuery: string): JHTMLElement<HTMLElement>
+export function $(query: string): JHTMLElement<HTMLElement>
+export function $(elements: NodeList): JHTMLElement<HTMLElement>
+export function $(element: HTMLElement): JHTMLElement<HTMLElement>
+export function $(w: Window): JHTMLElement<Window>
+export function $(d: Document): JHTMLElement<Document>
+export function $(queryOrObj: JSelection, queryOrElement?: HTMLElement | string)
+    : JHTMLElement<Node | HTMLElement | Window | Document> {
     if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
         return new JHTMLElement(...queryOrElement.querySelectorAll<HTMLElement>(queryOrObj))
 
@@ -213,12 +240,12 @@ export function $(queryOrObj: any, queryOrElement?: HTMLElement | string): JHTML
         return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrObj))
 
     if (queryOrObj instanceof NodeList)
-        return new JHTMLElement(...queryOrObj as NodeListOf<any>)
+        return new JHTMLElement(...queryOrObj)
 
     if (queryOrObj instanceof HTMLElement)
         return new JHTMLElement(queryOrObj)
 
-    return new JHTMLElement(queryOrObj)
+    return new JHTMLElement<Window | Document>(queryOrObj)
 }
 
 

@@ -10,7 +10,7 @@ type DOMTreeNode = {
     classList?: string | string[],
     id?: string,
     attribute?: Record<string, string | number>,
-    child?: HTMLElement | string | { [key: string | number]: DOMTreeNode }
+    child?: HTMLElement | string | Record<string | number, DOMTreeNode>
 }
 
 
@@ -406,7 +406,7 @@ const magicDOM = {
 
         const MINIMIZED = 0.075
         $(container)
-            .setdata('scrollable', 'true')
+            .dataset('scrollable', 'true')
             .on('wheel', (event: any) => {
                 let { deltaY } = event
                 translate = lib.clamp(-maxPath, translate - deltaY * MINIMIZED, maxPath)

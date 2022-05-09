@@ -42,6 +42,9 @@ class Console {
     }
 
 
+    private static initialized = false
+
+
     static get #padding() {
         let userAgent = navigator.userAgent.toLowerCase()
 
@@ -183,11 +186,13 @@ class Console {
 
     static display(queryOrElement: string | HTMLElement, {
         code = -1,
-        title = `💣 Oh shit, it's an ERROR !!!`,
+        icon = '💣',
+        title = `Oh shit, it's an ERROR !!!`,
         message = `Unknown`,
         description = 'Reload the page or maybe try reaching out to the creator',
     }: {
         code?: number | string,
+        icon?: string,
         description?: string
         message?: string,
         title?: string
@@ -201,28 +206,12 @@ class Console {
 
         magicDOM.emptyNode(container)
 
-        const errorBlock = magicDOM.createElement('div', {
-            classList: 'error',
-            child: [
-                magicDOM.createElement('div', {
-                    classList: 'error__title',
-                    child: title
-                }),
-                magicDOM.createElement('div', {
-                    classList: [
-                        'error__description',
-                        'error__description--big'
-                    ],
-                    child: `[${code}] >>> ${message}`
-                }),
-                magicDOM.createElement('div', {
-                    classList: [
-                        'error__description',
-                        'error__description--small'
-                    ],
-                    child: description
-                })
-            ]
+        const errorBlock = magicDOM.createTree({
+            classList: 'error', child: {
+                t: { classList: 'error__title', child: `${icon} ${title}` },
+                m: { classList: 'error__message', child: `[${code}] >>> ${message}` },
+                d: { classList: 'error__description', child: description }
+            }
         })
 
         container.append(errorBlock)
@@ -236,16 +225,23 @@ class Console {
     static error(...args: any[]) { return this.#log('error', this.#errorLog, ...args) }
     static okay(...args: any[]) { return this.#log('okay', this.#okayLog, ...args) }
     static init() {
+        if (this.initialized) return
+
+
         this.okay(`Log started at : ${zalib.prettyTime()}`)
 
-        window.addEventListener("error", error => {
-            if (error.error instanceof Object) {
-                this.crit(`Uncaught [object Object] \nat ${error.filename}:${error.lineno}:${error.colno}\n`, error.error)
+
+        $(window).on('error', function ({ message, filename, lineno, colno, error }) {
+            if (error instanceof Object) {
+                Console.crit(`Uncaught [object Object]\nat ${error.filename}:${error.lineno}:${error.colno}\n`, error)
                 return
             }
 
-            this.crit(`${error.message} \nat ${error.filename}:${error.lineno}:${error.colno}`)
+            Console.crit(`${message}\nat ${filename}:${lineno}:${colno}`)
         })
+
+
+        this.initialized = true
     }
 }
 
