@@ -99,9 +99,9 @@ const tooltip = {
         this.processor[on].attach(hook);
     },
     attachEvent(target, hook) {
-        let hooks = typeof hook === 'object' ? [hook] : this.hooks;
         if (target.tooltipListened === true)
             return;
+        let hooks = typeof hook === 'object' ? [hook] : this.hooks;
         for (let fncHook of hooks) {
             if (!this.getValue(target, fncHook))
                 continue;

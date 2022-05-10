@@ -173,8 +173,8 @@ const tooltip = {
 
 
     attachEvent(target: TooltipElement, hook: Hook): void {
-        let hooks: Hook[] = typeof hook === 'object' ? [hook] : this.hooks
         if (target.tooltipListened === true) return
+        let hooks: Hook[] = typeof hook === 'object' ? [hook] : this.hooks
 
         for (let fncHook of hooks) {
             if (!this.getValue(target, fncHook)) continue
