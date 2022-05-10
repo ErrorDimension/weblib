@@ -77,7 +77,7 @@ const tooltip = {
                 let targets: NodeListOf<HTMLElement> = document
                     .querySelectorAll<HTMLElement>(`[data-${kebabCase}]:not([data-tooltip-checked])`)
 
-                targets.forEach(target => tooltip.attachEvent(target, hook))
+                targets.forEach((target: HTMLElement): void => tooltip.attachEvent(target, hook))
             }
         },
 
@@ -93,7 +93,7 @@ const tooltip = {
                 let targets: NodeListOf<HTMLElement> = document
                     .querySelectorAll<HTMLElement>(`[${hook.key}]:not([data-tooltip-checked])`)
 
-                targets.forEach(target => tooltip.attachEvent(target, hook))
+                targets.forEach((target: HTMLElement): void => tooltip.attachEvent(target, hook))
             }
         }
     },
@@ -106,10 +106,10 @@ const tooltip = {
         this.container.appendChild(this.content)
         document.body.insertBefore(this.container, document.body.firstChild)
 
-        new ResizeObserver(() => this.move())
+        new ResizeObserver((): void => this.move())
             .observe(this.content)
 
-        new MutationObserver(() => this.scan())
+        new MutationObserver((): void => this.scan())
             .observe(document.body, { childList: true, subtree: true })
 
         cursor.watch(true)
@@ -119,11 +119,11 @@ const tooltip = {
     },
 
 
-    scan(): void { this.hooks.forEach(hook => this.processor[hook.on].attach(hook)) },
+    scan(): void { this.hooks.forEach((hook: Hook): void => this.processor[hook.on].attach(hook)) },
 
 
     getValue(target: HTMLElement, hook: Hook): string | undefined {
-        if (!(target instanceof HTMLElement)) return
+        if (!(target instanceof HTMLElement)) return undefined
         return this.processor[hook.on].process(target, hook.key)
     },
 
@@ -153,9 +153,12 @@ const tooltip = {
         let hook: Hook = { on, key, handler, destroy, priority, noPadding }
         this.hooks.push(hook)
         this.hooks.sort(function (a: Hook, b: Hook): 1 | -1 | 0 {
-            if ((a.priority as number) < (b.priority as number))
+            if (!(a.priority && b.priority))
+                throw new Error("'tooltip.addHook()' : 'priority' is not valid")
+
+            if (a.priority < b.priority)
                 return 1
-            if ((a.priority as number) > (b.priority as number))
+            if (a.priority > b.priority)
                 return -1
             return 0
         })
@@ -199,15 +202,15 @@ const tooltip = {
 
 
     mouseenter(hook: Hook, target: HTMLElement): void {
-        if (this.container === null || this.content === null) return
+        if (this.container === null) return
 
-        let value = this.getValue(target, hook)
-        let content = (typeof hook.handler === 'undefined')
+        let value: string | undefined = this.getValue(target, hook)
+        let content: string | HTMLElement | undefined = (typeof hook.handler === 'undefined')
             ? undefined
             : hook.handler({
                 target,
                 value,
-                update: (data: string | HTMLElement) => this.update(data)
+                update: (data: string | HTMLElement): void => this.update(data)
             })
 
         if (hook.noPadding)
@@ -221,7 +224,7 @@ const tooltip = {
 
 
     mouseleave(hook: Hook): void {
-        if (this.container === null || this.content === null) return
+        if (this.container === null) return
 
         (typeof hook.destroy !== 'undefined') && hook.destroy()
         this.hide()
@@ -235,7 +238,7 @@ const tooltip = {
 
 
     show(content: HTMLElement | string): void {
-        if (this.container === null || this.content === null) return
+        if (this.container === null) return
 
         this.container.dataset.activated = ''
         this.update(content)
@@ -247,7 +250,7 @@ const tooltip = {
     },
 
 
-    move: throttle(function () {
+    move: throttle(function (): void {
         const { container } = tooltip
 
         if (!container) return
@@ -260,10 +263,10 @@ const tooltip = {
         const LARGE_X_AXIS: number = 3 / 4
         const LARGE_Y_AXIS: number = 77 / 100
 
-        let isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX
-        let isLargerThanScreenX = innerWidth - clientWidth - OFFSET < positionX
-        let isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY
-        let isLargerThanScreenY = innerWidth - clientHeight - OFFSET < positionY
+        let isMoreOuterX: boolean = innerWidth * LARGE_X_AXIS < positionX
+        let isLargerThanScreenX: boolean = innerWidth - clientWidth - OFFSET < positionX
+        let isMoreOuterY: boolean = innerHeight * LARGE_Y_AXIS < positionY
+        let isLargerThanScreenY: boolean = innerWidth - clientHeight - OFFSET < positionY
 
         let xPos: number = (isMoreOuterX || isLargerThanScreenX)
             ? positionX - clientWidth - 13
@@ -273,17 +276,17 @@ const tooltip = {
             ? positionY - clientHeight - 25
             : positionY + 25
 
-        lib.cssFrame(() => $(container).css({
-            'transform': `translate(${xPos}px, ${yPos}px)`
-        }))
-    }, 55) as (this: object, ev?: MouseEvent) => void,
+        lib.cssFrame((): void => {
+            $(container).css('transform', `translate(${xPos}px, ${yPos}px)`)
+        })
+    }, 55),
 
 
     hide(): void {
         const { container } = this
         if (!container) return
 
-        this.hideTimeout = window.setTimeout(() => {
+        this.hideTimeout = window.setTimeout((): void => {
             delete container.dataset.activated
             window.removeEventListener('mousemove', this.move)
         }, 200)
@@ -291,8 +294,7 @@ const tooltip = {
 
 
     update(content: HTMLElement | string): void {
-        if (this.container === null || this.content === null) return
-        if (!content) return
+        if (!(content && this.content)) return
 
         this.glow()
 

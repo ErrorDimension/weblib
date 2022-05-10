@@ -34,7 +34,7 @@ const tooltip = {
                 let kebabCase = modCase.camel.kebab(hook.key);
                 let targets = document
                     .querySelectorAll(`[data-${kebabCase}]:not([data-tooltip-checked])`);
-                targets.forEach(target => tooltip.attachEvent(target, hook));
+                targets.forEach((target) => tooltip.attachEvent(target, hook));
             }
         },
         attribute: {
@@ -47,7 +47,7 @@ const tooltip = {
                     return;
                 let targets = document
                     .querySelectorAll(`[${hook.key}]:not([data-tooltip-checked])`);
-                targets.forEach(target => tooltip.attachEvent(target, hook));
+                targets.forEach((target) => tooltip.attachEvent(target, hook));
             }
         }
     },
@@ -66,10 +66,10 @@ const tooltip = {
         this.initialized = true;
         Console.okay(this.tooltipLog, 'Successfully initialized');
     },
-    scan() { this.hooks.forEach(hook => this.processor[hook.on].attach(hook)); },
+    scan() { this.hooks.forEach((hook) => this.processor[hook.on].attach(hook)); },
     getValue(target, hook) {
         if (!(target instanceof HTMLElement))
-            return;
+            return undefined;
         return this.processor[hook.on].process(target, hook.key);
     },
     /**
@@ -88,6 +88,8 @@ const tooltip = {
         let hook = { on, key, handler, destroy, priority, noPadding };
         this.hooks.push(hook);
         this.hooks.sort(function (a, b) {
+            if (!(a.priority && b.priority))
+                throw new Error("'tooltip.addHook()' : 'priority' is not valid");
             if (a.priority < b.priority)
                 return 1;
             if (a.priority > b.priority)
@@ -121,7 +123,7 @@ const tooltip = {
         target.dataset.tooltipChecked = '';
     },
     mouseenter(hook, target) {
-        if (this.container === null || this.content === null)
+        if (this.container === null)
             return;
         let value = this.getValue(target, hook);
         let content = (typeof hook.handler === 'undefined')
@@ -140,7 +142,7 @@ const tooltip = {
             this.show(content);
     },
     mouseleave(hook) {
-        if (this.container === null || this.content === null)
+        if (this.container === null)
             return;
         (typeof hook.destroy !== 'undefined') && hook.destroy();
         this.hide();
@@ -151,7 +153,7 @@ const tooltip = {
             });
     },
     show(content) {
-        if (this.container === null || this.content === null)
+        if (this.container === null)
             return;
         this.container.dataset.activated = '';
         this.update(content);
@@ -179,9 +181,9 @@ const tooltip = {
         let yPos = (isMoreOuterY || isLargerThanScreenY)
             ? positionY - clientHeight - 25
             : positionY + 25;
-        lib.cssFrame(() => $(container).css({
-            'transform': `translate(${xPos}px, ${yPos}px)`
-        }));
+        lib.cssFrame(() => {
+            $(container).css('transform', `translate(${xPos}px, ${yPos}px)`);
+        });
     }, 55),
     hide() {
         const { container } = this;
@@ -193,9 +195,7 @@ const tooltip = {
         }, 200);
     },
     update(content) {
-        if (this.container === null || this.content === null)
-            return;
-        if (!content)
+        if (!(content && this.content))
             return;
         this.glow();
         if (content instanceof HTMLElement) {

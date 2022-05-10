@@ -256,27 +256,27 @@ export const recordAnimationFrame = (callback, autoStart = true) => {
 /**
  * throttle a function
  * @param       { Function }          fn            function
- * @param       { Number }            t             throttler delay in milliseconds
+ * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttle(fn, t) {
+export function throttle(fn, throttleTime) {
     let throttler = false;
     const context = this;
     return function () {
         if (throttler)
             return;
         throttler = true;
-        window.setTimeout(() => throttler = false, t);
+        window.setTimeout(() => throttler = false, throttleTime);
         return fn.call(context, ...arguments);
     };
 }
 /**
  * throttle a function and always run the last call
  * @param       { Function }          fn            function
- * @param       { Number }            t             throttler delay in milliseconds
+ * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttled(fn, t) {
+export function throttled(fn, throttleTime) {
     let lastFunc = undefined;
     let lastRan = 0;
     const context = this;
@@ -288,11 +288,11 @@ export function throttled(fn, t) {
         }
         window.clearTimeout(lastFunc);
         lastFunc = window.setTimeout(function () {
-            if ((Date.now() - lastRan) >= t) {
+            if ((Date.now() - lastRan) >= throttleTime) {
                 fn.call(context, ...arguments);
                 lastRan = Date.now();
             }
-        }, t - (Date.now() - lastRan));
+        }, throttleTime - (Date.now() - lastRan));
     };
 }
 /**
@@ -302,7 +302,7 @@ export function throttled(fn, t) {
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function debounce(fn, t, firstCall = false) {
+export function debounce(fn, timeout, firstCall = false) {
     let timer = -1;
     let toCall = false;
     if (firstCall)
@@ -314,7 +314,7 @@ export function debounce(fn, t, firstCall = false) {
             fn.call(context, ...arguments);
         }
         window.clearTimeout(timer);
-        timer = window.setTimeout(() => fn.call(context, ...arguments), t);
+        timer = window.setTimeout(() => fn.call(context, ...arguments), timeout);
     };
 }
 export default lib;

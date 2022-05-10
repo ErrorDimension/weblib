@@ -342,10 +342,10 @@ type ReturnedFunction = (...args: any[]) => any
 /** 
  * throttle a function
  * @param       { Function }          fn            function
- * @param       { Number }            t             throttler delay in milliseconds
+ * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttle(this: any, fn: Function, t: number): ReturnedFunction {
+export function throttle(this: any, fn: Function, throttleTime: number): ReturnedFunction {
     let throttler = false
 
     const context = this
@@ -354,7 +354,7 @@ export function throttle(this: any, fn: Function, t: number): ReturnedFunction {
         if (throttler) return
         throttler = true
 
-        window.setTimeout(() => throttler = false, t)
+        window.setTimeout(() => throttler = false, throttleTime)
 
         return fn.call(context, ...arguments)
     }
@@ -364,10 +364,10 @@ export function throttle(this: any, fn: Function, t: number): ReturnedFunction {
 /** 
  * throttle a function and always run the last call
  * @param       { Function }          fn            function
- * @param       { Number }            t             throttler delay in milliseconds
+ * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttled(this: any, fn: Function, t: number): ReturnedFunction {
+export function throttled(this: any, fn: Function, throttleTime: number): ReturnedFunction {
     let lastFunc: number | undefined = undefined
     let lastRan: number = 0
 
@@ -382,11 +382,11 @@ export function throttled(this: any, fn: Function, t: number): ReturnedFunction 
 
         window.clearTimeout(lastFunc)
         lastFunc = window.setTimeout(function () {
-            if ((Date.now() - lastRan) >= t) {
+            if ((Date.now() - lastRan) >= throttleTime) {
                 fn.call(context, ...arguments)
                 lastRan = Date.now()
             }
-        }, t - (Date.now() - lastRan))
+        }, throttleTime - (Date.now() - lastRan))
     }
 }
 
@@ -398,9 +398,9 @@ export function throttled(this: any, fn: Function, t: number): ReturnedFunction 
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function debounce(this: any, fn: Function, t: number, firstCall: boolean = false): ReturnedFunction {
+export function debounce(this: any, fn: Function, timeout: number, firstCall: boolean = false): ReturnedFunction {
     let timer: number = -1
-    let toCall = false
+    let toCall: boolean = false
     if (firstCall) toCall = true
 
     const context = this
@@ -412,7 +412,7 @@ export function debounce(this: any, fn: Function, t: number, firstCall: boolean 
         }
 
         window.clearTimeout(timer)
-        timer = window.setTimeout(() => fn.call(context, ...arguments), t)
+        timer = window.setTimeout(() => fn.call(context, ...arguments), timeout)
     }
 }
 
