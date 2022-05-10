@@ -146,7 +146,7 @@ const lib = {
 
 
     delayAsync(time: number): Promise<void> {
-        return new Promise(function (resolve) { setTimeout(() => resolve(), time) })
+        return new Promise(function (resolve) { window.setTimeout(() => resolve(), time) })
     },
 
 
@@ -299,15 +299,11 @@ const lib = {
 
 
     preferDarkColorScheme: (): boolean =>
-        window &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches,
+        typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
 
 
     preferLightColorScheme: (): boolean =>
-        window &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: light)').matches,
+        typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches,
 }
 
 
@@ -358,7 +354,7 @@ export function throttle(this: any, fn: Function, t: number): ReturnedFunction {
         if (throttler) return
         throttler = true
 
-        setTimeout(() => throttler = false, t)
+        window.setTimeout(() => throttler = false, t)
 
         return fn.call(context, ...arguments)
     }
@@ -384,7 +380,7 @@ export function throttled(this: any, fn: Function, t: number): ReturnedFunction 
             return
         }
 
-        clearTimeout(lastFunc)
+        window.clearTimeout(lastFunc)
         lastFunc = window.setTimeout(function () {
             if ((Date.now() - lastRan) >= t) {
                 fn.call(context, ...arguments)
@@ -415,7 +411,7 @@ export function debounce(this: any, fn: Function, t: number, firstCall: boolean 
             fn.call(context, ...arguments)
         }
 
-        clearTimeout(timer)
+        window.clearTimeout(timer)
         timer = window.setTimeout(() => fn.call(context, ...arguments), t)
     }
 }

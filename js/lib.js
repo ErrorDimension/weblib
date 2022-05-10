@@ -122,7 +122,7 @@ const lib = {
         return Math.round(number * d) / d;
     },
     delayAsync(time) {
-        return new Promise(function (resolve) { setTimeout(() => resolve(), time); });
+        return new Promise(function (resolve) { window.setTimeout(() => resolve(), time); });
     },
     nextFrameAsync() {
         return new Promise((resolve) => { requestAnimationFrame(() => resolve()); });
@@ -223,12 +223,8 @@ const lib = {
             return undefined;
         return cookie.split('=')[1];
     },
-    preferDarkColorScheme: () => window &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: dark)').matches,
-    preferLightColorScheme: () => window &&
-        window.matchMedia &&
-        window.matchMedia('(prefers-color-scheme: light)').matches,
+    preferDarkColorScheme: () => typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
+    preferLightColorScheme: () => typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches,
 };
 /** this function return the recording of an animation frame callback */
 export const recordAnimationFrame = (callback, autoStart = true) => {
@@ -270,7 +266,7 @@ export function throttle(fn, t) {
         if (throttler)
             return;
         throttler = true;
-        setTimeout(() => throttler = false, t);
+        window.setTimeout(() => throttler = false, t);
         return fn.call(context, ...arguments);
     };
 }
@@ -290,7 +286,7 @@ export function throttled(fn, t) {
             lastRan = Date.now();
             return;
         }
-        clearTimeout(lastFunc);
+        window.clearTimeout(lastFunc);
         lastFunc = window.setTimeout(function () {
             if ((Date.now() - lastRan) >= t) {
                 fn.call(context, ...arguments);
@@ -317,7 +313,7 @@ export function debounce(fn, t, firstCall = false) {
             toCall = false;
             fn.call(context, ...arguments);
         }
-        clearTimeout(timer);
+        window.clearTimeout(timer);
         timer = window.setTimeout(() => fn.call(context, ...arguments), t);
     };
 }
