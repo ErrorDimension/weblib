@@ -308,36 +308,35 @@ const lib = {
 
 
 /** this function return the recording of an animation frame callback */
-export const recordAnimationFrame = (callback: Function, autoStart = true): { start: Function, stop: Function } => {
-    let running = false
-    let raf = -1
+export const recordAnimationFrame =
+    (callback: Function, autoStart = true): { start: Function, stop: Function } => {
+        let running = false
+        let raf = -1
 
-    const stop = () => {
-        if (!running) return
-        running = false
-        cancelAnimationFrame(raf)
+        const stop = () => {
+            if (!running) return
+            running = false
+            cancelAnimationFrame(raf)
+        }
+
+        const run = () => {
+            raf = requestAnimationFrame(() => {
+                callback()
+                if (running) run()
+            })
+        }
+
+        const start = () => {
+            if (running) return
+            running = true
+            run()
+        }
+
+        if (autoStart) start()
+
+        return { start, stop }
     }
 
-    const run = () => {
-        raf = requestAnimationFrame(() => {
-            callback()
-            if (running) run()
-        })
-    }
-
-    const start = () => {
-        if (running) return
-        running = true
-        run()
-    }
-
-    if (autoStart) start()
-
-    return { start, stop }
-}
-
-
-type ReturnedFunction = (...args: any[]) => any
 
 /** 
  * throttle a function
@@ -345,7 +344,7 @@ type ReturnedFunction = (...args: any[]) => any
  * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttle(this: any, fn: Function, throttleTime: number): ReturnedFunction {
+export function throttle(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
     let throttler = false
 
     const context = this
@@ -367,7 +366,7 @@ export function throttle(this: any, fn: Function, throttleTime: number): Returne
  * @param       { Number }            throttleTime             throttler delay in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function throttled(this: any, fn: Function, throttleTime: number): ReturnedFunction {
+export function throttled(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
     let lastFunc: number | undefined = undefined
     let lastRan: number = 0
 
@@ -398,7 +397,7 @@ export function throttled(this: any, fn: Function, throttleTime: number): Return
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function debounce(this: any, fn: Function, timeout: number, firstCall: boolean = false): ReturnedFunction {
+export function debounce(this: any, fn: Function, timeout: number, firstCall: boolean = false): (...args: any[]) => any {
     let timer: number = -1
     let toCall: boolean = false
     if (firstCall) toCall = true

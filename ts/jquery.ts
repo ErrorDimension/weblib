@@ -107,7 +107,7 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
     }
 
 
-    on<Key extends K<Type>>(event: Key, listener: F<Type, Key>, option?: EOp): JHTMLElement<Type>
+    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
     on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
     * add an event listener onto a list of object

@@ -53,6 +53,10 @@ interface Hook {
     noPadding?: boolean
 }
 
+interface TooltipElement extends HTMLElement {
+    tooltipChecked?: boolean,
+    tooltipListened?: boolean
+}
 
 const tooltip = {
     tooltipLog: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
@@ -75,7 +79,7 @@ const tooltip = {
 
                 let kebabCase: string = modCase.camel.kebab(hook.key)
                 let targets: NodeListOf<HTMLElement> = document
-                    .querySelectorAll<HTMLElement>(`[data-${kebabCase}]:not([data-tooltip-checked])`)
+                    .querySelectorAll<HTMLElement>(`[data-${kebabCase}]`)
 
                 targets.forEach((target: HTMLElement): void => tooltip.attachEvent(target, hook))
             }
@@ -91,7 +95,7 @@ const tooltip = {
                 if (!windowIsDefined) return
 
                 let targets: NodeListOf<HTMLElement> = document
-                    .querySelectorAll<HTMLElement>(`[${hook.key}]:not([data-tooltip-checked])`)
+                    .querySelectorAll<HTMLElement>(`[${hook.key}]`)
 
                 targets.forEach((target: HTMLElement): void => tooltip.attachEvent(target, hook))
             }
@@ -168,36 +172,39 @@ const tooltip = {
     },
 
 
-    attachEvent(target: HTMLElement, hook: Hook): void {
+    attachEvent(target: TooltipElement, hook: Hook): void {
         let hooks: Hook[] = typeof hook === 'object' ? [hook] : this.hooks
+        if (target.tooltipListened === true) return
 
         for (let fncHook of hooks) {
             if (!this.getValue(target, fncHook)) continue
-            if (target.dataset.tooltipListening === '') break
+            if (target.tooltipChecked === true) break
 
 
             let { key } = fncHook
             if (fncHook.on === 'dataset')
                 key = `data-${modCase.camel.kebab(key)}`
 
-            const observer = new MutationObserver(() => this.mouseenter(fncHook, target))
+            const observer: MutationObserver = new MutationObserver((): void => {
+                this.mouseenter(fncHook, target)
+            })
 
-            target.addEventListener('mouseenter', () => {
+            $(target).on('mouseenter', (): void => {
                 this.mouseenter(fncHook, target)
                 observer.observe(target, { attributeFilter: [key] })
             })
 
-            target.addEventListener('mouseleave', () => {
+            $(target).on('mouseleave', (): void => {
                 this.mouseleave(fncHook)
                 observer.disconnect()
             })
 
 
-            target.dataset.tooltipListening = ''
+            target.tooltipChecked = true
             break
         }
 
-        target.dataset.tooltipChecked = ''
+        target.tooltipListened = target.tooltipChecked
     },
 
 

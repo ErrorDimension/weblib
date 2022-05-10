@@ -33,7 +33,7 @@ const tooltip = {
                     return;
                 let kebabCase = modCase.camel.kebab(hook.key);
                 let targets = document
-                    .querySelectorAll(`[data-${kebabCase}]:not([data-tooltip-checked])`);
+                    .querySelectorAll(`[data-${kebabCase}]`);
                 targets.forEach((target) => tooltip.attachEvent(target, hook));
             }
         },
@@ -46,7 +46,7 @@ const tooltip = {
                 if (!windowIsDefined)
                     return;
                 let targets = document
-                    .querySelectorAll(`[${hook.key}]:not([data-tooltip-checked])`);
+                    .querySelectorAll(`[${hook.key}]`);
                 targets.forEach((target) => tooltip.attachEvent(target, hook));
             }
         }
@@ -100,27 +100,31 @@ const tooltip = {
     },
     attachEvent(target, hook) {
         let hooks = typeof hook === 'object' ? [hook] : this.hooks;
+        if (target.tooltipListened === true)
+            return;
         for (let fncHook of hooks) {
             if (!this.getValue(target, fncHook))
                 continue;
-            if (target.dataset.tooltipListening === '')
+            if (target.tooltipChecked === true)
                 break;
             let { key } = fncHook;
             if (fncHook.on === 'dataset')
                 key = `data-${modCase.camel.kebab(key)}`;
-            const observer = new MutationObserver(() => this.mouseenter(fncHook, target));
-            target.addEventListener('mouseenter', () => {
+            const observer = new MutationObserver(() => {
+                this.mouseenter(fncHook, target);
+            });
+            $(target).on('mouseenter', () => {
                 this.mouseenter(fncHook, target);
                 observer.observe(target, { attributeFilter: [key] });
             });
-            target.addEventListener('mouseleave', () => {
+            $(target).on('mouseleave', () => {
                 this.mouseleave(fncHook);
                 observer.disconnect();
             });
-            target.dataset.tooltipListening = '';
+            target.tooltipChecked = true;
             break;
         }
-        target.dataset.tooltipChecked = '';
+        target.tooltipListened = target.tooltipChecked;
     },
     mouseenter(hook, target) {
         if (this.container === null)
