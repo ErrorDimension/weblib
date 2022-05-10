@@ -1,6 +1,8 @@
+const windowIsDefined = typeof window !== 'undefined';
 const cursor = {
-    positionX: window.innerWidth / 2,
-    positionY: window.innerHeight / 2,
+    windowIsDefined: typeof window !== 'undefined',
+    positionX: windowIsDefined ? window.innerWidth / 2 : 500,
+    positionY: windowIsDefined ? window.innerHeight / 2 : 500,
     deltaX: 0,
     deltaY: 0,
     isWatching: false,

@@ -109,7 +109,7 @@ class Console {
     }
 
 
-    static #log(id: Log, ...args: any[]) {
+    static log(id: Log, ...args: any[]) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -151,51 +151,63 @@ class Console {
     }
 
 
-    static #infoLog = new Console('info', {
+    private static infoLog = new Console('info', {
         color: 'white',
         background: 'rgb(196, 24, 196)',
         opacity: 0.95
     })
-    static #debugLog = new Console('debug', {
+    private static debugLog = new Console('debug', {
         color: 'white',
         background: zalib.hexCodeColor('gray'),
         opacity: 0.55
     })
-    static #okayLog = new Console('okay', {
+    private static okayLog = new Console('okay', {
         color: 'white',
         background: 'rgb(16, 186, 16)',
         opacity: 0.85
     })
-    static #warnLog = new Console('warn', {
+    private static warnLog = new Console('warn', {
         color: 'white',
         background: '#ffc400',
         opacity: 0.8
     })
-    static #errorLog = new Console('error', {
+    private static errorLog = new Console('error', {
         color: 'white',
         background: '#c40000',
         opacity: 0.9
     })
-    static #critLog = new Console('crit', {
+    private static critLog = new Console('crit', {
         color: 'white',
         background: '#2b2a2a',
         opacity: 1
     })
 
 
-
+    /**
+     * display the error and callback buttons to the selected
+     * @param   { String | HTMLElement }    queryOrElement      selected query or element
+     * @param   { Object | undefined }      detail              detail for the error as well as the callbacks
+     */
     static display(queryOrElement: string | HTMLElement, {
         code = -1,
         icon = '💣',
-        title = `Oh shit, it's an ERROR !!!`,
+        title = `Oh dammyum, it's an ERROR !!!`,
         message = `Unknown`,
         description = 'Reload the page or maybe try reaching out to the creator',
+        button = {
+            primary: { text: undefined, callback: () => { /* logic here */ } },
+            secondary: { text: undefined, callback: () => { /* logic here */ } }
+        }
     }: {
         code?: number | string,
         icon?: string,
         description?: string
         message?: string,
-        title?: string
+        title?: string,
+        button?: {
+            primary?: { text?: string, callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null },
+            secondary?: { text?: string, callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null }
+        }
     } = {}) {
         let container = typeof queryOrElement === 'string'
             ? $$(queryOrElement)
@@ -210,36 +222,57 @@ class Console {
             classList: 'error', child: {
                 t: { classList: 'error__title', child: `${icon} ${title}` },
                 m: { classList: 'error__message', child: `[${code}] >>> ${message}` },
-                d: { classList: 'error__description', child: description }
+                d: { classList: 'error__description', child: description },
+                c: { classList: 'error__callback' }
             }
         })
+
+        const createBtn = (
+            text: string,
+            primary: boolean,
+            callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null
+        ) => {
+            const btn = magicDOM.createElement('div', {
+                classList: `error__button--${primary ? 'primary' : 'secondary'}`,
+                child: text
+            })
+
+            btn.onclick = callback
+
+            return btn
+        }
+
+        const callbackContainer = errorBlock.querySelector('.error__callback')
+
+        if (button && button.primary && button.primary.text)
+            callbackContainer?.appendChild(createBtn(button.primary.text, true, button.primary.callback))
+
+        if (button && button.secondary && button.secondary.text)
+            callbackContainer?.appendChild(createBtn(button.secondary.text, false, button.secondary.callback))
 
         container.append(errorBlock)
     }
 
 
-    static info(...args: any[]) { return this.#log('info', this.#infoLog, ...args) }
-    static debug(...args: any[]) { return this.#log('debug', this.#debugLog, ...args) }
-    static warn(...args: any[]) { return this.#log('warn', this.#warnLog, ...args) }
-    static crit(...args: any[]) { return this.#log('crit', this.#critLog, ...args) }
-    static error(...args: any[]) { return this.#log('error', this.#errorLog, ...args) }
-    static okay(...args: any[]) { return this.#log('okay', this.#okayLog, ...args) }
+    static info(...args: any[]) { return this.log('info', this.infoLog, ...args) }
+    static debug(...args: any[]) { return this.log('debug', this.debugLog, ...args) }
+    static warn(...args: any[]) { return this.log('warn', this.warnLog, ...args) }
+    static crit(...args: any[]) { return this.log('crit', this.critLog, ...args) }
+    static error(...args: any[]) { return this.log('error', this.errorLog, ...args) }
+    static okay(...args: any[]) { return this.log('okay', this.okayLog, ...args) }
     static init() {
         if (this.initialized) return
 
-
         this.okay(`Log started at : ${zalib.prettyTime()}`)
-
 
         $(window).on('error', function ({ message, filename, lineno, colno, error }) {
             if (error instanceof Object) {
-                Console.crit(`Uncaught [object Object]\nat ${error.filename}:${error.lineno}:${error.colno}\n`, error)
+                Console.crit(`Uncaught [object Object]\nat ${filename}:${lineno}:${colno}`, error)
                 return
             }
 
             Console.crit(`${message}\nat ${filename}:${lineno}:${colno}`)
         })
-
 
         this.initialized = true
     }

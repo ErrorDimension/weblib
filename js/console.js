@@ -71,7 +71,7 @@ class Console {
             style[0] += `margin-inline-start: ${this.#padding}px`;
         return { text, style };
     }
-    static #log(id, ...args) {
+    static log(id, ...args) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -108,37 +108,45 @@ class Console {
                 return console.error.call(console, text, ...style, ...other);
         }
     }
-    static #infoLog = new Console('info', {
+    static infoLog = new Console('info', {
         color: 'white',
         background: 'rgb(196, 24, 196)',
         opacity: 0.95
     });
-    static #debugLog = new Console('debug', {
+    static debugLog = new Console('debug', {
         color: 'white',
         background: zalib.hexCodeColor('gray'),
         opacity: 0.55
     });
-    static #okayLog = new Console('okay', {
+    static okayLog = new Console('okay', {
         color: 'white',
         background: 'rgb(16, 186, 16)',
         opacity: 0.85
     });
-    static #warnLog = new Console('warn', {
+    static warnLog = new Console('warn', {
         color: 'white',
         background: '#ffc400',
         opacity: 0.8
     });
-    static #errorLog = new Console('error', {
+    static errorLog = new Console('error', {
         color: 'white',
         background: '#c40000',
         opacity: 0.9
     });
-    static #critLog = new Console('crit', {
+    static critLog = new Console('crit', {
         color: 'white',
         background: '#2b2a2a',
         opacity: 1
     });
-    static display(queryOrElement, { code = -1, icon = '💣', title = `Oh shit, it's an ERROR !!!`, message = `Unknown`, description = 'Reload the page or maybe try reaching out to the creator', } = {}) {
+    /**
+     * display the error and callback buttons to the selected
+     * @param   { String | HTMLElement }    queryOrElement      selected query or element
+     * @param   { Object | undefined }      detail              detail for the error as well as the callbacks
+     */
+    static display(queryOrElement, { code = -1, icon = '💣', title = `Oh dammyum, it's an ERROR !!!`, message = `Unknown`, description = 'Reload the page or maybe try reaching out to the creator', button = {
+        primary: { text: undefined, callback: () => { } },
+        secondary: { text: undefined, callback: () => { } }
+    } } = {}) {
         let container = typeof queryOrElement === 'string'
             ? $$(queryOrElement)
             : $(queryOrElement)[0];
@@ -149,24 +157,38 @@ class Console {
             classList: 'error', child: {
                 t: { classList: 'error__title', child: `${icon} ${title}` },
                 m: { classList: 'error__message', child: `[${code}] >>> ${message}` },
-                d: { classList: 'error__description', child: description }
+                d: { classList: 'error__description', child: description },
+                c: { classList: 'error__callback' }
             }
         });
+        const createBtn = (text, primary, callback) => {
+            const btn = magicDOM.createElement('div', {
+                classList: `error__button--${primary ? 'primary' : 'secondary'}`,
+                child: text
+            });
+            btn.onclick = callback;
+            return btn;
+        };
+        const callbackContainer = errorBlock.querySelector('.error__callback');
+        if (button && button.primary && button.primary.text)
+            callbackContainer?.appendChild(createBtn(button.primary.text, true, button.primary.callback));
+        if (button && button.secondary && button.secondary.text)
+            callbackContainer?.appendChild(createBtn(button.secondary.text, false, button.secondary.callback));
         container.append(errorBlock);
     }
-    static info(...args) { return this.#log('info', this.#infoLog, ...args); }
-    static debug(...args) { return this.#log('debug', this.#debugLog, ...args); }
-    static warn(...args) { return this.#log('warn', this.#warnLog, ...args); }
-    static crit(...args) { return this.#log('crit', this.#critLog, ...args); }
-    static error(...args) { return this.#log('error', this.#errorLog, ...args); }
-    static okay(...args) { return this.#log('okay', this.#okayLog, ...args); }
+    static info(...args) { return this.log('info', this.infoLog, ...args); }
+    static debug(...args) { return this.log('debug', this.debugLog, ...args); }
+    static warn(...args) { return this.log('warn', this.warnLog, ...args); }
+    static crit(...args) { return this.log('crit', this.critLog, ...args); }
+    static error(...args) { return this.log('error', this.errorLog, ...args); }
+    static okay(...args) { return this.log('okay', this.okayLog, ...args); }
     static init() {
         if (this.initialized)
             return;
         this.okay(`Log started at : ${zalib.prettyTime()}`);
         $(window).on('error', function ({ message, filename, lineno, colno, error }) {
             if (error instanceof Object) {
-                Console.crit(`Uncaught [object Object]\nat ${error.filename}:${error.lineno}:${error.colno}\n`, error);
+                Console.crit(`Uncaught [object Object]\nat ${filename}:${lineno}:${colno}`, error);
                 return;
             }
             Console.crit(`${message}\nat ${filename}:${lineno}:${colno}`);

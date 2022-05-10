@@ -1,14 +1,15 @@
-import lib, { throttle } from './lib';
-import modCase from './modcase';
+import Console from './console';
 import cursor from './cursor';
 import { $ } from './jquery';
-import Console from './console';
-customElements.define('tooltip-container', class HTMLTooltipContainer extends HTMLDivElement {
+import lib, { throttle } from './lib';
+import modCase from './modcase';
+const windowIsDefined = typeof window !== 'undefined';
+windowIsDefined && customElements.define('tooltip-container', class HTMLTooltipContainer extends HTMLDivElement {
     constructor() {
         super();
     }
 }, { extends: 'div' });
-customElements.define('tooltip-content', class HTMLTooltipContent extends HTMLDivElement {
+windowIsDefined && customElements.define('tooltip-content', class HTMLTooltipContent extends HTMLDivElement {
     constructor() {
         super();
     }
@@ -21,13 +22,15 @@ const tooltip = {
     tooltipLog: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
     initialized: false,
     hideTimeout: -1,
-    container: document.createElement('tooltip-container'),
-    content: document.createElement('tooltip-content'),
+    container: windowIsDefined ? document.createElement('tooltip-container') : null,
+    content: windowIsDefined ? document.createElement('tooltip-content') : null,
     hooks: [],
     processor: {
         dataset: {
             process: (target, key) => target.dataset[key],
             attach: (hook) => {
+                if (!windowIsDefined)
+                    return;
                 let kebabCase = modCase.camel.kebab(hook.key);
                 let targets = document
                     .querySelectorAll(`[data-${kebabCase}]:not([data-tooltip-checked])`);
@@ -40,6 +43,8 @@ const tooltip = {
                 return data === null ? undefined : data;
             },
             attach: (hook) => {
+                if (!windowIsDefined)
+                    return;
                 let targets = document
                     .querySelectorAll(`[${hook.key}]:not([data-tooltip-checked])`);
                 targets.forEach(target => tooltip.attachEvent(target, hook));
@@ -47,6 +52,8 @@ const tooltip = {
         }
     },
     init() {
+        if (this.container === null || this.content === null)
+            return;
         if (lib.isOnMobile() || this.initialized)
             return;
         this.container.appendChild(this.content);
@@ -114,6 +121,8 @@ const tooltip = {
         target.dataset.tooltipChecked = '';
     },
     mouseenter(hook, target) {
+        if (this.container === null || this.content === null)
+            return;
         let value = this.getValue(target, hook);
         let content = (typeof hook.handler === 'undefined')
             ? undefined
@@ -131,6 +140,8 @@ const tooltip = {
             this.show(content);
     },
     mouseleave(hook) {
+        if (this.container === null || this.content === null)
+            return;
         (typeof hook.destroy !== 'undefined') && hook.destroy();
         this.hide();
         if (hook.noPadding)
@@ -140,14 +151,18 @@ const tooltip = {
             });
     },
     show(content) {
+        if (this.container === null || this.content === null)
+            return;
         this.container.dataset.activated = '';
         this.update(content);
-        clearTimeout(this.hideTimeout);
+        window.clearTimeout(this.hideTimeout);
         this.move();
         window.addEventListener('mousemove', this.move);
     },
     move: throttle(function () {
         const { container } = tooltip;
+        if (!container)
+            return;
         let { innerWidth, innerHeight } = window;
         let { clientWidth, clientHeight } = container;
         let { positionX, positionY } = cursor;
@@ -169,12 +184,17 @@ const tooltip = {
         }));
     }, 55),
     hide() {
-        this.hideTimeout = setTimeout(() => {
-            delete this.container.dataset.activated;
+        const { container } = this;
+        if (!container)
+            return;
+        this.hideTimeout = window.setTimeout(() => {
+            delete container.dataset.activated;
             window.removeEventListener('mousemove', this.move);
         }, 200);
     },
     update(content) {
+        if (this.container === null || this.content === null)
+            return;
         if (!content)
             return;
         this.glow();
@@ -186,8 +206,11 @@ const tooltip = {
         this.content.innerText = content;
     },
     glow: throttle(() => {
-        tooltip.container.style.animation = 'none';
-        lib.cssFrame(() => $(tooltip.container).css('animation', null));
+        const { container } = tooltip;
+        if (container === null)
+            return;
+        container.style.animation = 'none';
+        lib.cssFrame(() => $(container).css('animation', null));
     }, 350),
 };
 export default tooltip;

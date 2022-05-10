@@ -291,7 +291,7 @@ export function throttled(fn, t) {
             return;
         }
         clearTimeout(lastFunc);
-        lastFunc = setTimeout(function () {
+        lastFunc = window.setTimeout(function () {
             if ((Date.now() - lastRan) >= t) {
                 fn.call(context, ...arguments);
                 lastRan = Date.now();
@@ -318,7 +318,7 @@ export function debounce(fn, t, firstCall = false) {
             fn.call(context, ...arguments);
         }
         clearTimeout(timer);
-        timer = setTimeout(() => fn.call(context, ...arguments), t);
+        timer = window.setTimeout(() => fn.call(context, ...arguments), t);
     };
 }
 export default lib;

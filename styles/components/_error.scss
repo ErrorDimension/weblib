@@ -6,47 +6,117 @@
     width: 100%;
     height: 100%;
 
-    padding: 0 1em;
+    padding: 1em;
 
-    font-size: clamp(0.9em, calc(1vw + 1vh), 23px);
+    font-size: 0.75rem;
+
+    cursor: default;
 
     &__title {
         font-family: "Nunito";
-        font-size: 1.85em;
+        font-size: 1.5em;
         font-weight: bold;
         color: var(--error-color, black);
         line-height: 1.25em;
         text-align: center;
 
-        margin-block-end: 0.75em;
+        margin-block-end: 0.25em;
     }
 
     &__message {
         font-family: "Consolas", sans-serif;
-        font-size: 1.45em;
+        font-size: 1.25em;
         font-weight: 600;
         color: var(--error-color, black);
         line-height: 1.5em;
-        text-align: center;
+        text-align: left;
 
-        margin-block-end: 0.5em;
+        margin-block-end: 0.25em;
     }
 
     &__description {
         font-family: "Consolas", sans-serif;
         font-weight: 100;
-        font-size: 1.15em;
+        font-size: 1em;
         color: var(--error-color, black);
         line-height: 1.5em;
-        text-align: center;
+        text-align: justify;
 
-        max-width: 500px;
+        max-width: 525px;
+
         word-break: break-word;
     }
+
+    &__callback {
+        display: flex;
+        flex-wrap: wrap;
+
+        width: 18em;
+
+        .error__button {
+            &--primary,
+            &--secondary {
+                flex-grow: 1;
+
+                margin: 10px;
+
+                height: 1.8em;
+
+                font-family: var(--font-code);
+                font-weight: bold;
+
+                text-align: center;
+                line-height: 1.8em;
+
+                border-color: var(--error-btn-bg);
+                border-radius: 6px;
+                border-style: solid;
+                border-width: 1px;
+
+                cursor: pointer;
+
+                user-select: none;
+
+                transition: transform 200ms ease-out, filter 200ms ease-out, background-color 200ms ease-out;
+
+                &:active {
+                    transform: scale(0.9);
+                }
+            }
+
+            &--primary {
+                background-color: var(--error-btn-bg);
+
+                color: white;
+            }
+        }
+    }
+}
+
+body {
+    --error-btn-bg: hsl(229, 55%, 54%, 90%);
+}
+
+body > .error,
+body > * > .error,
+body > * > * > .error {
+    font-size: clamp(0.9em, calc(1vw + 1vh), 23px);
 }
 
 body[theme="dark"],
 body[data-theme="dark"],
 body.dark {
     --error-color: white;
+}
+
+@media (hover: hover) {
+    .error__button {
+        &--primary:hover {
+            filter: brightness(115%);
+        }
+
+        &--secondary:hover {
+            background-color: hsl(229, 55%, 70%, 0.15);
+        }
+    }
 }

@@ -1,11 +1,14 @@
-import lib, { throttle } from './lib'
-import modCase from './modcase'
+import Console from './console'
 import cursor from './cursor'
 import { $ } from './jquery'
-import Console from './console'
+import lib, { throttle } from './lib'
+import modCase from './modcase'
 
 
-customElements.define(
+const windowIsDefined = typeof window !== 'undefined'
+
+
+windowIsDefined && customElements.define(
     'tooltip-container',
     class HTMLTooltipContainer extends HTMLDivElement {
         constructor() {
@@ -16,7 +19,7 @@ customElements.define(
 )
 
 
-customElements.define(
+windowIsDefined && customElements.define(
     'tooltip-content',
     class HTMLTooltipContent extends HTMLDivElement {
         constructor() {
@@ -58,8 +61,8 @@ const tooltip = {
 
     hideTimeout: -1,
 
-    container: document.createElement('tooltip-container'),
-    content: document.createElement('tooltip-content'),
+    container: windowIsDefined ? document.createElement('tooltip-container') : null,
+    content: windowIsDefined ? document.createElement('tooltip-content') : null,
 
     hooks: [] as Hook[],
 
@@ -68,11 +71,12 @@ const tooltip = {
             process: (target: HTMLElement, key: string): string | undefined => target.dataset[key],
 
             attach: (hook: Hook): void => {
+                if (!windowIsDefined) return
+
                 let kebabCase: string = modCase.camel.kebab(hook.key)
                 let targets: NodeListOf<HTMLElement> = document
-                    .querySelectorAll<HTMLElement>(
-                        `[data-${kebabCase}]:not([data-tooltip-checked])`
-                    )
+                    .querySelectorAll<HTMLElement>(`[data-${kebabCase}]:not([data-tooltip-checked])`)
+
                 targets.forEach(target => tooltip.attachEvent(target, hook))
             }
         },
@@ -84,10 +88,11 @@ const tooltip = {
             },
 
             attach: (hook: Hook): void => {
+                if (!windowIsDefined) return
+
                 let targets: NodeListOf<HTMLElement> = document
-                    .querySelectorAll<HTMLElement>(
-                        `[${hook.key}]:not([data-tooltip-checked])`
-                    )
+                    .querySelectorAll<HTMLElement>(`[${hook.key}]:not([data-tooltip-checked])`)
+
                 targets.forEach(target => tooltip.attachEvent(target, hook))
             }
         }
@@ -95,6 +100,7 @@ const tooltip = {
 
 
     init(): void {
+        if (this.container === null || this.content === null) return
         if (lib.isOnMobile() || this.initialized) return
 
         this.container.appendChild(this.content)
@@ -136,7 +142,7 @@ const tooltip = {
         on,
         key,
         handler = ({ target, value, update }) => value,
-        destroy = () => { /* function body */ },
+        destroy = () => { /* logic here */ },
         priority = 1,
         noPadding = false
     }: Hook): void {
@@ -193,6 +199,8 @@ const tooltip = {
 
 
     mouseenter(hook: Hook, target: HTMLElement): void {
+        if (this.container === null || this.content === null) return
+
         let value = this.getValue(target, hook)
         let content = (typeof hook.handler === 'undefined')
             ? undefined
@@ -213,6 +221,8 @@ const tooltip = {
 
 
     mouseleave(hook: Hook): void {
+        if (this.container === null || this.content === null) return
+
         (typeof hook.destroy !== 'undefined') && hook.destroy()
         this.hide()
 
@@ -225,10 +235,12 @@ const tooltip = {
 
 
     show(content: HTMLElement | string): void {
+        if (this.container === null || this.content === null) return
+
         this.container.dataset.activated = ''
         this.update(content)
 
-        clearTimeout(this.hideTimeout)
+        window.clearTimeout(this.hideTimeout)
 
         this.move()
         window.addEventListener('mousemove', this.move)
@@ -237,6 +249,8 @@ const tooltip = {
 
     move: throttle(function () {
         const { container } = tooltip
+
+        if (!container) return
 
         let { innerWidth, innerHeight } = window
         let { clientWidth, clientHeight } = container
@@ -251,11 +265,11 @@ const tooltip = {
         let isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY
         let isLargerThanScreenY = innerWidth - clientHeight - OFFSET < positionY
 
-        let xPos = (isMoreOuterX || isLargerThanScreenX)
+        let xPos: number = (isMoreOuterX || isLargerThanScreenX)
             ? positionX - clientWidth - 13
             : positionX + 13
 
-        let yPos = (isMoreOuterY || isLargerThanScreenY)
+        let yPos: number = (isMoreOuterY || isLargerThanScreenY)
             ? positionY - clientHeight - 25
             : positionY + 25
 
@@ -266,14 +280,18 @@ const tooltip = {
 
 
     hide(): void {
-        this.hideTimeout = setTimeout(() => {
-            delete this.container.dataset.activated
+        const { container } = this
+        if (!container) return
+
+        this.hideTimeout = window.setTimeout(() => {
+            delete container.dataset.activated
             window.removeEventListener('mousemove', this.move)
         }, 200)
     },
 
 
     update(content: HTMLElement | string): void {
+        if (this.container === null || this.content === null) return
         if (!content) return
 
         this.glow()
@@ -290,8 +308,11 @@ const tooltip = {
 
 
     glow: throttle(() => {
-        tooltip.container.style.animation = 'none'
-        lib.cssFrame(() => $(tooltip.container)!.css('animation', null))
+        const { container } = tooltip
+        if (container === null) return
+
+        container.style.animation = 'none'
+        lib.cssFrame(() => $(container).css('animation', null))
     }, 350),
 }
 

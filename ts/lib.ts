@@ -385,7 +385,7 @@ export function throttled(this: any, fn: Function, t: number): ReturnedFunction 
         }
 
         clearTimeout(lastFunc)
-        lastFunc = setTimeout(function () {
+        lastFunc = window.setTimeout(function () {
             if ((Date.now() - lastRan) >= t) {
                 fn.call(context, ...arguments)
                 lastRan = Date.now()
@@ -416,7 +416,7 @@ export function debounce(this: any, fn: Function, t: number, firstCall: boolean 
         }
 
         clearTimeout(timer)
-        timer = setTimeout(() => fn.call(context, ...arguments), t)
+        timer = window.setTimeout(() => fn.call(context, ...arguments), t)
     }
 }
 
