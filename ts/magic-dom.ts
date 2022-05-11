@@ -3,113 +3,124 @@ import { $ } from './jquery.js'
 import lib, { debounce } from './lib.js'
 
 
-type QuerySelector = null | Element | HTMLElement
-
-type DOMTreeNode = {
-    tag?: string,
+interface DOMTreeNode {
+    tag?: keyof HTMLElementTagNameMap,
     classList?: string | string[],
-    id?: string,
     attribute?: Record<string, string | number>,
-    child?: HTMLElement | string | Record<string | number, DOMTreeNode>
+    children?: Record<string, DOMTreeNode>
 }
 
 
 const magicDOM = {
     /**
      * Create a HTMLElement the easy way
-     * @param       type                HTMLElement type
+     * @param       tagName             HTMLElement type
      * @param       prop                HTMLElement prop
      * @param       prop.id             HTMLElement id
      * @param       prop.classList      HTMLElement class list
      * @param       prop.attribute      HTMLElement attribute
      * @param       prop.child          HTMLElement child
      */
-    createElement(type: string = 'div', {
+    createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, {
         id = undefined,
-        classList = [],
-        attribute = {},
-        child = undefined,
+        classList = undefined,
+        attribute = undefined,
+        children = undefined
     }: {
         id?: string,
         classList?: string | string[],
-        attribute?: Record<string, string | number>
-        child?: string | HTMLElement | Array<HTMLElement>
-    } = {}) {
-        const element = document.createElement(type)
+        attribute?: Record<string, string | number>,
+        children?: string | HTMLElement | HTMLElement[]
+    } = {}): HTMLElementTagNameMap[K] {
+        const container: HTMLElementTagNameMap[K] = document.createElement(tagName)
 
+        /** add id to the container */
+        if (id) container.id = id
 
-        if (typeof id === 'string') element.id = id
+        /** add class list to the container */
+        if (typeof classList === 'string')
+            container.classList.add(classList)
 
+        if (classList instanceof Array)
+            container.classList.add(...classList)
 
-        if (typeof classList === 'string') element.classList.add(classList)
-        else if (classList.length) element.classList.add(...classList)
+        /** add attribute to the container */
+        if (attribute)
+            for (let value in attribute)
+                container.setAttribute(value, attribute[value].toString())
 
+        /** append child to the container */
+        if (typeof children === 'string')
+            container.innerText = children
 
-        for (let key in attribute)
-            element.setAttribute(key, attribute[key].toString())
+        if (children instanceof HTMLElement)
+            container.appendChild(children)
 
+        if (children instanceof Array)
+            container.append(...children)
 
-        if (child === undefined || child === null) return element
-
-        if (child instanceof HTMLElement) {
-            element.append(child)
-            return element
-        }
-
-        if (typeof child === 'string') {
-            element.innerText = child
-            return element
-        }
-
-        if (child.length)
-            element.append(...child)
-
-
-        return element
+        return container
     },
 
 
-    createTree({
-        tag = 'div',
-        classList = [],
-        id = undefined,
-        attribute = {},
-        child = undefined
-    }: DOMTreeNode = {}) {
-        const container = magicDOM.createElement(tag, { id, classList, attribute })
+    createTree<K extends keyof HTMLElementTagNameMap>(
+        tag: K,
+        classList?: string | string[],
+        attribute?: Record<string, string | number>,
+        children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode>
+    ): HTMLElementTagNameMap[K] & {
+        [key: string]: HTMLElement
+    } {
+        let container: HTMLElementTagNameMap[K] & {
+            [key: string]: any
+        } = magicDOM.createElement(tag, { classList, attribute })
 
+        if (children === undefined) return container
 
-        if (child === undefined) return container
-
-        if (typeof child === 'string') {
-            container.innerText = child
+        if (typeof children === 'string') {
+            container.innerText = children
             return container
         }
 
-        if (child instanceof HTMLElement) {
-            container.appendChild(child)
+        if (children instanceof HTMLElement) {
+            container.appendChild(children)
             return container
         }
 
-        for (let key in child) {
-            if (!(child[key] instanceof Object))
-                throw new Error(`'magicDOM.createTree()' : '{ child }' is not valid : \n`)
+        if (children instanceof Array) {
+            container.append(...children)
+            return container
+        }
 
-            let child_ = magicDOM.createTree(child[key])
-            Object.assign(container, { [key]: child_ })
+        for (let key in children) {
+            const child: DOMTreeNode = children[key]
+            const tag_: keyof HTMLElementTagNameMap = child.tag ? child.tag : 'div'
+            const classList_: string | string[] | undefined = child.classList
+            const attribute_: Record<string, string | number> | undefined = child.attribute
+            const children_: Record<string, DOMTreeNode> | undefined = child.children
+
+            const child_: HTMLElement & {
+                [key: string]: HTMLElement
+            } = magicDOM.createTree(
+                tag_,
+                classList_,
+                attribute_,
+                children_
+            )
+
             container.appendChild(child_)
+            Object.assign(container, { [key]: child_ })
         }
-
 
         return container
     },
 
 
     /**
-    * @brief empty the %HTMLElement node
+    * empty node
     * @param { HTMLElement } node node to empty
     */
-    emptyNode(node: HTMLElement) {
+    emptyNode(node: HTMLElement): void {
         while (node.firstChild)
             node.firstChild.remove()
     },
@@ -131,133 +142,134 @@ const magicDOM = {
         min = 0,
         max = 11,
         step = 1,
-        highValue = undefined
+        comfortablePercentage = undefined
     }: {
         color?: 'pink' | 'blue',
         startValue?: number,
         min?: number,
         max?: number,
         step?: number
-        highValue?: number
+        comfortablePercentage?: number
     } = {}) {
-        let container = this.createTree({
-            classList: 'slider', attribute: { 'data-color': color }, child: {
-                input: {
-                    tag: 'input', attribute: {
-                        type: 'range',
-                        min,
-                        max,
-                        step,
-                        placeholder: 'none'
-                    }
-                },
-                leftTrack: { tag: 'span', classList: 'slider__left-track' },
-                thumb: { tag: 'span', classList: 'slider__thumb' },
-                rightTrack: { tag: 'span', classList: 'slider__right-track' },
-            }
+        const container: HTMLDivElement & {
+            input?: HTMLInputElement,
+            leftTrack?: HTMLSpanElement,
+            thumb?: HTMLSpanElement,
+            rightTrack?: HTMLSpanElement
+        } = this.createTree('div', 'slider', { 'data-color': color }, {
+            input: { tag: 'input', attribute: { type: 'range', placeholder: 'none', min, max, step } },
+            leftTrack: { tag: 'span', classList: 'slider__left-track' },
+            thumb: { tag: 'span', classList: 'slider__thumb' },
+            rightTrack: { tag: 'span', classList: 'slider__right-track' },
         })
-        let input = container.querySelector('input') as HTMLInputElement
-        let leftTrack = container.querySelector('.slider__left-track') as HTMLSpanElement
-        let rightTrack = container.querySelector('.slider__right-track') as HTMLSpanElement
-        let thumb = container.querySelector('.slider__thumb') as HTMLSpanElement
+        if (!container.input) return
 
 
-        let downTick = 0
         const inputHandlers: Function[] = []
         const changeHandlers: Function[] = []
 
-        function edit() {
-            ++downTick
-            if (downTick > 1)
-                container.classList.add('dragging')
+        let sliderTick: number = -1
 
-            let value = parseInt(input.value)
-            let pos: number = (value - min) / (max - min)
-            container.dataset.inputTooltip = input.value
 
-            thumb.style.left = `calc(20px + (100% - 40px) * ${pos})`
-            leftTrack.style.width = `calc(10px + (100% - 40px) * ${pos})`
-            rightTrack.style.width = `calc(100% - (30px + (100% - 40px) * ${pos}))`
-
-            if (!highValue) return
-
-            let isHigh = (value / max) >= highValue
-            container.dataset.isHigh = isHigh ? 'yes' : 'no'
-        }
-
-        function stop_dragState() {
-            downTick = 0
+        /** handler for the slider */
+        function handleMouseupEvent(): void {
+            sliderTick = 0
             container.classList.remove('dragging')
         }
+        /** this function is used to render the slider */
+        function editSlider(): void {
+            if (!(container.thumb && container.leftTrack && container.rightTrack && container.input))
+                throw new Error(`'magicDOM.createSlider()' : found undefined in tree`)
 
 
-        $(input)
-            .on('mouseup', stop_dragState)
-            .on('input', (event) => {
-                let target = event.target as HTMLInputElement
-                inputHandlers.forEach(handler => handler(target.value, event))
-                edit()
-            })
-            .on('change', (event) => {
-                let target = event.target as HTMLInputElement
-                changeHandlers.forEach(handler => handler(target.value, event))
-            })
+            /** change drag style */
+            ++sliderTick
+            if (sliderTick > 1) container.classList.add('dragging')
 
 
-        input.value = startValue.toString()
-        input.dispatchEvent(new Event("input"))
-        --downTick
+            /** render the position of the thumb */
+            let value: number = parseInt(container.input.value)
+            let pos: number = (value - min) / (max - min)
+
+            container.thumb.style.left = `calc(20px + (100% - 40px) * ${pos})`
+            container.leftTrack.style.width = `calc(10px + (100% - 40px) * ${pos})`
+            container.rightTrack.style.width = `calc(100% - (30px + (100% - 40px) * ${pos}))`
+
+
+            /** dataset */
+            if (!comfortablePercentage) return
+            container.dataset.isHigh = (value / max) >= comfortablePercentage ? 'yes' : 'no'
+        }
+        function handleInputEvent(this: HTMLInputElement, event: Event): void {
+            inputHandlers.forEach((handler: Function): any => handler(this.value, event))
+            editSlider()
+        }
+        function handleChangeEvent(this: HTMLInputElement, event: Event): void {
+            changeHandlers.forEach((handler: Function): any => handler(this.value, event))
+        }
+
+        $(container.input)
+            .on('mouseup', handleMouseupEvent)
+            .on('input', handleInputEvent)
+            .on('change', handleChangeEvent)
+
+
+        /** initial first state */
+        container.input.value = startValue.toString()
+        container.input.dispatchEvent(new Event("input"))
+
 
         return {
             container,
-            input,
-            usedTooltip: false,
+            input: container.input,
+            toUseTooltip: false,
 
-            useTooltip(func = (data: string | undefined) => data) {
-                if (this.usedTooltip)
-                    return
+            tooltip(contentCallback: (val: string) => string = (val) => val) {
+                if (this.toUseTooltip) return
 
-                const log = new Console('slider', {
-                    background: 'pink', opacity: 0.9
-                })
-                Console.info(log, 'zatooltip will be ready to be displayed')
+                if (typeof contentCallback !== "function")
+                    throw new Error("createSlider().tooltip() : `contentCallback` is not valid")
 
-                import('./tooltip').then(obj => {
-                    this.usedTooltip = true
+                import('./tooltip').then(module => {
+                    const tooltip = module.default
 
-                    obj.default.addHook({
-                        on: 'dataset',
-                        key: 'inputTooltip',
-                        handler: ({ value }) => {
-                            if (downTick >= 1) return func(value)
-                        },
-                    })
+                    const inputHandler: () => void = (): void => {
+                        if (sliderTick < 1) return
+                        tooltip.show(contentCallback(this.input.value))
+                    }
+
+                    $(this.input).on('input', inputHandler)
+                    $(this.container)
+                        .on('mousemove', tooltip.move)
+                        .on('mouseleave', tooltip.hide)
                 })
 
                 return this
             },
 
-            set value(newValue) {
-                this.input.value = newValue
+
+            get value(): number { return parseInt(this.input.value) },
+            set value(newValue: number) {
+                this.input.value = newValue.toString()
                 this.input.dispatchEvent(new Event('input'))
             },
 
-            get value() { return this.input.value },
 
             /** @param { Function } func (value, event) */
             onInput(func: Function) {
-                if (!func || typeof func !== 'function')
-                    throw new Error("createSlider().on_input() : `func` not a valid function")
+                if (typeof func !== 'function')
+                    throw new Error("createSlider().onInput() : `func` not a valid function")
 
                 inputHandlers.push(func)
 
                 return this
             },
 
+
             /** @param { Function } func (value, event) */
             onChange(func: Function) {
-                if (!func || typeof func !== 'function')
-                    throw new Error("createSlider().on_change() : `func` not a valid function")
+                if (typeof func !== 'function')
+                    throw new Error("createSlider().onChange() : `func` not a valid function")
 
                 changeHandlers.push(func)
 
@@ -267,159 +279,55 @@ const magicDOM = {
     },
 
 
-    createHam(id = undefined) {
-        let container = this.createElement('div', {
-            classList: ['hamburger'],
-            child: this.createElement('div', {
-                classList: 'hamburger__content', child: [
-                    this.createElement('div', { classList: 'hamburger__content__first-line' }),
-                    this.createElement('div', { classList: 'hamburger__content__second-line' }),
-                    this.createElement('div', { classList: 'hamburger__content__third-line' }),
-                ]
-            }),
-            id
-        })
-
-        let isActivated = false
-
-        const toggleHandlers: Function[] = []
-        const activateHandlers: Function[] = []
-        const deactivateHandlers: Function[] = []
-
-
-        const t = (event?: Event) => {
-            $(container).toggleClass("hamburger--activated")
-            toggleHandlers.forEach(handler => handler(event))
-            let currentHandlers = isActivated ? deactivateHandlers : activateHandlers
-            currentHandlers.forEach(handler => handler(event))
-            isActivated = !isActivated
-        }
-
-        const d = (event?: Event) => {
-            $(container).removeClass("hamburger--activated")
-            deactivateHandlers.forEach(handler => handler(event))
-        }
-
-        const a = (event?: Event) => {
-            $(container).addClass("hamburger--activated")
-            activateHandlers.forEach(handler => handler(event))
-        }
-
-        $(container).on('click', t)
-
-
-        return {
-            container,
-
-
-            /** @param { Function } func (event) */
-            onToggle(func: Function) {
-                if (!func || typeof func !== 'function')
-                    throw new Error("createHam().onToggle() : `func` not a valid function")
-
-                toggleHandlers.push(func)
-                return this
-            },
-
-
-            /** @param { Function } func (event) */
-            onActivate(func: Function) {
-                if (!func || typeof func !== 'function')
-                    throw new Error("createHam().onActivate() : `func` not a valid function")
-
-                activateHandlers.push(func)
-                return this
-            },
-
-
-            /** @param { Function } func (event) */
-            onDeactivate(func: Function) {
-                if (!func || typeof func !== 'function')
-                    throw new Error("createHam().onDeactivate() : `func` not a valid function")
-
-                deactivateHandlers.push(func)
-                return this
-            },
-
-
-            activate() {
-                isActivated = true
-                a()
-
-                return this
-            },
-
-
-            deactivate() {
-                isActivated = false
-                d()
-
-                return this
-            },
-
-
-            toggle() {
-                isActivated = !isActivated
-                t()
-
-                return this
-            }
-        }
-    },
-
-
-    toHTMLElement(html: string) {
-        const template = document.createElement("template")
+    toHTMLElement(html: string): ChildNode | null {
+        const template: HTMLTemplateElement = document.createElement("template")
         template.innerHTML = html.trim()
 
-        const fin = template.content.firstChild
+        const fin: ChildNode | null = template.content.firstChild
         template.remove()
 
         return fin
     },
 
 
-    bind(container: HTMLElement, obj: Record<number | string, HTMLElement>) {
-        for (let key in obj) {
-            container.appendChild(obj[key])
-            Object.assign(container, { [key]: obj[key] })
-        }
-    },
-
-
-    scrollable(container: HTMLElement, maxPath = 100) {
+    scrollable(container: HTMLElement & {
+        scrollBox: HTMLDivElement
+    }, maxPath: number = 100) {
         if (container.dataset.scrollable) return
 
-        let sbox = magicDOM.createElement('div', { classList: 'sbox' })
-        while (container.firstChild) sbox.append(container.firstChild)
+        let box: HTMLDivElement = magicDOM.createElement('div', { classList: 'sbox' })
+        while (container.firstChild) box.append(container.firstChild)
 
         $(container).css('overflow', 'overlay')
-        magicDOM.bind(container, { scrollBox: sbox })
+        container.scrollBox = box
 
 
-        let translate = 0
+        let translate: number = 0
 
-        const moveBack = debounce(() => {
+        const MINIMIZED: 0.075 = 0.075
+
+        const moveBack: Function = debounce(() => {
             translate = 0
-            $(sbox).css('transform', 'translateY(0)')
+            $(box).css('transform', 'translateY(0)')
         }, 100)
 
-        const MINIMIZED = 0.075
+        const onWheelHandler: (event: WheelEvent) => void = (event: WheelEvent): void => {
+            let { deltaY } = event
+            translate = lib.clamp(-maxPath, translate - deltaY * MINIMIZED, maxPath)
+
+            $(box).css('transform', `translateY(${translate}px)`)
+
+            moveBack()
+        }
+
         $(container)
             .dataset('scrollable', 'true')
-            .on('wheel', (event: any) => {
-                let { deltaY } = event
-                translate = lib.clamp(-maxPath, translate - deltaY * MINIMIZED, maxPath)
-
-                $(sbox).css('transform', `translateY(${translate}px)`)
-
-                moveBack()
-            })
+            .on('wheel', onWheelHandler)
 
 
         return {
             container,
-            scrollBox: sbox,
+            scrollBox: box,
 
             append(...args: string[] | HTMLElement[]) {
                 this.scrollBox.append(...args)

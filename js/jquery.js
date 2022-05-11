@@ -1,10 +1,9 @@
 import modCase from './modcase.js';
 class JHTMLElement extends Array {
     css(property, val) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach((element) => {
             if (!(element instanceof HTMLElement))
-                return self;
+                return;
             if (typeof property === 'string' && val !== undefined)
                 element.style.setProperty(modCase.camel.kebab(property), val);
             if (property instanceof Object)
@@ -14,42 +13,37 @@ class JHTMLElement extends Array {
                     element.style.setProperty(prop, value);
                 }
         });
-        return self;
+        return this;
     }
     attr(nameOrProps, val) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach((element) => {
             if (!(element instanceof HTMLElement))
-                return self;
-            if (typeof nameOrProps === 'string' && val !== undefined) {
-                if (val === null) {
+                return;
+            if (typeof nameOrProps === 'string' && val !== undefined)
+                if (val === null)
                     element.removeAttribute(nameOrProps);
-                    return self;
-                }
-                element.setAttribute(nameOrProps, val);
-                return self;
-            }
+                else
+                    element.setAttribute(nameOrProps, val);
             if (nameOrProps instanceof Object)
                 for (let key in nameOrProps) {
                     const name = key;
                     const value = nameOrProps[key];
-                    if (value !== undefined)
+                    if (value === null)
                         element.removeAttribute(name);
                     else
                         element.setAttribute(name, value);
                 }
         });
-        return self;
+        return this;
     }
     dataset(nameOrProps, val) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach(function (element) {
             if (!(element instanceof HTMLElement))
-                return self;
+                return;
             if (typeof nameOrProps === 'string' && val === null)
                 delete element.dataset[nameOrProps];
-            if (typeof nameOrProps === 'string')
-                element.dataset[nameOrProps] = val === null ? undefined : val;
+            if (typeof nameOrProps === 'string' && typeof val === 'string')
+                element.dataset[nameOrProps] = val;
             if (nameOrProps instanceof Object)
                 for (let key in nameOrProps) {
                     const value = nameOrProps[key];
@@ -59,7 +53,7 @@ class JHTMLElement extends Array {
                         element.dataset[key] = value;
                 }
         });
-        return self;
+        return this;
     }
     each(func) {
         if (typeof func !== 'function')
@@ -68,7 +62,7 @@ class JHTMLElement extends Array {
         return this;
     }
     /**
-    * add an event listener onto a list of object
+    * add an event listener onto a list of elements
     * @param        { Event }                   event           event type
     * @param        { Function }                listener        callback listener
     * @param        { Boolean | object }        option          options
@@ -78,11 +72,11 @@ class JHTMLElement extends Array {
             throw new Error(`'JQuery.on() : 'event' is not valid`);
         if (typeof listener !== 'function')
             throw new Error(`'JQuery.on() : 'listener' is not valid`);
-        this.forEach(element => element.addEventListener(event, listener, option));
+        this.forEach((element) => element.addEventListener(event, listener, option));
         return this;
     }
     /**
-    * remove an event listener that attached onto a list of object
+    * remove an event listener that attached to a list of elements
     * @param        { Event }                   event           event type
     * @param        { Function }                listener        callback listener
     * @param        { Boolean | object }        option          options
@@ -92,32 +86,29 @@ class JHTMLElement extends Array {
             throw new Error(`'JQuery.on() : 'event' is not valid`);
         if (typeof listener !== 'function')
             throw new Error(`'JQuery.on() : 'listener' is not valid`);
-        this.forEach(element => element.removeEventListener(event, listener, option));
+        this.forEach((element) => element.removeEventListener(event, listener, option));
         return this;
     }
     addClass(...className) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach(function (element) {
             if (!(element instanceof HTMLElement))
-                return self;
+                return;
             element.classList.add(...className);
         });
         return this;
     }
     removeClass(...className) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach(function (element) {
             if (!(element instanceof HTMLElement))
-                return self;
+                return;
             element.classList.remove(...className);
         });
         return this;
     }
     toggleClass(className) {
-        const self = this;
-        this.forEach(element => {
+        this.forEach(function (element) {
             if (!(element instanceof HTMLElement))
-                return self;
+                return;
             element.classList.toggle(className);
         });
         return this;
@@ -135,14 +126,14 @@ export function $$(queryOrObj, queryOrElement) {
     return document.querySelector(queryOrObj);
 }
 export function $(queryOrObj, queryOrElement) {
-    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
-        return new JHTMLElement(...queryOrElement.querySelectorAll(queryOrObj));
     if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
         const container = document.querySelector(queryOrElement);
-        if (container !== null)
-            return new JHTMLElement(...container.querySelectorAll(queryOrObj));
-        return new JHTMLElement();
+        const qsa = container?.querySelectorAll(queryOrObj);
+        const elements = qsa ? qsa : [];
+        return new JHTMLElement(...elements);
     }
+    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
+        return new JHTMLElement(...queryOrElement.querySelectorAll(queryOrObj));
     if (typeof queryOrObj === 'string')
         return new JHTMLElement(...document.querySelectorAll(queryOrObj));
     if (queryOrObj instanceof NodeList)

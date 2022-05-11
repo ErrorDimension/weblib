@@ -3,25 +3,22 @@ import modCase from './modcase.js'
 
 type ELoELO = EventListenerOrEventListenerObject
 type EOp = boolean | AddEventListenerOptions
+
 type E<Type> =
     Type extends Window ? WindowEventMap :
     Type extends Document ? DocumentEventMap :
     Type extends HTMLElement ? HTMLElementEventMap : never
 type K<Type> = keyof E<Type>
-type F<Type, Key extends K<Type>> = (this: Type, ev: E<Type>[Key]) => any
-
 type Ev<Key> = Key | string
 type Fn<Type, Key extends K<Type>> = ((this: Type, ev: E<Type>[Key] | Event) => any) | ELoELO
 
-class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extends Array<Type> {
+class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends Array<Type> {
     css(
         property: string | Record<string, string | null>,
         val?: string | null
     ): JHTMLElement<Type> {
-        const self = this
-
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
+        this.forEach((element: Type): void => {
+            if (!(element instanceof HTMLElement)) return
 
             if (typeof property === 'string' && val !== undefined)
                 element.style.setProperty(modCase.camel.kebab(property), val)
@@ -34,7 +31,7 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
                 }
         })
 
-        return self
+        return this
     }
 
 
@@ -42,32 +39,24 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
     ): JHTMLElement<Type> {
-        const self = this
+        this.forEach((element: Type): void => {
+            if (!(element instanceof HTMLElement)) return
 
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
-
-            if (typeof nameOrProps === 'string' && val !== undefined) {
-                if (val === null) {
-                    element.removeAttribute(nameOrProps)
-                    return self
-                }
-
-                element.setAttribute(nameOrProps, val)
-                return self
-            }
+            if (typeof nameOrProps === 'string' && val !== undefined)
+                if (val === null) element.removeAttribute(nameOrProps)
+                else element.setAttribute(nameOrProps, val)
 
             if (nameOrProps instanceof Object)
                 for (let key in nameOrProps) {
                     const name: string = key
                     const value: string | null = nameOrProps[key]
 
-                    if (value !== undefined) element.removeAttribute(name)
+                    if (value === null) element.removeAttribute(name)
                     else element.setAttribute(name, value)
                 }
         })
 
-        return self
+        return this
     }
 
 
@@ -75,16 +64,14 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
     ): JHTMLElement<Type> {
-        const self = this
-
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
+        this.forEach(function (element: Type): void {
+            if (!(element instanceof HTMLElement)) return
 
             if (typeof nameOrProps === 'string' && val === null)
                 delete element.dataset[nameOrProps]
 
-            if (typeof nameOrProps === 'string')
-                element.dataset[nameOrProps] = val === null ? undefined : val
+            if (typeof nameOrProps === 'string' && typeof val === 'string')
+                element.dataset[nameOrProps] = val
 
             if (nameOrProps instanceof Object)
                 for (let key in nameOrProps) {
@@ -95,14 +82,14 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
                 }
         })
 
-        return self
+        return this
     }
 
 
     each(func: (index: number) => any): JHTMLElement<Type> {
         if (typeof func !== 'function') throw new Error('"jquery.each()" : "func" is not a function')
 
-        this.forEach((element, index) => func.call(element, index))
+        this.forEach((element: Type, index: number): void => func.call(element, index))
         return this
     }
 
@@ -110,7 +97,7 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
     on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
     on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
-    * add an event listener onto a list of object
+    * add an event listener onto a list of elements
     * @param        { Event }                   event           event type
     * @param        { Function }                listener        callback listener
     * @param        { Boolean | object }        option          options
@@ -119,16 +106,16 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
-        this.forEach(element => element.addEventListener(event, listener, option))
+        this.forEach((element: Type): void => element.addEventListener(event, listener, option))
 
         return this
     }
 
 
-    off<Key extends K<Type>>(event: Key, listener: F<Type, Key>, option?: EOp): JHTMLElement<Type>
+    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
     off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
-    * remove an event listener that attached onto a list of object
+    * remove an event listener that attached to a list of elements
     * @param        { Event }                   event           event type
     * @param        { Function }                listener        callback listener
     * @param        { Boolean | object }        option          options
@@ -137,17 +124,15 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
-        this.forEach(element => element.removeEventListener(event, listener, option))
+        this.forEach((element: Type): void => element.removeEventListener(event, listener, option))
 
         return this
     }
 
 
     addClass(...className: string[]): JHTMLElement<Type> {
-        const self = this
-
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
+        this.forEach(function (element: Type): void {
+            if (!(element instanceof HTMLElement)) return
             element.classList.add(...className)
         })
 
@@ -156,10 +141,8 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
 
 
     removeClass(...className: string[]): JHTMLElement<Type> {
-        const self = this
-
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
+        this.forEach(function (element: Type): void {
+            if (!(element instanceof HTMLElement)) return
             element.classList.remove(...className)
         })
 
@@ -168,10 +151,8 @@ class JHTMLElement<Type extends (Window | Document | HTMLElement | Node)> extend
 
 
     toggleClass(className: string): JHTMLElement<Type> {
-        const self = this
-
-        this.forEach(element => {
-            if (!(element instanceof HTMLElement)) return self
+        this.forEach(function (element: Type): void {
+            if (!(element instanceof HTMLElement)) return
             element.classList.toggle(className)
         })
 
@@ -204,26 +185,26 @@ export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): Q
 
 type JSelection = string | NodeList | HTMLElement | Window | Document
 
-export function $(query: string, element: HTMLElement): JHTMLElement<HTMLElement>
+export function $(d: Document): JHTMLElement<Document>
+export function $(w: Window): JHTMLElement<Window>
 export function $(query: string, containerQuery: string): JHTMLElement<HTMLElement>
+export function $(query: string, element: HTMLElement): JHTMLElement<HTMLElement>
 export function $(query: string): JHTMLElement<HTMLElement>
 export function $(elements: NodeList): JHTMLElement<HTMLElement>
-export function $(element: HTMLElement): JHTMLElement<HTMLElement>
-export function $(w: Window): JHTMLElement<Window>
-export function $(d: Document): JHTMLElement<Document>
+export function $<HTMLElementType extends HTMLElement>
+    (element: HTMLElementType): JHTMLElement<HTMLElementType>
 export function $(queryOrObj: JSelection, queryOrElement?: HTMLElement | string)
     : JHTMLElement<Node | HTMLElement | Window | Document> {
+    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
+        const container: Element | null = document.querySelector(queryOrElement)
+        const qsa: NodeListOf<Element> | undefined = container?.querySelectorAll(queryOrObj)
+        const elements: NodeListOf<Element> | never[] = qsa ? qsa : []
+
+        return new JHTMLElement(...elements)
+    }
+
     if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
         return new JHTMLElement(...queryOrElement.querySelectorAll<HTMLElement>(queryOrObj))
-
-    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
-        const container = document.querySelector(queryOrElement)
-
-        if (container !== null)
-            return new JHTMLElement(...container.querySelectorAll<HTMLElement>(queryOrObj))
-
-        return new JHTMLElement()
-    }
 
     if (typeof queryOrObj === 'string')
         return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrObj))
