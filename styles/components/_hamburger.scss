@@ -91,6 +91,8 @@
 
 @media (hover: hover) {
     .hamburger:hover {
+        background-color: var(--ham-hover-bg);
+
         .hamburger__content__first-line,
         .hamburger__content__third-line {
             width: 50%;
@@ -106,10 +108,6 @@
         .hamburger__content__second-line {
             transform: rotate(0deg);
         }
-    }
-
-    .hamburger:hover {
-        background-color: var(--ham-hover-bg);
     }
 }
 

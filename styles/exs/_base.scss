@@ -1,10 +1,11 @@
 *,
 *:after,
 *:before {
-    scroll-behavior: smooth;
-    box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
     outline: none;
+
+    scroll-behavior: smooth;
+
     box-sizing: border-box;
 
     z-index: 0;
@@ -18,19 +19,6 @@
 
 *:hover::-webkit-scrollbar {
     display: block;
-}
-
-body {
-    --scrollbar-show-color: hsla(0, 0%, 60%, 0.6);
-    --scrollbar-hover-color: rgba(90, 90, 90, 0.5);
-    --scrollbar-active-color: rgba(75, 75, 75, 0.6);
-}
-
-body.dark,
-body[data-theme="dark"] {
-    --scrollbar-show-color: rgba(213, 204, 204, 0.5);
-    --scrollbar-hover-color: rgba(235, 235, 235, 0.6);
-    --scrollbar-active-color: rgba(255, 255, 255, 0.8);
 }
 
 *::-webkit-scrollbar-thumb {
@@ -47,17 +35,24 @@ body[data-theme="dark"] {
 }
 
 body {
-    background-color: whitesmoke;
-}
+    --scrollbar-show-color: hsla(0, 0%, 60%, 0.6);
+    --scrollbar-hover-color: rgba(90, 90, 90, 0.5);
+    --scrollbar-active-color: rgba(75, 75, 75, 0.6);
 
-body {
+    background-color: whitesmoke;
+
     scroll-behavior: smooth;
 
     min-height: 100vh;
     min-width: 100vw;
 }
 
+body.dark,
 body[data-theme="dark"] {
+    --scrollbar-show-color: rgba(213, 204, 204, 0.5);
+    --scrollbar-hover-color: rgba(235, 235, 235, 0.6);
+    --scrollbar-active-color: rgba(255, 255, 255, 0.8);
+
     color: white;
     background-color: rgb(24, 24, 24);
 }
