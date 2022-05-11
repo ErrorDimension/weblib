@@ -218,13 +218,12 @@ class Console {
 
         magicDOM.emptyNode(container)
 
-        const errorBlock = magicDOM.createTree({
-            classList: 'error', child: {
-                t: { classList: 'error__title', child: `${icon} ${title}` },
-                m: { classList: 'error__message', child: `[${code}] >>> ${message}` },
-                d: { classList: 'error__description', child: description },
-                c: { classList: 'error__callback' }
-            }
+        const errorBlock = magicDOM.createTree(
+            'div', 'error', {}, {
+            t: { classList: 'error__title', children: `${icon} ${title}` },
+            m: { classList: 'error__message', children: `[${code}] >>> ${message}` },
+            d: { classList: 'error__description', children: description },
+            c: { classList: 'error__callback' }
         })
 
         const createBtn = (
@@ -234,7 +233,7 @@ class Console {
         ) => {
             const btn = magicDOM.createElement('div', {
                 classList: `error__button--${primary ? 'primary' : 'secondary'}`,
-                child: text
+                children: text
             })
 
             btn.onclick = callback

@@ -7,7 +7,7 @@ interface DOMTreeNode {
     tag?: keyof HTMLElementTagNameMap,
     classList?: string | string[],
     attribute?: Record<string, string | number>,
-    children?: Record<string, DOMTreeNode>
+    children?: Record<string, DOMTreeNode> | string | HTMLElement | HTMLElement[]
 }
 
 
@@ -97,7 +97,7 @@ const magicDOM = {
             const tag_: keyof HTMLElementTagNameMap = child.tag ? child.tag : 'div'
             const classList_: string | string[] | undefined = child.classList
             const attribute_: Record<string, string | number> | undefined = child.attribute
-            const children_: Record<string, DOMTreeNode> | undefined = child.children
+            const children_ = child.children
 
             const child_: HTMLElement & {
                 [key: string]: HTMLElement
