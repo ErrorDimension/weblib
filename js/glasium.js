@@ -18,7 +18,7 @@ class Glasium {
             let maxBrightness = lib.max(...brightness);
             let minBrightness = lib.min(...brightness);
             let randomBrightness = lib.randomBetween(minBrightness, maxBrightness, false);
-            let position = lib.randomBetween(-5, 105, false);
+            let position = lib.randomBetween(0, 100, false);
             let delay = lib.randomBetween(-speed / 2.5, speed / 2, false, [0.97, 1.03]);
             let shapeStyle = shape === 'all'
                 ? lib.randomItem(this.SHAPES) : shape;
@@ -102,31 +102,26 @@ class Glasium {
         if (!this.SHAPES.includes(shape))
             throw new Error(`'Glasium.init()' : '{shape}' is not valid`);
         /** check if there was a background before to re-initialize */
-        const postBackground = $$('.glasium__background', container);
-        if (postBackground)
-            postBackground.remove();
+        $$('.glasium__background')?.remove();
         /** initial class list */
-        const classList = ['glasium', ...container.classList];
+        const { classList } = container;
         container.className = '';
-        container.classList.add(...classList);
-        $('*', container).each(function () {
-            this.classList.add('glasium__content');
-        });
+        container.classList.add('glasium', ...classList);
+        $('*', container).addClass('glasium__content');
         /** initialize background */
-        const background = magicDOM.createElement('div', {
-            classList: 'glasium__background'
-        });
+        const background = magicDOM.createElement('div');
         $(background).css({
             '--background-color': color.background,
             '--shape-color': color.shape,
             '--rotation': rotate ? '360deg' : '0deg'
-        });
+        }).addClass('glasium__background');
         this.#fillBackground(background, { scale, speed, count, shape, brightness });
         container.insertBefore(background, container.firstChild);
         container.glasiumBackground = background;
         /** watch container's size */
         this.#update(background, scale);
-        new ResizeObserver(() => this.#update(background, scale)).observe(container);
+        new ResizeObserver(() => this.#update(background, scale))
+            .observe(container);
     }
     constructor(queryOrContainer, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd' }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 38, rotate = false } = {
         shape: 'triangle',

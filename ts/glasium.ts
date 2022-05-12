@@ -39,7 +39,7 @@ class Glasium {
                 false
             )
 
-            let position = lib.randomBetween(-5, 105, false)
+            let position = lib.randomBetween(0, 100, false)
 
             let delay = lib.randomBetween(
                 -speed / 2.5,
@@ -178,31 +178,25 @@ class Glasium {
 
 
         /** check if there was a background before to re-initialize */
-        const postBackground: HTMLElement | null = $$('.glasium__background', container)
-        if (postBackground)
-            postBackground.remove()
+        $$('.glasium__background')?.remove()
 
 
         /** initial class list */
-        const classList: string[] = ['glasium', ...container.classList]
+        const { classList } = container
         container.className = ''
-        container.classList.add(...classList)
+        container.classList.add('glasium', ...classList)
 
-        $('*', container).each(function (): void {
-            this.classList.add('glasium__content')
-        })
+        $('*', container).addClass('glasium__content')
 
 
         /** initialize background */
-        const background: HTMLDivElement = magicDOM.createElement('div', {
-            classList: 'glasium__background'
-        })
+        const background: HTMLDivElement = magicDOM.createElement('div')
 
         $(background).css({
             '--background-color': color.background,
             '--shape-color': color.shape,
             '--rotation': rotate ? '360deg' : '0deg'
-        })
+        }).addClass('glasium__background')
 
         this.#fillBackground(background, { scale, speed, count, shape, brightness })
 
@@ -212,7 +206,8 @@ class Glasium {
 
         /** watch container's size */
         this.#update(background, scale)
-        new ResizeObserver((): void => this.#update(background, scale)).observe(container)
+        new ResizeObserver((): void => this.#update(background, scale))
+            .observe(container)
     }
 
 

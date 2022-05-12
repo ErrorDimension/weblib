@@ -1,45 +1,50 @@
 tooltip-container {
     position: fixed;
+    inset: 0 auto auto 0;
+
     display: inline-block;
     place-items: center;
     place-content: center;
+
+    letter-spacing: 0.2px;
     text-align: center;
+    white-space: pre-line;
     word-wrap: break-word;
-    z-index: 999999;
 
     border-radius: 6px;
+
     backdrop-filter: saturate(50%) blur(2px) opacity(0.5);
 
-    background-color: var(--background, rgba(92, 92, 92, 0.4));
-    padding: 0;
-    white-space: pre-line;
-    letter-spacing: 0.2px;
+    background-color: rgba(92, 92, 92, 0.4);
 
-    top: 0;
-    left: 0;
-    transform: translate(50vw, 50vh);
+    padding: 0;
+
+    transform: translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px));
     transform-origin: center;
 
     overflow: hidden;
+
     pointer-events: none;
+    user-select: none;
 
-    will-change: opacity, transform, visibility, filter, background-color;
-    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1), padding 0.25s linear;
+    will-change: opacity, padding, --position-x, --position-y, --padding-duration;
 
-    animation: tooltip-blink 0.3s linear;
+    transition-duration: 300ms, var(--padding-duration, 300ms);
+    transition-property: all, padding;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in;
+
+    animation-name: tooltip-blink;
+    animation-duration: 300ms;
+    animation-timing-function: ease-out;
     animation-fill-mode: forwards;
 
     opacity: 0;
 
+    z-index: 999999;
+
     &[data-activated] {
         opacity: 1;
         padding: var(--padding, 10px 15px);
-
-        >tooltip-content {
-            transform: scale(1);
-
-            animation: gelatine 200ms ease-out;
-        }
     }
 
     >tooltip-content {
@@ -50,14 +55,12 @@ tooltip-container {
         height: fit-content;
 
         color: white;
+
         font-family: "Ubuntu";
         font-size: 16.5px;
-
-        transition: all 200ms ease-out;
-
-        transform: scale(0);
     }
 }
+
 
 @keyframes tooltip-blink {
     0% {
