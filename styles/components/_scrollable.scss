@@ -1,4 +1,9 @@
-.sbox {
+*[data-scrollable] {
+    overflow: overlay;
+}
+
+
+.scrollable {
     position: relative;
 
     transform: translateY(0);

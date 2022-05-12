@@ -39,6 +39,9 @@ export class Setting extends Component {
     }
 
 
+    componentDidMount() { }
+
+
     render() {
         const { children } = this.props
 

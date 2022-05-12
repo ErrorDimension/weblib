@@ -1,37 +1,3 @@
-@keyframes glasium-shape {
-    0% {
-        transform: translateY(0) rotate(0deg);
-        filter: brightness(var(--max-brightness));
-    }
-
-    40% {
-        filter: brightness(var(--min-brightness));
-    }
-
-    50% {
-        filter: brightness(var(--max-brightness));
-    }
-
-    60% {
-        filter: brightness(var(--min-brightness));
-    }
-
-    100% {
-        transform: translateY(calc(var(--moving-size) * -1)) rotate(var(--rotation));
-        filter: brightness(var(--max-brightness));
-    }
-}
-
-@keyframes tooltip-blink {
-    0% {
-        background-color: rgba(92, 92, 92, 0.4);
-    }
-
-    100% {
-        background-color: rgba(10, 10, 10, 0.4);
-    }
-}
-
 @keyframes rotate360 {
     to {
         transform: rotate(360deg);

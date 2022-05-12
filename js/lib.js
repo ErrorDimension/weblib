@@ -171,12 +171,11 @@ const lib = {
      *
      * @param	{ Number }		    min		        Minimum Random Number
      * @param	{ Number }		    max		        Maximum Random Number
-     * @param   { Object }	        opt             options
-     * @param   { boolean }         opt.toInt
+     * @param   { object }	        opt             options
+     * @param   { boolean }         opt.toInt       by default is true
      * @param   { Number[2] }       opt.outRange
-     * @returns	{ Number }
      */
-    randomBetween(min, max, { toInt = true, outRange = [] } = {}) {
+    randomBetween(min, max, toInt = true, outRange = []) {
         let res = toInt
             ? Math.floor(Math.random() * (max - min + 1) + min)
             : Math.random() * (max - min) + min;
@@ -184,7 +183,7 @@ const lib = {
             return res;
         let [minEdge, maxEdge] = outRange;
         if (res > minEdge && res < maxEdge)
-            return this.randomBetween(min, max, { toInt, outRange });
+            return this.randomBetween(min, max, toInt, outRange);
         return res;
     },
     truncate(str, length = 20, { suffix = '...' } = {}) {
@@ -205,8 +204,8 @@ const lib = {
         return str;
     },
     randomItem(array) {
-        if (typeof array.length !== "number")
-            console.warn('`randomItem()` : not a valid array'); // todo Console
+        if (!(array instanceof Array))
+            throw new Error('`randomItem()` : "array" is not a valid array');
         return array[this.randomBetween(0, array.length - 1)];
     },
     /** this function returns the smallest number */

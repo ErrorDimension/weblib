@@ -4,12 +4,15 @@ class JHTMLElement extends Array {
         this.forEach((element) => {
             if (!(element instanceof HTMLElement))
                 return;
-            if (typeof property === 'string' && val !== undefined)
+            if (typeof property === 'string' && val !== undefined) {
+                val = typeof val === 'number' ? val.toString() : val;
                 element.style.setProperty(modCase.camel.kebab(property), val);
+            }
             if (property instanceof Object)
                 for (let key in property) {
                     const prop = modCase.camel.kebab(key);
-                    const value = property[key];
+                    let value = property[key];
+                    value = typeof value === 'number' ? value.toString() : value;
                     element.style.setProperty(prop, value);
                 }
         });

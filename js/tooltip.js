@@ -79,8 +79,12 @@ const tooltip = {
      * @param       prop.noPadding      decide whether to disable padding prop or not
      */
     addHook({ on, key, handler = ({ target, value, update }) => value, destroy = () => { }, priority = 1, noPadding = false }) {
-        if (!['attribute', 'dataset'].includes(on))
+        if (!(['attribute', 'dataset'].includes(on)))
             throw new Error(`tooltip.addHook() : '${on}' is not a valid option`);
+        if (typeof on === 'undefined')
+            throw new Error(`'tooltip.addHook()' : 'on' is not defined`);
+        if (typeof key === 'undefined')
+            throw new Error(`'tooltip.addHook()' : 'key' is not defined`);
         let hook = { on, key, handler, destroy, priority, noPadding };
         this.hooks.push(hook);
         this.hooks.sort(function (a, b) {

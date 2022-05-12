@@ -31,18 +31,16 @@ windowIsDefined && customElements.define(
 )
 
 
+interface HookHandlerArguments {
+    target: HTMLElement,
+    value?: string,
+    update: (content: string | HTMLElement) => void
+}
+
 interface Hook {
     on: 'dataset' | 'attribute',
     key: string,
-    handler?: ({
-        target,
-        value,
-        update
-    }: {
-        target: HTMLElement,
-        value?: string,
-        update: (data: string | HTMLElement) => void
-    }) => HTMLElement | string | undefined,
+    handler?: ({ target, value, update }: HookHandlerArguments) => HTMLElement | string | undefined,
     destroy?: () => void,
     priority?: number,
     noPadding?: boolean
@@ -135,14 +133,17 @@ const tooltip = {
     addHook({
         on,
         key,
-        handler = ({ target, value, update }) => value,
-        destroy = () => { /* logic here */ },
+        handler = ({ target, value, update }: HookHandlerArguments): string | undefined => value,
+        destroy = (): void => { /* logic here */ },
         priority = 1,
         noPadding = false
     }: Hook): void {
-        if (!['attribute', 'dataset'].includes(on))
+        if (!(['attribute', 'dataset'].includes(on)))
             throw new Error(`tooltip.addHook() : '${on}' is not a valid option`)
-
+        if (typeof on === 'undefined')
+            throw new Error(`'tooltip.addHook()' : 'on' is not defined`)
+        if (typeof key === 'undefined')
+            throw new Error(`'tooltip.addHook()' : 'key' is not defined`)
 
         let hook: Hook = { on, key, handler, destroy, priority, noPadding }
         this.hooks.push(hook)

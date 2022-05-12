@@ -1,18 +1,48 @@
 .glasium {
     position: relative;
+
     background: transparent;
-    overflow: hidden;
 
     &__background {
         position: absolute;
         inset: 0;
+
         width: 100%;
         height: 100%;
+
         pointer-events: none;
         z-index: -1;
+
+        border-radius: inherit;
+
         overflow: hidden;
 
+        transition: 200ms background-color ease-out;
+
         &__shape {
+
+            &--circle,
+            &--square,
+            &--triangle,
+            &--hexagon {
+                position: absolute;
+                top: 100%;
+
+                background: var(--shape-color);
+                opacity: 0.97;
+
+                filter: brightness(var(--brightness));
+
+                animation-name: glasium-shape;
+                animation-timing-function: linear;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+
+                pointer-events: none;
+
+                transition: 200ms background-color ease-out;
+            }
+
             &--circle {
                 border-radius: 50%;
                 width: var(--size);
@@ -35,227 +65,41 @@
                 height: var(--size);
                 clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
             }
-
-            &--circle,
-            &--square,
-            &--triangle,
-            &--hexagon {
-                position: absolute;
-                top: 100%;
-
-                background: var(--shape-color);
-                filter: brightness(var(--min-brightness));
-
-                animation-name: glasium-shape;
-                animation-timing-function: linear;
-                animation-iteration-count: infinite;
-                animation-direction: alternate;
-                opacity: 0.97;
-                z-index: 0;
-                pointer-events: none;
-            }
         }
     }
 
     &__content {
         background: transparent;
-        border: none;
 
         z-index: 1;
     }
 
-    &[glasium="blue"] {
-        .glasium__background {
-            background: #44aadd;
+    .glasium__background {
+        background-color: var(--background-color);
 
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #44aadd;
-                }
+        &__shape {
+
+            &--circle,
+            &--triangle,
+            &--square,
+            &--hexagon {
+                background-color: var(--shape-color);
             }
-        }
-    }
-
-    &[glasium="grey"] {
-        .glasium__background {
-            background: #485e74;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #485e74;
-                }
-            }
-        }
-    }
-
-    &[glasium="green"] {
-        .glasium__background {
-            background: #38e538;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #38e538;
-                }
-            }
-        }
-    }
-
-    &[glasium="pink"] {
-        .glasium__background {
-            background: #ff66aa;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #ff66aa;
-                }
-            }
-        }
-    }
-
-    &[glasium="red"] {
-        .glasium__background {
-            background: #fb3852;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: hsl(352, 85%, 50%);
-                }
-            }
-        }
-    }
-
-    &[glasium="darkred"] {
-        color: white;
-
-        .glasium__background {
-            background: #c52339;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: hsl(352, 85%, 30%);
-                }
-            }
-        }
-    }
-
-    &[glasium="orange"] {
-        .glasium__background {
-            background: #ffa502;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #ffa502;
-                }
-            }
-        }
-    }
-
-    &[glasium="navyblue"] {
-        .glasium__background {
-            background: #333d79;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #333d79;
-                }
-            }
-        }
-    }
-
-    &[glasium="whitesmoke"] {
-        color: black;
-
-        .glasium__background {
-            background: #f6f6f6;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #f6f6f6;
-                }
-            }
-        }
-    }
-
-    &[glasium="lightblue"] {
-        .glasium__background {
-            background: #b9e8fd;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #b9e8fd;
-                }
-            }
-        }
-    }
-
-    &[glasium="dark"] {
-        .glasium__background {
-            background: #1e1e1e;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #242424;
-                }
-            }
-        }
-    }
-
-    &[glasium="yellow"] {
-        .glasium__background {
-            background: #ffc414;
-
-            &__shape {
-                &--circle,
-                &--triangle,
-                &--square,
-                &--hexagon {
-                    --shape-color: #fccc3de6;
-                }
-            }
-        }
-    }
-
-    &[glasium="custom"] {
-        .glasium__background {
-            background: var(--background-color);
         }
     }
 
     &[data-disabled],
     &[disabled] {
         filter: brightness(0.8);
+    }
+}
+
+@keyframes glasium-shape {
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(calc(var(--moving-size) * -1)) rotate(var(--rotation));
     }
 }

@@ -35,14 +35,14 @@ tooltip-container {
         opacity: 1;
         padding: var(--padding, 10px 15px);
 
-        > tooltip-content {
+        >tooltip-content {
             transform: scale(1);
 
             animation: gelatine 200ms ease-out;
         }
     }
 
-    > tooltip-content {
+    >tooltip-content {
         max-width: max(250px, 25vw);
         max-height: max(250px, 30vh);
 
@@ -56,5 +56,15 @@ tooltip-container {
         transition: all 200ms ease-out;
 
         transform: scale(0);
+    }
+}
+
+@keyframes tooltip-blink {
+    0% {
+        background-color: rgba(92, 92, 92, 0.4);
+    }
+
+    100% {
+        background-color: rgba(10, 10, 10, 0.4);
     }
 }

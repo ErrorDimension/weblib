@@ -12,21 +12,26 @@ type K<Type> = keyof E<Type>
 type Ev<Key> = Key | string
 type Fn<Type, Key extends K<Type>> = ((this: Type, ev: E<Type>[Key] | Event) => any) | ELoELO
 
+type PropValue = string | number | null
+
 class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends Array<Type> {
     css(
-        property: string | Record<string, string | null>,
-        val?: string | null
+        property: string | Record<string, PropValue>,
+        val?: PropValue
     ): JHTMLElement<Type> {
         this.forEach((element: Type): void => {
             if (!(element instanceof HTMLElement)) return
 
-            if (typeof property === 'string' && val !== undefined)
+            if (typeof property === 'string' && val !== undefined) {
+                val = typeof val === 'number' ? val.toString() : val
                 element.style.setProperty(modCase.camel.kebab(property), val)
+            }
 
             if (property instanceof Object)
                 for (let key in property) {
                     const prop: string = modCase.camel.kebab(key)
-                    const value: string | null = property[key]
+                    let value: PropValue = property[key]
+                    value = typeof value === 'number' ? value.toString() : value
                     element.style.setProperty(prop, value)
                 }
         })
@@ -86,7 +91,7 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
-    each(func: (index: number) => any): JHTMLElement<Type> {
+    each(func: (this: Type, index: number) => any): JHTMLElement<Type> {
         if (typeof func !== 'function') throw new Error('"jquery.each()" : "func" is not a function')
 
         this.forEach((element: Type, index: number): void => func.call(element, index))
@@ -161,12 +166,10 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 }
 
 
-type QuerySelector = null | Element | HTMLElement
-
-export function $$(query: string): QuerySelector
-export function $$(query: string, element: HTMLElement): QuerySelector
-export function $$(query: string, containerQuery: string): QuerySelector
-export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): QuerySelector {
+export function $$(query: string): null | HTMLElement
+export function $$(query: string, element: HTMLElement): null | HTMLElement
+export function $$(query: string, containerQuery: string): null | HTMLElement
+export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): null | HTMLElement {
     if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
         const container = document.querySelector(queryOrElement)
 
