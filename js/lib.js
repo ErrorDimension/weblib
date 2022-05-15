@@ -96,7 +96,7 @@ const lib = {
         format = format.replace('wd', fullWeekday().toLowerCase());
         return format;
     },
-    isOnMobile() {
+    get isMobile() {
         const toMatch = [
             /Android/i,
             /webOS/i,
@@ -276,22 +276,12 @@ export function throttle(fn, throttleTime) {
  * @returns     { Function }                        func(...args)
  */
 export function throttled(fn, throttleTime) {
-    let lastFunc = undefined;
-    let lastRan = 0;
     const context = this;
+    const t = throttle.call(context, fn, throttleTime);
+    const d = debounce.call(context, fn, throttleTime);
     return function () {
-        if (!lastRan) {
-            fn.call(context, ...arguments);
-            lastRan = Date.now();
-            return;
-        }
-        window.clearTimeout(lastFunc);
-        lastFunc = window.setTimeout(function () {
-            if ((Date.now() - lastRan) >= throttleTime) {
-                fn.call(context, ...arguments);
-                lastRan = Date.now();
-            }
-        }, throttleTime - (Date.now() - lastRan));
+        t.call(context);
+        d.call(context);
     };
 }
 /**

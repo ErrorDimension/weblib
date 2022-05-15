@@ -5,6 +5,16 @@ import magicDOM from './magic-dom'
 
 type Shape = 'triangle' | 'square' | 'hexagon' | 'all' | 'circle'
 
+interface Properties {
+    shape?: Shape,
+    color?: { background: string, shape: string },
+    brightness?: [number, number],
+    scale?: number,
+    speed?: number,
+    count?: number,
+    rotate?: boolean
+}
+
 class Glasium {
     static __isWatching: boolean = false
     static get isWatching(): boolean { return this.__isWatching }
@@ -91,14 +101,10 @@ class Glasium {
         brightness = [0.87, 1.2],
         rotate = false
     }: {
-        color: { background: string, shape: string },
-        brightness: [number, number],
-        rotate: boolean
-    } = {
-                color: { background: '#44aadd', shape: '#44aadd' },
-                brightness: [0.87, 1.2],
-                rotate: false
-            }): void {
+        color?: { background: string, shape: string },
+        brightness?: [number, number],
+        rotate?: boolean
+    } = {}): void {
         if (!container.glasiumBackground) return
 
         const background = container.glasiumBackground
@@ -123,7 +129,7 @@ class Glasium {
     }
 
 
-    static SHAPES: ['triangle', 'square', 'hexagon', 'circle', 'all'] = [
+    static SHAPES: Shape[] = [
         'triangle',
         'square',
         'hexagon',
@@ -132,18 +138,18 @@ class Glasium {
     ]
     static BRIGHTNESS: [number, number][] = [[1.15, 1.35], [0.9, 1.1], [0.87, 1.2]]
     static COLOR: Record<string, { background: string, shape: string }> = {
-        blue: { background: '#44aadd', shape: '#44aadd' },
-        red: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)' },
-        grey: { background: '#485e74', shape: '#485e74' },
-        green: { background: '#38e538', shape: '#38e538' },
-        pink: { background: '#ff66aa', shape: '#ff66aa' },
-        darkred: { background: '#c52339', shape: '#c52339' },
-        orange: { background: '#ffa502', shape: '#ffa502' },
-        navyblue: { background: '#333d79', shape: '#333d79' },
-        whitesmoke: { background: '#f6f6f6', shape: '#f6f6f6' },
-        lightblue: { background: '#b9e8fd', shape: '#b9e8fd' },
-        dark: { background: '#1e1e1e', shape: '#242424' },
-        yellow: { background: '#ffc414', shape: '#fccc3de6' }
+        BLUE: { background: '#44aadd', shape: '#44aadd' },
+        RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)' },
+        GREY: { background: '#485e74', shape: '#485e74' },
+        GREEN: { background: '#38e538', shape: '#38e538' },
+        PINK: { background: '#ff66aa', shape: '#ff66aa' },
+        DARKRED: { background: '#c52339', shape: '#c52339' },
+        ORANGE: { background: '#ffa502', shape: '#ffa502' },
+        NAVYBLUE: { background: '#333d79', shape: '#333d79' },
+        WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6' },
+        LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd' },
+        DARK: { background: '#1e1e1e', shape: '#242424' },
+        YELLOW: { background: '#ffc414', shape: '#fccc3de6' }
     }
 
     static init(container: HTMLElement & {
@@ -156,23 +162,7 @@ class Glasium {
         speed = 34,
         count = 38,
         rotate = false
-    }: {
-        shape: Shape,
-        color: { background: string, shape: string },
-        brightness: [number, number],
-        scale: number,
-        speed: number,
-        count: number,
-        rotate: boolean
-    } = {
-                shape: 'triangle',
-                color: { background: '#44aadd', shape: '#44aadd' },
-                brightness: [0.87, 1.2],
-                scale: 2,
-                speed: 34,
-                count: 38,
-                rotate: false
-            }): void {
+    }: Properties = {}): void {
         if (!this.SHAPES.includes(shape))
             throw new Error(`'Glasium.init()' : '{shape}' is not valid`)
 
@@ -219,23 +209,7 @@ class Glasium {
         speed = 34,
         count = 38,
         rotate = false
-    }: {
-        shape: Shape,
-        color: { background: string, shape: string },
-        brightness: [number, number],
-        scale: number,
-        speed: number,
-        count: number,
-        rotate: boolean
-    } = {
-            shape: 'triangle',
-            color: { background: '#44aadd', shape: '#44aadd' },
-            brightness: [0.87, 1.2],
-            scale: 2,
-            speed: 34,
-            count: 38,
-            rotate: false
-        }) {
+    }: Properties = {}) {
         const findContainer = () => {
             if (typeof queryOrContainer === 'string') {
                 const element = $$(queryOrContainer)
@@ -253,26 +227,18 @@ class Glasium {
     }
 
 
+    container: HTMLElement & { glasiumBackground?: HTMLDivElement }
+
+
     change({
         color = { background: '#44aadd', shape: '#44aadd' },
         brightness = [0.87, 1.2],
         rotate = false
     }: {
-        color: { background: string, shape: string },
-        brightness: [number, number],
-        rotate: boolean
-    } = {
-            color: { background: '#44aadd', shape: '#44aadd' },
-            brightness: [0.87, 1.2],
-            rotate: false
-        }): void {
-        Glasium.change(this.container, { color, brightness, rotate })
-    }
-
-
-    container: HTMLElement & {
-        glasiumBackground?: HTMLDivElement
-    }
+        color?: { background: string, shape: string },
+        brightness?: [number, number],
+        rotate?: boolean
+    } = {}): void { Glasium.change(this.container, { color, brightness, rotate }) }
 }
 
 

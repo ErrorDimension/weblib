@@ -117,16 +117,28 @@ class JHTMLElement extends Array {
         return this;
     }
 }
-export function $$(queryOrObj, queryOrElement) {
-    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
-        const container = document.querySelector(queryOrElement);
-        if (container !== null)
-            return container.querySelector(queryOrObj);
-        return null;
+export function $$(query, queryOrContainer) {
+    if (query === undefined)
+        throw new Error(`'jqueryy()' : 'query' is not defined`);
+    if (typeof query === 'string' && typeof queryOrContainer === 'string') {
+        const container = document.querySelector(queryOrContainer);
+        if (container === null)
+            throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`);
+        const element = container.querySelector(query);
+        if (element === null)
+            throw new Error(`'jqueryy()' : 'query' returned null`);
+        return element;
     }
-    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
-        return queryOrElement.querySelector(queryOrObj);
-    return document.querySelector(queryOrObj);
+    if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
+        const element = queryOrContainer.querySelector(query);
+        if (element === null)
+            throw new Error(`'jqueryy()' : 'query' returned null`);
+        return element;
+    }
+    const el = document.querySelector(query);
+    if (el === null)
+        throw new Error(`'jqueryy()' : 'query' returned null`);
+    return el;
 }
 export function $(queryOrObj, queryOrElement) {
     if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {

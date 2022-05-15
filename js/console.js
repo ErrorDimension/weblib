@@ -26,6 +26,8 @@ class Console {
     }
     static initialized = false;
     static get #padding() {
+        if (typeof window === 'undefined')
+            return;
         let userAgent = navigator.userAgent.toLowerCase();
         if (userAgent.match(/edg/i)) /* Edge */
             return 16;
@@ -71,7 +73,7 @@ class Console {
             style[0] += `margin-inline-start: ${this.#padding}px`;
         return { text, style };
     }
-    static log(id, ...args) {
+    static #log(id, ...args) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -81,7 +83,9 @@ class Console {
                 background: zalib.hexCodeColor('aqua'),
                 opacity: 0.85
             }),
-            new Console(window.location.pathname, {
+            new Console(typeof window !== 'undefined'
+                ? window.location.pathname
+                : '/*', {
                 background: '#f48287',
                 opacity: 0.9
             })
@@ -174,13 +178,15 @@ class Console {
             callbackContainer?.appendChild(createBtn(button.secondary.text, false, button.secondary.callback));
         container.append(errorBlock);
     }
-    static info(...args) { return this.log('info', this.infoLog, ...args); }
-    static debug(...args) { return this.log('debug', this.debugLog, ...args); }
-    static warn(...args) { return this.log('warn', this.warnLog, ...args); }
-    static crit(...args) { return this.log('crit', this.critLog, ...args); }
-    static error(...args) { return this.log('error', this.errorLog, ...args); }
-    static okay(...args) { return this.log('okay', this.okayLog, ...args); }
+    static info(...args) { return this.#log('info', this.infoLog, ...args); }
+    static debug(...args) { return this.#log('debug', this.debugLog, ...args); }
+    static warn(...args) { return this.#log('warn', this.warnLog, ...args); }
+    static crit(...args) { return this.#log('crit', this.critLog, ...args); }
+    static error(...args) { return this.#log('error', this.errorLog, ...args); }
+    static okay(...args) { return this.#log('okay', this.okayLog, ...args); }
     static init() {
+        if (typeof window === 'undefined')
+            return;
         if (this.initialized)
             return;
         this.okay(`Log started at : ${zalib.prettyTime()}`);

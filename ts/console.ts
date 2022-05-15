@@ -46,6 +46,8 @@ class Console {
 
 
     static get #padding() {
+        if (typeof window === 'undefined') return
+
         let userAgent = navigator.userAgent.toLowerCase()
 
         if (userAgent.match(/edg/i))                    /* Edge */
@@ -109,7 +111,7 @@ class Console {
     }
 
 
-    static log(id: Log, ...args: any[]) {
+    static #log(id: Log, ...args: any[]) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -119,7 +121,9 @@ class Console {
                 background: zalib.hexCodeColor('aqua'),
                 opacity: 0.85
             }),
-            new Console(window.location.pathname, {
+            new Console(typeof window !== 'undefined'
+                ? window.location.pathname
+                : '/*', {
                 background: '#f48287',
                 opacity: 0.9
             })
@@ -151,32 +155,32 @@ class Console {
     }
 
 
-    private static infoLog = new Console('info', {
+    private static infoLog: Console = new Console('info', {
         color: 'white',
         background: 'rgb(196, 24, 196)',
         opacity: 0.95
     })
-    private static debugLog = new Console('debug', {
+    private static debugLog: Console = new Console('debug', {
         color: 'white',
         background: zalib.hexCodeColor('gray'),
         opacity: 0.55
     })
-    private static okayLog = new Console('okay', {
+    private static okayLog: Console = new Console('okay', {
         color: 'white',
         background: 'rgb(16, 186, 16)',
         opacity: 0.85
     })
-    private static warnLog = new Console('warn', {
+    private static warnLog: Console = new Console('warn', {
         color: 'white',
         background: '#ffc400',
         opacity: 0.8
     })
-    private static errorLog = new Console('error', {
+    private static errorLog: Console = new Console('error', {
         color: 'white',
         background: '#c40000',
         opacity: 0.9
     })
-    private static critLog = new Console('crit', {
+    private static critLog: Console = new Console('crit', {
         color: 'white',
         background: '#2b2a2a',
         opacity: 1
@@ -253,13 +257,14 @@ class Console {
     }
 
 
-    static info(...args: any[]) { return this.log('info', this.infoLog, ...args) }
-    static debug(...args: any[]) { return this.log('debug', this.debugLog, ...args) }
-    static warn(...args: any[]) { return this.log('warn', this.warnLog, ...args) }
-    static crit(...args: any[]) { return this.log('crit', this.critLog, ...args) }
-    static error(...args: any[]) { return this.log('error', this.errorLog, ...args) }
-    static okay(...args: any[]) { return this.log('okay', this.okayLog, ...args) }
-    static init() {
+    static info(...args: any[]) { return this.#log('info', this.infoLog, ...args) }
+    static debug(...args: any[]) { return this.#log('debug', this.debugLog, ...args) }
+    static warn(...args: any[]) { return this.#log('warn', this.warnLog, ...args) }
+    static crit(...args: any[]) { return this.#log('crit', this.critLog, ...args) }
+    static error(...args: any[]) { return this.#log('error', this.errorLog, ...args) }
+    static okay(...args: any[]) { return this.#log('okay', this.okayLog, ...args) }
+    static init(): void {
+        if (typeof window === 'undefined') return
         if (this.initialized) return
 
         this.okay(`Log started at : ${zalib.prettyTime()}`)

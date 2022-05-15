@@ -1,50 +1,16 @@
+import { $ } from './jquery'
 import Console from './console'
 import cursor from './cursor'
-import { $ } from './jquery'
 import lib, { throttled } from './lib'
 import magicDOM from './magic-dom'
 import modCase from './modcase'
 
 
-const windowIsDefined: boolean = typeof window !== 'undefined'
+const windowIsNotDefined: boolean = typeof window === 'undefined'
 
-
-windowIsDefined && customElements.define(
-    'tooltip-container',
-    class TooltipContainer extends HTMLDivElement {
-        constructor() {
-            super()
-        }
-    },
-    { extends: 'div' }
-)
-
-
-windowIsDefined && customElements.define(
-    'tooltip-content',
-    class TooltipContent extends HTMLDivElement {
-        constructor() {
-            super()
-        }
-    },
-    { extends: 'div' }
-)
-
-
-interface HandlerArguments {
-    target: HTMLElement,
-    value?: string,
-    update: (content: string | HTMLElement) => void
-}
-
-interface Hook {
-    on: 'dataset' | 'attribute',
-    key: string,
-    handler?: ({ target, value, update }: HandlerArguments) => HTMLElement | string | undefined,
-    destroy?: () => void,
-    priority?: number,
-    noPadding?: boolean
-}
+const logger: Console | undefined = windowIsNotDefined
+    ? undefined
+    : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' })
 
 const OFFSET: number = 135
 const LARGE_X_AXIS: number = 3 / 4
@@ -52,164 +18,167 @@ const LARGE_Y_AXIS: number = 77 / 100
 const MOUSE_OFFSET_X: number = 13
 const MOUSE_OFFSET_Y: number = 25
 
+const MOVE_THROTTLE: number = 55
+
+const HIDE_DURATION: number = 200
+const DEACTIVATE_DURATION: number = 300
+
+
+interface Hook {
+    on: 'attribute' | 'dataset',
+    key: string,
+    handler?({ target, value, update }: {
+        target: HTMLElement,
+        value?: string,
+        update(content: string | HTMLElement): void
+    }): undefined | string | HTMLElement,
+    follower?(): void,
+    priority?: number,
+    padding?: boolean
+}
+
+
 const tooltip: {
-    logger: Console,
-    initialized: boolean,
-    hideTimeout: number,
+    readonly initialized: boolean,
     container?: HTMLElement,
     content?: HTMLElement,
+    hideTimeoutId: number,
+    glowing: boolean,
     hooks: Hook[],
     processor: {
-        dataset: {
-            process: (target: HTMLElement, key: string) => string | undefined,
-            attach: (hook: Hook) => void
-        },
         attribute: {
-            process: (target: HTMLElement, key: string) => string | undefined,
-            attach: (hook: Hook) => void
+            process(target: HTMLElement, key: string): string | undefined,
+            attach(hook: Hook): void
         },
+        dataset: {
+            process(target: HTMLElement, key: string): string | undefined,
+            attach(hook: Hook): void
+        }
     },
     init(): void,
     scan(_?: any): void,
-    getValue(target: HTMLElement, hook: Hook): string | undefined,
-    addHook({ on, key, handler, destroy, priority, noPadding }: Hook): void,
-    attachEvent(target: HTMLElement & {
-        tooltipListened?: boolean,
-        tooltipChecked?: boolean
-    }, hook: Hook): void,
-    mouseenter(hook: Hook, target: HTMLElement): void,
-    mouseleave(hook: Hook): void,
-    show(content: HTMLElement | string): void,
+    addHook({ on, key, handler, follower, priority, padding }: Hook): void,
+    process(target: HTMLElement, { on, key }: Hook): string | undefined,
+    attach(target: HTMLElement & { tooltipAttached?: boolean }, hook: Hook): void,
+    mouseenter(target: HTMLElement, { on, key, handler, padding }: Hook): void,
+    mouseleave({ follower, padding }: Hook): void,
+    show(content: string | HTMLElement): void,
     hide(): void,
     move(_?: any): void,
-    update(content: HTMLElement | string): void,
-    glowing: boolean,
+    update(content: string | HTMLElement): void,
     glow(): void
 } = {
-    logger: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
+    get initialized(): boolean { return !!(this.container && this.content) },
 
-    initialized: false,
+    container: undefined,
+    content: undefined,
 
-    hideTimeout: -1,
+    hideTimeoutId: -1,
 
-    container: windowIsDefined ? document.createElement('tooltip-container') : undefined,
-    content: windowIsDefined ? document.createElement('tooltip-content') : undefined,
+    glowing: false,
 
     hooks: [],
 
-
     processor: {
-        dataset: {
-            process: (target: HTMLElement, key: string): string | undefined => target.dataset[key],
+        attribute: {
+            process(target: HTMLElement, key: string): string | undefined {
+                const value: null | string = target.getAttribute(key)
+                return value === null ? undefined : value
+            },
 
-            attach: (hook: Hook): void => {
-                if (!windowIsDefined) return
+            attach(hook: Hook): void {
+                if (windowIsNotDefined) return
 
-                let key: string = modCase.camel.kebab(hook.key)
-
-                $(`[data-${key}]`).each(function (): void {
-                    tooltip.attachEvent(this, hook)
-                })
+                const key: string = hook.key
+                $(`[${key}]`).each(function (): void { tooltip.attach(this, hook) })
             }
         },
 
-        attribute: {
-            process: (target: HTMLElement, key: string): string | undefined => {
-                const data: string | null = target.getAttribute(key)
-                return data === null ? undefined : data
-            },
 
-            attach: (hook: Hook): void => {
-                if (!windowIsDefined) return
+        dataset: {
+            process(target: HTMLElement, key: string): string | undefined { return target.dataset[key] },
 
-                let key: string = hook.key
+            attach(hook: Hook): void {
+                if (windowIsNotDefined) return
 
-                $(`[${key}]`).each(function () {
-                    tooltip.attachEvent(this, hook)
-                })
+                const key: string = modCase.camel.kebab(hook.key)
+                $(`[data-${key}]`).each(function (): void { tooltip.attach(this, hook) })
             }
         }
     },
 
 
     init(): void {
-        const { container, content } = this
-        if (!(container && content)) return
+        /** return if meet the conditions */
+        if (windowIsNotDefined) return
         if (this.initialized) return
-        if (lib.isMobile) return
 
 
-        /** insert tooltip to the document */
-        container.appendChild(content)
-        document.body.insertBefore(container, document.body.firstChild)
+        /** initialize tooltip's container and content */
+        class TContainer extends HTMLDivElement { constructor() { super() } }
+        class TContent extends HTMLDivElement { constructor() { super() } }
+        window.customElements.define('t-container', TContainer, { extends: 'div' })
+        window.customElements.define('t-content', TContent, { extends: 'div' })
+
+        this.container = document.createElement('t-container')
+        this.content = document.createElement('t-content')
+
+        this.container.append(this.content)
+        $(this.container).dataset({ deactivated: '' })
+        document.body.insertBefore(this.container, document.body.firstChild)
 
 
         /** observe the tooltip */
-        new ResizeObserver(this.move).observe(container)
+        new ResizeObserver(this.move).observe(this.container)
         new MutationObserver(this.scan).observe(document.body, {
             childList: true,
             subtree: true
         })
 
 
-        /** initial mouse event */
+        /** initialize move event */
         cursor.watch(true)
         this.move()
 
 
         /** limit glowing rate */
-        $(container).on('animationend', (): void => {
-            $(container).dataset('glow', null)
-            this.glowing = false
+        $(this.container).on('animationend', function (): void {
+            $(this).dataset('glow', null)
+            tooltip.glowing = false
         })
 
 
-        /** inform that the tooltip is successfully attached */
-        this.initialized = true
-        Console.okay(this.logger, 'Successfully initialized')
+        /** inform success */
+        Console.okay(logger, 'Successfully initialized')
     },
 
 
-    scan(_?: any): void {
+    scan(): void {
+        /** scan for new elements in the document and attach tooltip events onto them */
         tooltip.hooks.forEach((hook: Hook): void => tooltip.processor[hook.on].attach(hook))
     },
 
 
-    getValue(target: HTMLElement, hook: Hook): string | undefined {
-        if (!(target instanceof HTMLElement)) return undefined
-        return this.processor[hook.on].process(target, hook.key)
-    },
-
-
-    /**
-     * This function add tooltip hook into the document
-     * @param       prop                hook properties
-     * @param       prop.on             on 'dataset' or 'attribute'
-     * @param       prop.key            key to attach tooltip on
-     * @param       prop.handler        handler content
-     * @param       prop.destroy        fallback event after hide the tooltip
-     * @param       prop.priority       decide which hook is chosen to execute
-     * @param       prop.noPadding      decide whether to disable padding prop or not
-     */
     addHook({
         on,
         key,
-        handler = ({ target, value, update }: HandlerArguments): string | undefined => value,
-        destroy = (): void => { /* logic here */ },
+        handler = ({ target, value, update }: {
+            target: HTMLElement,
+            value?: string,
+            update(): void
+        }): undefined | string | HTMLElement => value,
+        follower = (): void => { /** logic here */ },
         priority = 1,
-        noPadding = false
+        padding = true
     }: Hook): void {
         if (!['attribute', 'dataset'].includes(on))
-            throw new Error(
-                `tooltip.addHook() : unexpected '{on}', expecting 'attribute' or 'dataset'`
-            )
-        if (typeof on === 'undefined')
-            throw new Error(`'tooltip.addHook()' : '{on}' is not defined`)
-        if (typeof key === 'undefined')
-            throw new Error(`'tooltip.addHook()' : '{key}' is not defined`)
+            throw new
+                Error(`'tooltip.addHook()' : unexpected '${on}', expecting 'attribute' or 'dataset'`)
 
 
-        let hook: Hook = { on, key, handler, destroy, priority, noPadding }
+        const hook: Hook = { on, key, handler, follower, priority, padding }
+
+
         this.hooks.push(hook)
         this.hooks.sort(function (a: Hook, b: Hook): 1 | -1 | 0 {
             if (!(a.priority && b.priority))
@@ -225,115 +194,104 @@ const tooltip: {
     },
 
 
-    attachEvent(target: HTMLElement & {
-        tooltipListened?: boolean,
-        tooltipChecked?: boolean
-    }, hook: Hook): void {
-        if (target.tooltipListened === true) return
-
-
-        const hooks: Hook[] = typeof hook === 'object' ? [hook] : this.hooks
-
-        for (let fncHook of hooks) {
-            if (!this.getValue(target, fncHook)) continue
-            if (target.tooltipChecked === true) break
-
-
-            /** get the key of the hook */
-            let { key } = fncHook
-            if (fncHook.on === 'dataset')
-                key = `data-${modCase.camel.kebab(key)}`
-
-
-            /** initialize the observer and the functions of the hook */
-            const observer: MutationObserver = new MutationObserver((): void => {
-                this.mouseenter(fncHook, target)
-            })
-
-            const mouseenter: () => void = (): void => {
-                this.mouseenter(fncHook, target)
-                observer.observe(target, { attributeFilter: [key] })
-            }
-
-            const mouseleave: () => void = (): void => {
-                this.mouseleave(fncHook)
-                observer.disconnect()
-            }
-
-
-            /** attach event handlers onto the target */
-            $(target)
-                .on('mouseenter', mouseenter)
-                .on('mouseleave', mouseleave)
-
-
-            target.tooltipChecked = true
-            break
-        }
-
-
-        target.tooltipListened = target.tooltipChecked
+    process(target: HTMLElement, { on, key }: Hook): string | undefined {
+        /** return the value from the target's key */
+        return this.processor[on].process(target, key)
     },
 
 
-    mouseenter(hook: Hook, target: HTMLElement): void {
+    attach(target: HTMLElement & { tooltipAttached?: boolean }, hook: Hook): void {
+        if (target.tooltipAttached) return
+        if (!this.process(target, hook)) return
+
+
+        /** key of the hook */
+        let { key } = hook
+        if (hook.on === 'dataset')
+            key = `data - ${modCase.camel.kebab(key)} `
+
+
+        /** observer */
+        const observer: MutationObserver = new MutationObserver((): void => {
+            this.mouseenter(target, hook)
+        })
+
+
+        /** attach tooltip event */
+        $(target)
+            .on('mouseenter', (): void => {
+                this.mouseenter(target, hook)
+                observer.observe(target, { attributeFilter: [key] })
+            })
+            .on('mouseleave', (): void => {
+                this.mouseleave(hook)
+                observer.disconnect()
+            })
+
+
+        /** inform that the target is having a tooltip event attached */
+        target.tooltipAttached = true
+    },
+
+
+    mouseenter(target: HTMLElement, { on, key, handler, padding }: Hook): void {
         if (!this.container) return
 
 
-        /** get value for the tooltip */
-        let value: string | undefined = this.getValue(target, hook)
-        let content: string | HTMLElement | undefined = (typeof hook.handler === 'undefined')
-            ? undefined
-            : hook.handler({
-                target,
-                value,
-                update: (data: string | HTMLElement): void => this.update(data)
-            })
+        /** content of the tooltip */
+        const value: string | undefined = this.process(target, { on, key })
+        const content: string | HTMLElement | undefined = handler ? handler({
+            target,
+            value,
+            update: (content_: string | HTMLElement): void => this.update(content_)
+        }) : undefined
 
 
-        /** handle no padding option */
-        if (hook.noPadding)
-            $(this.container).css({
-                '--padding': '0px',
-                '--padding-duration': '0ms'
-            })
+        /** handle padding option */
+        if (!padding) $(this.container).css({
+            '--padding': '0px',
+            '--padding-duration': '0ms'
+        })
 
 
-        /** show the tooltip if content is defined */
+        /** display content */
         if (content) this.show(content)
     },
 
 
-    mouseleave(hook: Hook): void {
+    mouseleave({ follower, padding }: Hook): void {
         if (!this.container) return
 
-        const { destroy } = hook
-        const { hide } = this
 
-        destroy && destroy()
-        hide()
+        follower && follower()
+        this.hide()
 
-        if (hook.noPadding)
-            $(this.container).css({
-                '--padding': null,
-                '--padding-duration': null
-            })
+
+        if (!padding) $(this.container).css({
+            '--padding': null,
+            '--padding-duration': null
+        })
     },
 
 
-    show(content: HTMLElement | string): void {
+    show(content: string | HTMLElement): void {
         if (!this.container) return
 
-        window.clearTimeout(this.hideTimeout)
+
+        window.clearInterval(this.hideTimeoutId)
+
 
         $(this.container).dataset({
             'deactivated': null,
             'activated': ''
         })
+
+
         this.update(content)
 
+
         this.move()
-        $(window).on('mousemove', this.move)
+        $(window).on('mousemove', tooltip.move)
     },
 
 
@@ -341,39 +299,40 @@ const tooltip: {
         const { container, content } = tooltip
         if (!(container && content)) return
 
-        tooltip.hideTimeout = window.setTimeout(function (): void {
+
+        tooltip.hideTimeoutId = window.setTimeout((): void => {
             $(container).dataset('activated', null)
 
-            tooltip.hideTimeout = window.setTimeout((): void => {
+            tooltip.hideTimeoutId = window.setTimeout((): void => {
                 $(container).dataset('deactivated', '')
                 $(window).off('mousemove', tooltip.move)
-                magicDOM.emptyNode(content)
-            }, 300)
-        }, 200)
+            }, DEACTIVATE_DURATION)
+        }, HIDE_DURATION)
     },
 
 
     move: throttled(function (_?: any): void {
+        if (!tooltip.container) return
+
         const { container } = tooltip
-        if (!container) return
 
 
-        let { innerWidth, innerHeight } = window
-        let { clientWidth, clientHeight } = container
-        let { positionX, positionY } = cursor
+        const { innerWidth, innerHeight } = window
+        const { clientWidth, clientHeight } = container
+        const { positionX, positionY } = cursor
 
 
-        let isMoreOuterX: boolean = innerWidth * LARGE_X_AXIS < positionX
-        let isMoreOuterY: boolean = innerHeight * LARGE_Y_AXIS < positionY
-        let isLargerThanScreenX: boolean = innerWidth - clientWidth - OFFSET < positionX
-        let isLargerThanScreenY: boolean = innerWidth - clientHeight - OFFSET < positionY
+        const isMoreOuterX: boolean = innerWidth * LARGE_X_AXIS < positionX
+        const isMoreOuterY: boolean = innerHeight * LARGE_Y_AXIS < positionY
+        const isLargerThanScreenX: boolean = innerWidth - clientWidth - OFFSET < positionX
+        const isLargerThanScreenY: boolean = innerWidth - clientHeight - OFFSET < positionY
 
 
-        let posX: number = (isMoreOuterX || isLargerThanScreenX)
+        const posX: number = (isMoreOuterX || isLargerThanScreenX)
             ? positionX - clientWidth - MOUSE_OFFSET_X
             : positionX + MOUSE_OFFSET_X
 
-        let posY: number = (isMoreOuterY || isLargerThanScreenY)
+        const posY: number = (isMoreOuterY || isLargerThanScreenY)
             ? positionY - clientHeight - MOUSE_OFFSET_Y
             : positionY + MOUSE_OFFSET_Y
 
@@ -384,30 +343,29 @@ const tooltip: {
                 '--position-y': posY
             })
         })
-    }, 55),
+    }, MOVE_THROTTLE),
 
 
-    update(content: HTMLElement | string): void {
-        if (!(content && this.content)) return
+    update(content: string | HTMLElement): void {
+        if (!this.content) return
+        if (!content) return
+
 
         this.glow()
 
-        if (content instanceof HTMLElement) {
-            this.content.appendChild(content)
-            return
-        }
 
-        this.content.innerText = content
+        magicDOM.emptyNode(this.content)
+        this.content.append(content)
     },
 
 
-    glowing: false,
     glow(): void {
         if (!this.container) return
         if (this.glowing) return
 
+
         $(this.container).dataset('glow', '')
-    },
+    }
 }
 
 
@@ -418,14 +376,17 @@ export default tooltip
 tooltip.addHook({
     on: 'attribute',
     key: 'title',
-    handler: ({ target, value }: {
+    handler({ target, value }: {
         target: HTMLElement & { tooltipTitle?: string },
         value?: string
-    }): string | undefined => {
+    }): string | undefined {
         if (target.tooltipTitle) return target.tooltipTitle
+
 
         target.tooltipTitle = value
         target.removeAttribute('title')
-        return value
+
+
+        return target.tooltipTitle
     }
 })

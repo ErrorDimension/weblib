@@ -166,23 +166,34 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 }
 
 
-export function $$(query: string): null | HTMLElement
-export function $$(query: string, element: HTMLElement): null | HTMLElement
-export function $$(query: string, containerQuery: string): null | HTMLElement
-export function $$(queryOrObj: string, queryOrElement?: HTMLElement | string): null | HTMLElement {
-    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
-        const container = document.querySelector(queryOrElement)
+export function $$(query: string): HTMLElement
+export function $$(query: string, element?: HTMLElement): HTMLElement
+export function $$(query: string, containerQuery?: string): HTMLElement
+export function $$(query: string, queryOrContainer?: string | HTMLElement): HTMLElement {
+    if (query === undefined)
+        throw new Error(`'jqueryy()' : 'query' is not defined`)
 
-        if (container !== null)
-            return container.querySelector(queryOrObj)
+    if (typeof query === 'string' && typeof queryOrContainer === 'string') {
+        const container = document.querySelector<HTMLElement>(queryOrContainer)
+        if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
 
-        return null
+        const element = container.querySelector<HTMLElement>(query)
+        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null`)
+
+        return element
     }
 
-    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
-        return queryOrElement.querySelector(queryOrObj)
+    if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
+        const element = queryOrContainer.querySelector<HTMLElement>(query)
+        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null`)
 
-    return document.querySelector(queryOrObj)
+        return element
+    }
+
+    const el = document.querySelector<HTMLElement>(query)
+    if (el === null) throw new Error(`'jqueryy()' : 'query' returned null`)
+
+    return el
 }
 
 

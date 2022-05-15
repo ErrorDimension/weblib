@@ -115,7 +115,7 @@ const lib = {
     },
 
 
-    isOnMobile(): boolean {
+    get isMobile(): boolean {
         const toMatch = [
             /Android/i,
             /webOS/i,
@@ -338,11 +338,11 @@ export const recordAnimationFrame =
  * @returns     { Function }                        func(...args)
  */
 export function throttle(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
-    let throttler = false
+    let throttler: boolean = false
 
-    const context = this
+    const context: any = this
 
-    return function () {
+    return function (): any {
         if (throttler) return
         throttler = true
 
@@ -360,25 +360,13 @@ export function throttle(this: any, fn: Function, throttleTime: number): (...arg
  * @returns     { Function }                        func(...args)
  */
 export function throttled(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
-    let lastFunc: number | undefined = undefined
-    let lastRan: number = 0
+    const context: any = this
+    const t: (...args: any[]) => any = throttle.call(context, fn, throttleTime)
+    const d: (...args: any[]) => any = debounce.call(context, fn, throttleTime)
 
-    const context = this
-
-    return function () {
-        if (!lastRan) {
-            fn.call(context, ...arguments)
-            lastRan = Date.now()
-            return
-        }
-
-        window.clearTimeout(lastFunc)
-        lastFunc = window.setTimeout(function () {
-            if ((Date.now() - lastRan) >= throttleTime) {
-                fn.call(context, ...arguments)
-                lastRan = Date.now()
-            }
-        }, throttleTime - (Date.now() - lastRan))
+    return function (): void {
+        t.call(context)
+        d.call(context)
     }
 }
 
@@ -395,9 +383,9 @@ export function debounce(this: any, fn: Function, timeout: number, firstCall: bo
     let toCall: boolean = false
     if (firstCall) toCall = true
 
-    const context = this
+    const context: any = this
 
-    return function () {
+    return function (): void {
         if (toCall) {
             toCall = false
             fn.call(context, ...arguments)

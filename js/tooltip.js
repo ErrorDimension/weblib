@@ -1,104 +1,96 @@
+import { $ } from './jquery';
 import Console from './console';
 import cursor from './cursor';
-import { $ } from './jquery';
-import lib, { throttle } from './lib';
+import lib, { throttled } from './lib';
 import magicDOM from './magic-dom';
 import modCase from './modcase';
-const windowIsDefined = typeof window !== 'undefined';
-windowIsDefined && customElements.define('tooltip-container', class HTMLTooltipContainer extends HTMLDivElement {
-    constructor() {
-        super();
-    }
-}, { extends: 'div' });
-windowIsDefined && customElements.define('tooltip-content', class HTMLTooltipContent extends HTMLDivElement {
-    constructor() {
-        super();
-    }
-}, { extends: 'div' });
+const windowIsNotDefined = typeof window === 'undefined';
+const logger = windowIsNotDefined
+    ? undefined
+    : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' });
 const OFFSET = 135;
 const LARGE_X_AXIS = 3 / 4;
 const LARGE_Y_AXIS = 77 / 100;
 const MOUSE_OFFSET_X = 13;
 const MOUSE_OFFSET_Y = 25;
+const MOVE_THROTTLE = 55;
+const HIDE_DURATION = 200;
+const DEACTIVATE_DURATION = 300;
 const tooltip = {
-    tooltipLog: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
-    initialized: false,
-    hideTimeout: -1,
-    container: windowIsDefined ? document.createElement('tooltip-container') : null,
-    content: windowIsDefined ? document.createElement('tooltip-content') : null,
+    get initialized() { return !!(this.container && this.content); },
+    container: undefined,
+    content: undefined,
+    hideTimeoutId: -1,
+    glowing: false,
     hooks: [],
     processor: {
-        dataset: {
-            process: (target, key) => target.dataset[key],
-            attach: (hook) => {
-                if (!windowIsDefined)
+        attribute: {
+            process(target, key) {
+                const value = target.getAttribute(key);
+                return value === null ? undefined : value;
+            },
+            attach(hook) {
+                if (windowIsNotDefined)
                     return;
-                let key = modCase.camel.kebab(hook.key);
-                $(`[data-${key}]`).each(function () {
-                    tooltip.attachEvent(this, hook);
-                });
+                const key = hook.key;
+                $(`[${key}]`).each(function () { tooltip.attach(this, hook); });
             }
         },
-        attribute: {
-            process: (target, key) => {
-                const data = target.getAttribute(key);
-                return data === null ? undefined : data;
-            },
-            attach: (hook) => {
-                if (!windowIsDefined)
+        dataset: {
+            process(target, key) { return target.dataset[key]; },
+            attach(hook) {
+                if (windowIsNotDefined)
                     return;
-                let key = hook.key;
-                $(`[${key}]`).each(function () {
-                    tooltip.attachEvent(this, hook);
-                });
+                const key = modCase.camel.kebab(hook.key);
+                $(`[data-${key}]`).each(function () { tooltip.attach(this, hook); });
             }
         }
     },
     init() {
-        if (this.container === null || this.content === null)
+        /** return if meet the conditions */
+        if (windowIsNotDefined)
             return;
-        if (lib.isOnMobile() || this.initialized)
+        if (this.initialized)
             return;
-        /** insert tooltip to the document */
-        this.container.appendChild(this.content);
+        /** initialize tooltip's container and content */
+        class TContainer extends HTMLDivElement {
+            constructor() { super(); }
+        }
+        class TContent extends HTMLDivElement {
+            constructor() { super(); }
+        }
+        window.customElements.define('t-container', TContainer, { extends: 'div' });
+        window.customElements.define('t-content', TContent, { extends: 'div' });
+        this.container = document.createElement('t-container');
+        this.content = document.createElement('t-content');
+        this.container.append(this.content);
+        $(this.container).dataset({ deactivated: '' });
         document.body.insertBefore(this.container, document.body.firstChild);
         /** observe the tooltip */
-        const observerOptions = { childList: true, subtree: true };
-        new ResizeObserver(this.move).observe(this.content);
-        new MutationObserver(this.scan).observe(document.body, observerOptions);
-        /** initial mouse event */
+        new ResizeObserver(this.move).observe(this.container);
+        new MutationObserver(this.scan).observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        /** initialize move event */
         cursor.watch(true);
         this.move();
-        /** inform that the tooltip is successfully attached */
-        this.initialized = true;
-        Console.okay(this.tooltipLog, 'Successfully initialized');
+        /** limit glowing rate */
+        $(this.container).on('animationend', function () {
+            $(this).dataset('glow', null);
+            tooltip.glowing = false;
+        });
+        /** inform success */
+        Console.okay(logger, 'Successfully initialized');
     },
-    scan(_) {
+    scan() {
+        /** scan for new elements in the document and attach tooltip events onto them */
         tooltip.hooks.forEach((hook) => tooltip.processor[hook.on].attach(hook));
     },
-    getValue(target, hook) {
-        if (!(target instanceof HTMLElement))
-            return undefined;
-        return this.processor[hook.on].process(target, hook.key);
-    },
-    /**
-     * This function add tooltip hook into the document
-     * @param       prop                hook properties
-     * @param       prop.on             on 'dataset' or 'attribute'
-     * @param       prop.key            key to attach tooltip on
-     * @param       prop.handler        handler content
-     * @param       prop.destroy        fallback event after hide the tooltip
-     * @param       prop.priority       decide which hook is chosen to execute
-     * @param       prop.noPadding      decide whether to disable padding prop or not
-     */
-    addHook({ on, key, handler = ({ target, value, update }) => value, destroy = () => { }, priority = 1, noPadding = false }) {
-        if (!(['attribute', 'dataset'].includes(on)))
-            throw new Error(`tooltip.addHook() : '{on}' is not a valid option : ${on}`);
-        if (typeof on === 'undefined')
-            throw new Error(`'tooltip.addHook()' : '{on}' is not defined`);
-        if (typeof key === 'undefined')
-            throw new Error(`'tooltip.addHook()' : '{key}' is not defined`);
-        let hook = { on, key, handler, destroy, priority, noPadding };
+    addHook({ on, key, handler = ({ target, value, update }) => value, follower = () => { }, priority = 1, padding = true }) {
+        if (!['attribute', 'dataset'].includes(on))
+            throw new Error(`'tooltip.addHook()' : unexpected '${on}', expecting 'attribute' or 'dataset'`);
+        const hook = { on, key, handler, follower, priority, padding };
         this.hooks.push(hook);
         this.hooks.sort(function (a, b) {
             if (!(a.priority && b.priority))
@@ -111,70 +103,62 @@ const tooltip = {
         });
         this.processor[on].attach(hook);
     },
-    attachEvent(target, hook) {
-        if (target.tooltipListened === true)
-            return;
-        const hooks = typeof hook === 'object' ? [hook] : this.hooks;
-        for (let fncHook of hooks) {
-            if (!this.getValue(target, fncHook))
-                continue;
-            if (target.tooltipChecked === true)
-                break;
-            /** get the key of the hook */
-            let { key } = fncHook;
-            if (fncHook.on === 'dataset')
-                key = `data-${modCase.camel.kebab(key)}`;
-            /** initialize the observer and the functions of the hook */
-            const observer = new MutationObserver(() => {
-                this.mouseenter(fncHook, target);
-            });
-            const mouseenter = () => {
-                this.mouseenter(fncHook, target);
-                observer.observe(target, { attributeFilter: [key] });
-            };
-            const mouseleave = () => {
-                this.mouseleave(fncHook);
-                observer.disconnect();
-            };
-            /** attach event handlers onto the target */
-            $(target)
-                .on('mouseenter', mouseenter)
-                .on('mouseleave', mouseleave);
-            target.tooltipChecked = true;
-            break;
-        }
-        target.tooltipListened = target.tooltipChecked;
+    process(target, { on, key }) {
+        /** return the value from the target's key */
+        return this.processor[on].process(target, key);
     },
-    mouseenter(hook, target) {
+    attach(target, hook) {
+        if (target.tooltipAttached)
+            return;
+        if (!this.process(target, hook))
+            return;
+        /** key of the hook */
+        let { key } = hook;
+        if (hook.on === 'dataset')
+            key = `data - ${modCase.camel.kebab(key)} `;
+        /** observer */
+        const observer = new MutationObserver(() => {
+            this.mouseenter(target, hook);
+        });
+        /** attach tooltip event */
+        $(target)
+            .on('mouseenter', () => {
+            this.mouseenter(target, hook);
+            observer.observe(target, { attributeFilter: [key] });
+        })
+            .on('mouseleave', () => {
+            this.mouseleave(hook);
+            observer.disconnect();
+        });
+        /** inform that the target is having a tooltip event attached */
+        target.tooltipAttached = true;
+    },
+    mouseenter(target, { on, key, handler, padding }) {
         if (!this.container)
             return;
-        /** get value for the tooltip */
-        let value = this.getValue(target, hook);
-        let content = (typeof hook.handler === 'undefined')
-            ? undefined
-            : hook.handler({
-                target,
-                value,
-                update: (data) => this.update(data)
-            });
-        /** handle no padding option */
-        if (hook.noPadding)
+        /** content of the tooltip */
+        const value = this.process(target, { on, key });
+        const content = handler ? handler({
+            target,
+            value,
+            update: (content_) => this.update(content_)
+        }) : undefined;
+        /** handle padding option */
+        if (!padding)
             $(this.container).css({
                 '--padding': '0px',
                 '--padding-duration': '0ms'
             });
-        /** show the tooltip if content is defined */
+        /** display content */
         if (content)
             this.show(content);
     },
-    mouseleave(hook) {
+    mouseleave({ follower, padding }) {
         if (!this.container)
             return;
-        const { destroy } = hook;
-        const { hide } = this;
-        destroy && destroy();
-        hide();
-        if (hook.noPadding)
+        follower && follower();
+        this.hide();
+        if (!padding)
             $(this.container).css({
                 '--padding': null,
                 '--padding-duration': null
@@ -183,27 +167,42 @@ const tooltip = {
     show(content) {
         if (!this.container)
             return;
-        this.container.dataset.activated = '';
+        window.clearInterval(this.hideTimeoutId);
+        $(this.container).dataset({
+            'deactivated': null,
+            'activated': ''
+        });
         this.update(content);
-        window.clearTimeout(this.hideTimeout);
         this.move();
-        $(window).on('mousemove', this.move);
+        $(window).on('mousemove', tooltip.move);
     },
-    move: throttle(function (_) {
-        const { container } = tooltip;
-        if (!container)
+    hide() {
+        const { container, content } = tooltip;
+        if (!(container && content))
             return;
-        let { innerWidth, innerHeight } = window;
-        let { clientWidth, clientHeight } = container;
-        let { positionX, positionY } = cursor;
-        let isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX;
-        let isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY;
-        let isLargerThanScreenX = innerWidth - clientWidth - OFFSET < positionX;
-        let isLargerThanScreenY = innerWidth - clientHeight - OFFSET < positionY;
-        let posX = (isMoreOuterX || isLargerThanScreenX)
+        tooltip.hideTimeoutId = window.setTimeout(() => {
+            $(container).dataset('activated', null);
+            tooltip.hideTimeoutId = window.setTimeout(() => {
+                $(container).dataset('deactivated', '');
+                $(window).off('mousemove', tooltip.move);
+            }, DEACTIVATE_DURATION);
+        }, HIDE_DURATION);
+    },
+    move: throttled(function (_) {
+        if (!tooltip.container)
+            return;
+        const { container } = tooltip;
+        const { innerWidth, innerHeight } = window;
+        const { clientWidth, clientHeight } = container;
+        const { positionX, positionY } = cursor;
+        const isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX;
+        const isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY;
+        const isLargerThanScreenX = innerWidth - clientWidth - OFFSET < positionX;
+        const isLargerThanScreenY = innerWidth - clientHeight - OFFSET < positionY;
+        const posX = (isMoreOuterX || isLargerThanScreenX)
             ? positionX - clientWidth - MOUSE_OFFSET_X
             : positionX + MOUSE_OFFSET_X;
-        let posY = (isMoreOuterY || isLargerThanScreenY)
+        const posY = (isMoreOuterY || isLargerThanScreenY)
             ? positionY - clientHeight - MOUSE_OFFSET_Y
             : positionY + MOUSE_OFFSET_Y;
         lib.cssFrame(() => {
@@ -212,45 +211,34 @@ const tooltip = {
                 '--position-y': posY
             });
         });
-    }, 55),
-    hide() {
-        function hide() {
-            if (!tooltip.container)
-                return;
-            $(tooltip.container).dataset('activated', null);
-            $(window).off('mousemove', tooltip.move);
-        }
-        tooltip.hideTimeout = window.setTimeout(hide, 200);
-    },
+    }, MOVE_THROTTLE),
     update(content) {
-        if (!(content && this.content))
+        if (!this.content)
+            return;
+        if (!content)
             return;
         this.glow();
-        if (content instanceof HTMLElement) {
-            magicDOM.emptyNode(this.content);
-            this.content.appendChild(content);
-            return;
-        }
-        this.content.innerText = content;
+        magicDOM.emptyNode(this.content);
+        this.content.append(content);
     },
-    glow: throttle(() => {
-        const { container } = tooltip;
-        if (!container)
+    glow() {
+        if (!this.container)
             return;
-        $(container).css('animation-name', 'undefined');
-        lib.cssFrame(() => { $(container).css('animation-name', null); });
-    }, 301),
+        if (this.glowing)
+            return;
+        $(this.container).dataset('glow', '');
+    }
 };
 export default tooltip;
 /** @brief default tooltip hook */
 tooltip.addHook({
     on: 'attribute',
     key: 'title',
-    handler: ({ target, value }) => {
+    handler({ target, value }) {
         if (target.tooltipTitle)
             return target.tooltipTitle;
         target.tooltipTitle = value;
         target.removeAttribute('title');
-        return value;
+        return target.tooltipTitle;
     }
 });
