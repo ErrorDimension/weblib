@@ -178,20 +178,20 @@ export function $$(query: string, queryOrContainer?: string | HTMLElement): HTML
         if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
 
         const element = container.querySelector<HTMLElement>(query)
-        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null`)
+        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (string)`)
 
         return element
     }
 
     if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
         const element = queryOrContainer.querySelector<HTMLElement>(query)
-        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null`)
+        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (html)`)
 
         return element
     }
 
     const el = document.querySelector<HTMLElement>(query)
-    if (el === null) throw new Error(`'jqueryy()' : 'query' returned null`)
+    if (el === null) throw new Error(`'jqueryy()' : 'query' returned null (o string)`)
 
     return el
 }

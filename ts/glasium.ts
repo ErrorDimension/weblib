@@ -168,15 +168,21 @@ class Glasium {
 
 
         /** check if there was a background before to re-initialize */
-        $$('.glasium__background')?.remove()
+        container.querySelector('.glasium__background')?.remove()
 
 
         /** initial class list */
-        const { classList } = container
+        const classList = [...container.classList]
         container.className = ''
         container.classList.add('glasium', ...classList)
 
         $('*', container).addClass('glasium__content')
+        new MutationObserver(() => {
+            $('*', container).addClass('glasium__content')
+        }).observe(container, {
+            childList: true,
+            subtree: true
+        })
 
 
         /** initialize background */
