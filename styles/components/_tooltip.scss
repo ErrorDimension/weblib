@@ -1,4 +1,7 @@
 tooltip-container {
+    --background-color: rgba(10, 10, 10, 0.4);
+    --background-blink-color: rgba(92, 92, 92, 0.4);
+
     position: fixed;
     inset: 0 auto auto 0;
 
@@ -13,61 +16,95 @@ tooltip-container {
 
     border-radius: 6px;
 
-    backdrop-filter: saturate(50%) blur(2px) opacity(0.5);
+    backdrop-filter: saturate(80%) blur(6px);
 
-    background-color: rgba(92, 92, 92, 0.4);
+    background-color: var(--background-color);
 
     padding: 0;
 
-    transform: translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px));
     transform-origin: center;
 
-    overflow: hidden;
+    overflow: visible;
 
     pointer-events: none;
     user-select: none;
 
-    will-change: opacity, padding, --position-x, --position-y, --padding-duration;
+    will-change: opacity, --position-x, --position-y;
 
-    transition-duration: 300ms, var(--padding-duration, 300ms);
-    transition-property: all, padding;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-in;
+    transition-duration: 450ms, 150ms;
+    transition-property: transform, opacity;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-out;
 
-    animation-name: tooltip-blink;
+    transform:
+        translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(1);
+
+    animation-name: none;
     animation-duration: 300ms;
-    animation-timing-function: ease-out;
+    animation-timing-function: linear;
     animation-fill-mode: forwards;
 
     opacity: 0;
 
     z-index: 999999;
 
+    &[data-glow] {
+        animation-name: tooltip-blink;
+    }
+
     &[data-activated] {
         opacity: 1;
-        padding: var(--padding, 10px 15px);
+
+        transition-duration: 300ms, 300ms;
+
+        >tooltip-content {
+            padding: var(--padding, 6px 9px);
+        }
+    }
+
+    &[data-deactivated] {
+        transform:
+            translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(0);
     }
 
     >tooltip-content {
-        max-width: max(250px, 25vw);
-        max-height: max(250px, 30vh);
+        display: flex;
+        flex-direction: row;
+        place-items: center;
+        place-content: center;
 
+        max-width: 25vw;
+        max-height: 30vh;
         width: fit-content;
         height: fit-content;
 
+        padding: var(--padding, 0);
+
         color: white;
 
-        font-family: "Ubuntu";
-        font-size: 16.5px;
+        font-family: var(--font-secondary);
+        font-size: 15px;
+        font-weight: normal;
+        text-align: center;
+        letter-spacing: 0.2px;
+        white-space: pre;
+
+        transition-property: padding, width, height;
+        transition-duration: var(--padding-duration, 300ms), 300ms, 300ms;
+        transition-timing-function: ease-in, cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.22, 1, 0.36, 1);
+
+        transform-origin: center;
+
+        will-change: --padding, --padding-duration;
     }
 }
 
 
 @keyframes tooltip-blink {
     0% {
-        background-color: rgba(92, 92, 92, 0.4);
+        background-color: var(--background-blink-color);
     }
 
     100% {
-        background-color: rgba(10, 10, 10, 0.4);
+        background-color: var(--background-color);
     }
 }

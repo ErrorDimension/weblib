@@ -1,7 +1,7 @@
 import Console from './console'
 import cursor from './cursor'
 import { $ } from './jquery'
-import lib, { throttle } from './lib'
+import lib, { throttled } from './lib'
 import magicDOM from './magic-dom'
 import modCase from './modcase'
 
@@ -11,7 +11,7 @@ const windowIsDefined: boolean = typeof window !== 'undefined'
 
 windowIsDefined && customElements.define(
     'tooltip-container',
-    class HTMLTooltipContainer extends HTMLDivElement {
+    class TooltipContainer extends HTMLDivElement {
         constructor() {
             super()
         }
@@ -22,7 +22,7 @@ windowIsDefined && customElements.define(
 
 windowIsDefined && customElements.define(
     'tooltip-content',
-    class HTMLTooltipContent extends HTMLDivElement {
+    class TooltipContent extends HTMLDivElement {
         constructor() {
             super()
         }
@@ -31,7 +31,7 @@ windowIsDefined && customElements.define(
 )
 
 
-interface HookHandlerArguments {
+interface HandlerArguments {
     target: HTMLElement,
     value?: string,
     update: (content: string | HTMLElement) => void
@@ -40,7 +40,7 @@ interface HookHandlerArguments {
 interface Hook {
     on: 'dataset' | 'attribute',
     key: string,
-    handler?: ({ target, value, update }: HookHandlerArguments) => HTMLElement | string | undefined,
+    handler?: ({ target, value, update }: HandlerArguments) => HTMLElement | string | undefined,
     destroy?: () => void,
     priority?: number,
     noPadding?: boolean
@@ -53,11 +53,11 @@ const MOUSE_OFFSET_X: number = 13
 const MOUSE_OFFSET_Y: number = 25
 
 const tooltip: {
-    tooltipLog: Console,
+    logger: Console,
     initialized: boolean,
     hideTimeout: number,
-    container: HTMLElement | null,
-    content: HTMLElement | null,
+    container?: HTMLElement,
+    content?: HTMLElement,
     hooks: Hook[],
     processor: {
         dataset: {
@@ -69,30 +69,31 @@ const tooltip: {
             attach: (hook: Hook) => void
         },
     },
-    init: () => void,
-    scan: (_?: any) => void,
-    getValue: (target: HTMLElement, hook: Hook) => string | undefined,
-    addHook: ({ on, key, handler, destroy, priority, noPadding }: Hook) => void,
-    attachEvent: (target: HTMLElement & {
+    init(): void,
+    scan(_?: any): void,
+    getValue(target: HTMLElement, hook: Hook): string | undefined,
+    addHook({ on, key, handler, destroy, priority, noPadding }: Hook): void,
+    attachEvent(target: HTMLElement & {
         tooltipListened?: boolean,
         tooltipChecked?: boolean
-    }, hook: Hook) => void,
-    mouseenter: (hook: Hook, target: HTMLElement) => void,
-    mouseleave: (hook: Hook) => void,
-    show: (content: HTMLElement | string) => void,
-    move: (_?: any) => void,
-    hide: () => void,
-    update: (content: HTMLElement | string) => void,
-    glow: () => void
+    }, hook: Hook): void,
+    mouseenter(hook: Hook, target: HTMLElement): void,
+    mouseleave(hook: Hook): void,
+    show(content: HTMLElement | string): void,
+    hide(): void,
+    move(_?: any): void,
+    update(content: HTMLElement | string): void,
+    glowing: boolean,
+    glow(): void
 } = {
-    tooltipLog: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
+    logger: new Console('zatooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
 
     initialized: false,
 
     hideTimeout: -1,
 
-    container: windowIsDefined ? document.createElement('tooltip-container') : null,
-    content: windowIsDefined ? document.createElement('tooltip-content') : null,
+    container: windowIsDefined ? document.createElement('tooltip-container') : undefined,
+    content: windowIsDefined ? document.createElement('tooltip-content') : undefined,
 
     hooks: [],
 
@@ -132,19 +133,23 @@ const tooltip: {
 
 
     init(): void {
-        if (this.container === null || this.content === null) return
-        if (lib.isOnMobile() || this.initialized) return
+        const { container, content } = this
+        if (!(container && content)) return
+        if (this.initialized) return
+        if (lib.isMobile) return
 
 
         /** insert tooltip to the document */
-        this.container.appendChild(this.content)
-        document.body.insertBefore(this.container, document.body.firstChild)
+        container.appendChild(content)
+        document.body.insertBefore(container, document.body.firstChild)
 
 
         /** observe the tooltip */
-        const observerOptions: { childList: boolean, subtree: boolean } = { childList: true, subtree: true }
-        new ResizeObserver(this.move).observe(this.content)
-        new MutationObserver(this.scan).observe(document.body, observerOptions)
+        new ResizeObserver(this.move).observe(container)
+        new MutationObserver(this.scan).observe(document.body, {
+            childList: true,
+            subtree: true
+        })
 
 
         /** initial mouse event */
@@ -152,9 +157,16 @@ const tooltip: {
         this.move()
 
 
+        /** limit glowing rate */
+        $(container).on('animationend', (): void => {
+            $(container).dataset('glow', null)
+            this.glowing = false
+        })
+
+
         /** inform that the tooltip is successfully attached */
         this.initialized = true
-        Console.okay(this.tooltipLog, 'Successfully initialized')
+        Console.okay(this.logger, 'Successfully initialized')
     },
 
 
@@ -182,13 +194,15 @@ const tooltip: {
     addHook({
         on,
         key,
-        handler = ({ target, value, update }: HookHandlerArguments): string | undefined => value,
+        handler = ({ target, value, update }: HandlerArguments): string | undefined => value,
         destroy = (): void => { /* logic here */ },
         priority = 1,
         noPadding = false
     }: Hook): void {
-        if (!(['attribute', 'dataset'].includes(on)))
-            throw new Error(`tooltip.addHook() : '{on}' is not a valid option : ${on}`)
+        if (!['attribute', 'dataset'].includes(on))
+            throw new Error(
+                `tooltip.addHook() : unexpected '{on}', expecting 'attribute' or 'dataset'`
+            )
         if (typeof on === 'undefined')
             throw new Error(`'tooltip.addHook()' : '{on}' is not defined`)
         if (typeof key === 'undefined')
@@ -310,17 +324,36 @@ const tooltip: {
     show(content: HTMLElement | string): void {
         if (!this.container) return
 
-        this.container.dataset.activated = ''
-        this.update(content)
-
         window.clearTimeout(this.hideTimeout)
+
+        $(this.container).dataset({
+            'deactivated': null,
+            'activated': ''
+        })
+        this.update(content)
 
         this.move()
         $(window).on('mousemove', this.move)
     },
 
 
-    move: throttle(function (_?: any): void {
+    hide(): void {
+        const { container, content } = tooltip
+        if (!(container && content)) return
+
+        tooltip.hideTimeout = window.setTimeout(function (): void {
+            $(container).dataset('activated', null)
+
+            tooltip.hideTimeout = window.setTimeout((): void => {
+                $(container).dataset('deactivated', '')
+                $(window).off('mousemove', tooltip.move)
+                magicDOM.emptyNode(content)
+            }, 300)
+        }, 200)
+    },
+
+
+    move: throttled(function (_?: any): void {
         const { container } = tooltip
         if (!container) return
 
@@ -354,27 +387,13 @@ const tooltip: {
     }, 55),
 
 
-    hide(): void {
-        function hide(): void {
-            if (!tooltip.container) return
-
-            $(tooltip.container).dataset('activated', null)
-            $(window).off('mousemove', tooltip.move)
-        }
-
-        tooltip.hideTimeout = window.setTimeout(hide, 200)
-    },
-
-
     update(content: HTMLElement | string): void {
         if (!(content && this.content)) return
 
         this.glow()
 
         if (content instanceof HTMLElement) {
-            magicDOM.emptyNode(this.content)
             this.content.appendChild(content)
-
             return
         }
 
@@ -382,13 +401,13 @@ const tooltip: {
     },
 
 
-    glow: throttle((): void => {
-        const { container } = tooltip
-        if (!container) return
+    glowing: false,
+    glow(): void {
+        if (!this.container) return
+        if (this.glowing) return
 
-        $(container).css('animation-name', 'undefined')
-        lib.cssFrame((): void => { $(container).css('animation-name', null) })
-    }, 301),
+        $(this.container).dataset('glow', '')
+    },
 }
 
 
