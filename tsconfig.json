@@ -1,22 +1,31 @@
 {
     "compilerOptions": {
-        "baseUrl": "./ts",
-        "paths": {},
+        "outDir": "js",
+        // Watch
+        "watch": true,
+        // Libraries
         "lib": [
             "dom",
             "es7",
             "dom.iterable"
         ],
+        // Options
+        "allowJs": false,
+        "alwaysStrict": true,
         "strict": true,
-        "target": "es2022",
-        "watch": true,
-        "outDir": "./js",
+        // Module
+        "allowSyntheticDefaultImports": true,
+        "module": "es2020",
         "moduleResolution": "node",
-        "module": "es2020"
+        "target": "es2022",
+        // Declaration
+        "declaration": true,
+        "declarationMap": true
     },
+    "include": [
+        "ts"
+    ],
     "exclude": [
-        "_build",
-        "dist",
-        "node_modules"
+        "node_modules",
     ]
 }

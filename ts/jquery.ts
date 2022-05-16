@@ -12,12 +12,13 @@ type K<Type> = keyof E<Type>
 type Ev<Key> = Key | string
 type Fn<Type, Key extends K<Type>> = ((this: Type, ev: E<Type>[Key] | Event) => any) | ELoELO
 
-type PropValue = string | number | null
 
 class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends Array<Type> {
+    css(property: string, value: string | number | null): JHTMLElement<Type>
+    css(record: Record<string, string | number | null>): JHTMLElement<Type>
     css(
-        property: string | Record<string, PropValue>,
-        val?: PropValue
+        property: string | Record<string, string | number | null>,
+        val?: string | number | null
     ): JHTMLElement<Type> {
         this.forEach((element: Type): void => {
             if (!(element instanceof HTMLElement)) return
@@ -30,7 +31,7 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
             if (property instanceof Object)
                 for (let key in property) {
                     const prop: string = modCase.camel.kebab(key)
-                    let value: PropValue = property[key]
+                    let value: string | number | null = property[key]
                     value = typeof value === 'number' ? value.toString() : value
                     element.style.setProperty(prop, value)
                 }
@@ -40,6 +41,8 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
+    attr(name: string, value: string): JHTMLElement<Type>
+    attr(record: Record<string, string | null>): JHTMLElement<Type>
     attr(
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
@@ -65,6 +68,8 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
+    dataset(name: string, value: string | null): JHTMLElement<Type>
+    dataset(record: Record<string, string | null>): JHTMLElement<Type>
     dataset(
         nameOrProps: string | Record<string, string | null>,
         val?: string | null
@@ -99,14 +104,18 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
-    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
-    on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
-    * add an event listener onto a list of elements
-    * @param        { Event }                   event           event type
-    * @param        { Function }                listener        callback listener
-    * @param        { Boolean | object }        option          options
-    */
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       option              options
+     */
+    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
+    /**
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       option              options
+     */
+    on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     on<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
@@ -117,14 +126,18 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
-    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
-    off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     /**
-    * remove an event listener that attached to a list of elements
-    * @param        { Event }                   event           event type
-    * @param        { Function }                listener        callback listener
-    * @param        { Boolean | object }        option          options
-    */
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       option              options
+     */
+    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
+    /**
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       option              options
+     */
+    off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
     off<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
         if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
         if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
@@ -166,32 +179,36 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 }
 
 
-export function $$(query: string): HTMLElement
-export function $$(query: string, element?: HTMLElement): HTMLElement
-export function $$(query: string, containerQuery?: string): HTMLElement
-export function $$(query: string, queryOrContainer?: string | HTMLElement): HTMLElement {
+export function $$<T extends HTMLElement>(query: string): T
+export function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T
+export function $$<T extends HTMLElement>(query: string, containerQuery?: string): T
+export function $$<T extends HTMLElement>(query: string, queryOrContainer?: string | HTMLElement): T {
     if (query === undefined)
         throw new Error(`'jqueryy()' : 'query' is not defined`)
 
+
     if (typeof query === 'string' && typeof queryOrContainer === 'string') {
-        const container = document.querySelector<HTMLElement>(queryOrContainer)
+        const container = document.querySelector<T>(queryOrContainer)
         if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
 
-        const element = container.querySelector<HTMLElement>(query)
+        const element = container.querySelector<T>(query)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (string)`)
 
         return element
     }
 
+
     if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
-        const element = queryOrContainer.querySelector<HTMLElement>(query)
+        const element = queryOrContainer.querySelector<T>(query)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (html)`)
 
         return element
     }
 
-    const el = document.querySelector<HTMLElement>(query)
+
+    const el = document.querySelector<T>(query)
     if (el === null) throw new Error(`'jqueryy()' : 'query' returned null (o string)`)
+
 
     return el
 }
@@ -199,14 +216,13 @@ export function $$(query: string, queryOrContainer?: string | HTMLElement): HTML
 
 type JSelection = string | NodeList | HTMLElement | Window | Document
 
-export function $(d: Document): JHTMLElement<Document>
-export function $(w: Window): JHTMLElement<Window>
-export function $(query: string, containerQuery: string): JHTMLElement<HTMLElement>
-export function $(query: string, element: HTMLElement): JHTMLElement<HTMLElement>
-export function $(query: string): JHTMLElement<HTMLElement>
-export function $(elements: NodeList): JHTMLElement<HTMLElement>
-export function $<HTMLElementType extends HTMLElement>
-    (element: HTMLElementType): JHTMLElement<HTMLElementType>
+export function $(doc: Document): JHTMLElement<Document>
+export function $(win: Window): JHTMLElement<Window>
+export function $<T extends HTMLElement>(query: string, containerQuery: string): JHTMLElement<T>
+export function $<T extends HTMLElement>(query: string, element: HTMLElement): JHTMLElement<T>
+export function $<T extends HTMLElement>(query: string): JHTMLElement<T>
+export function $<T extends HTMLElement>(elements: NodeList): JHTMLElement<T>
+export function $<T extends HTMLElement>(element: T): JHTMLElement<T>
 export function $(queryOrObj: JSelection, queryOrElement?: HTMLElement | string)
     : JHTMLElement<Node | HTMLElement | Window | Document> {
     if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
@@ -217,17 +233,22 @@ export function $(queryOrObj: JSelection, queryOrElement?: HTMLElement | string)
         return new JHTMLElement(...elements)
     }
 
+
     if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
         return new JHTMLElement(...queryOrElement.querySelectorAll<HTMLElement>(queryOrObj))
+
 
     if (typeof queryOrObj === 'string')
         return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrObj))
 
+
     if (queryOrObj instanceof NodeList)
         return new JHTMLElement(...queryOrObj)
 
+
     if (queryOrObj instanceof HTMLElement)
         return new JHTMLElement(queryOrObj)
+
 
     return new JHTMLElement<Window | Document>(queryOrObj)
 }

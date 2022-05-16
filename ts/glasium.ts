@@ -160,7 +160,7 @@ class Glasium {
         brightness = [0.87, 1.2],
         scale = 2,
         speed = 34,
-        count = 38,
+        count = 19,
         rotate = false
     }: Properties = {}): void {
         if (!this.SHAPES.includes(shape))

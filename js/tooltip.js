@@ -4,8 +4,7 @@ import cursor from './cursor';
 import lib, { throttled } from './lib';
 import magicDOM from './magic-dom';
 import modCase from './modcase';
-const windowIsNotDefined = typeof window === 'undefined';
-const logger = windowIsNotDefined
+const logger = typeof window === 'undefined'
     ? undefined
     : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' });
 const OFFSET = 135;
@@ -30,7 +29,7 @@ const tooltip = {
                 return value === null ? undefined : value;
             },
             attach(hook) {
-                if (windowIsNotDefined)
+                if (typeof window === 'undefined')
                     return;
                 const key = hook.key;
                 $(`[${key}]`).each(function () { tooltip.attach(this, hook); });
@@ -39,7 +38,7 @@ const tooltip = {
         dataset: {
             process(target, key) { return target.dataset[key]; },
             attach(hook) {
-                if (windowIsNotDefined)
+                if (typeof window === 'undefined')
                     return;
                 const key = modCase.camel.kebab(hook.key);
                 $(`[data-${key}]`).each(function () { tooltip.attach(this, hook); });
@@ -48,7 +47,7 @@ const tooltip = {
     },
     init() {
         /** return if meet the conditions */
-        if (windowIsNotDefined)
+        if (typeof window === 'undefined')
             return;
         if (this.initialized)
             return;

@@ -199,10 +199,12 @@ const magicDOM = {
             return this;
         }
     },
-    toHTMLElement(html) {
+    toHTMLElement(htmlString) {
         const template = document.createElement("template");
-        template.innerHTML = html.trim();
+        template.innerHTML = htmlString.trim();
         const fin = template.content.firstChild;
+        if (fin === null)
+            throw new Error(`'magicDOM.toHTMLElement()' : can't`);
         template.remove();
         return fin;
     },

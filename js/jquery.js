@@ -64,12 +64,6 @@ class JHTMLElement extends Array {
         this.forEach((element, index) => func.call(element, index));
         return this;
     }
-    /**
-    * add an event listener onto a list of elements
-    * @param        { Event }                   event           event type
-    * @param        { Function }                listener        callback listener
-    * @param        { Boolean | object }        option          options
-    */
     on(event, listener, option) {
         if (typeof event !== 'string')
             throw new Error(`'JQuery.on() : 'event' is not valid`);
@@ -78,12 +72,6 @@ class JHTMLElement extends Array {
         this.forEach((element) => element.addEventListener(event, listener, option));
         return this;
     }
-    /**
-    * remove an event listener that attached to a list of elements
-    * @param        { Event }                   event           event type
-    * @param        { Function }                listener        callback listener
-    * @param        { Boolean | object }        option          options
-    */
     off(event, listener, option) {
         if (typeof event !== 'string')
             throw new Error(`'JQuery.on() : 'event' is not valid`);
@@ -126,18 +114,18 @@ export function $$(query, queryOrContainer) {
             throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`);
         const element = container.querySelector(query);
         if (element === null)
-            throw new Error(`'jqueryy()' : 'query' returned null`);
+            throw new Error(`'jqueryy()' : 'query' returned null (string)`);
         return element;
     }
     if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
         const element = queryOrContainer.querySelector(query);
         if (element === null)
-            throw new Error(`'jqueryy()' : 'query' returned null`);
+            throw new Error(`'jqueryy()' : 'query' returned null (html)`);
         return element;
     }
     const el = document.querySelector(query);
     if (el === null)
-        throw new Error(`'jqueryy()' : 'query' returned null`);
+        throw new Error(`'jqueryy()' : 'query' returned null (o string)`);
     return el;
 }
 export function $(queryOrObj, queryOrElement) {

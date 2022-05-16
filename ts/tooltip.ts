@@ -6,9 +6,7 @@ import magicDOM from './magic-dom'
 import modCase from './modcase'
 
 
-const windowIsNotDefined: boolean = typeof window === 'undefined'
-
-const logger: Console | undefined = windowIsNotDefined
+const logger: Console | undefined = typeof window === 'undefined'
     ? undefined
     : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' })
 
@@ -57,6 +55,15 @@ const tooltip: {
     },
     init(): void,
     scan(_?: any): void,
+    /**
+     * @param       hook                
+     * @param       hook.on             'attribute' or 'dataset'
+     * @param       hook.key            hook's key
+     * @param       hook.handler        return content for the tooltip
+     * @param       hook.follower       event to fired after mouseleave
+     * @param       hook.priority       ensure hook's priority
+     * @param       hook.padding        decide to render padding or not
+     */
     addHook({ on, key, handler, follower, priority, padding }: Hook): void,
     process(target: HTMLElement, { on, key }: Hook): string | undefined,
     attach(target: HTMLElement & { tooltipAttached?: boolean }, hook: Hook): void,
@@ -87,7 +94,7 @@ const tooltip: {
             },
 
             attach(hook: Hook): void {
-                if (windowIsNotDefined) return
+                if (typeof window === 'undefined') return
 
                 const key: string = hook.key
                 $(`[${key}]`).each(function (): void { tooltip.attach(this, hook) })
@@ -99,7 +106,7 @@ const tooltip: {
             process(target: HTMLElement, key: string): string | undefined { return target.dataset[key] },
 
             attach(hook: Hook): void {
-                if (windowIsNotDefined) return
+                if (typeof window === 'undefined') return
 
                 const key: string = modCase.camel.kebab(hook.key)
                 $(`[data-${key}]`).each(function (): void { tooltip.attach(this, hook) })
@@ -110,7 +117,7 @@ const tooltip: {
 
     init(): void {
         /** return if meet the conditions */
-        if (windowIsNotDefined) return
+        if (typeof window === 'undefined') return
         if (this.initialized) return
 
 

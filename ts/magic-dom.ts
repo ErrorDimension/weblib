@@ -314,14 +314,16 @@ const magicDOM = {
     },
 
 
-    toHTMLElement(html: string): ChildNode | null {
+    toHTMLElement(htmlString: string): HTMLElement {
         const template: HTMLTemplateElement = document.createElement("template")
-        template.innerHTML = html.trim()
+        template.innerHTML = htmlString.trim()
 
         const fin: ChildNode | null = template.content.firstChild
+        if (fin === null)
+            throw new Error(`'magicDOM.toHTMLElement()' : can't`)
         template.remove()
 
-        return fin
+        return fin as HTMLElement
     },
 
 
