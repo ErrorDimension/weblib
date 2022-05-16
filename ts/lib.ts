@@ -116,6 +116,8 @@ const lib = {
 
 
     get isMobile(): boolean {
+        if (typeof window === 'undefined') return false
+
         const toMatch = [
             /Android/i,
             /webOS/i,

@@ -47,6 +47,8 @@ const tooltip = {
     },
     init() {
         /** return if meet the conditions */
+        if (lib.isMobile)
+            return;
         if (typeof window === 'undefined')
             return;
         if (this.initialized)
