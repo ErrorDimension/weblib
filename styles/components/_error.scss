@@ -91,7 +91,7 @@
 }
 
 body {
-    --error-btn-bg: hsl(229, 55%, 54%, 90%);
+    --error-btn-bg: #44aadd;
 }
 
 body>.error,
@@ -104,10 +104,6 @@ body[theme="dark"],
 body[data-theme="dark"],
 body.dark {
     --error-color: white;
-
-    .error__button--secondary {
-        background-color: rgb(24, 24, 24);
-    }
 }
 
 @media (hover: hover) {
