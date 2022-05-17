@@ -68,7 +68,7 @@ const magicDOM = {
         tag: K,
         classList?: string | string[],
         attribute?: Record<string, string | number>,
-        children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode>
+        children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode | HTMLElement>
     ): HTMLElementTagNameMap[K] & {
         [key: string]: HTMLElement
     } {
@@ -94,7 +94,14 @@ const magicDOM = {
         }
 
         for (let key in children) {
-            const child: DOMTreeNode = children[key]
+            const child: DOMTreeNode | HTMLElement = children[key]
+
+            if (child instanceof HTMLElement) {
+                container.append(child)
+                Object.assign(container, { [key]: child })
+                continue
+            }
+
             const tag_: keyof HTMLElementTagNameMap = child.tag ? child.tag : 'div'
             const classList_: string | string[] | undefined = child.classList
             const attribute_: Record<string, string | number> | undefined = child.attribute

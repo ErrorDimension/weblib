@@ -2,6 +2,7 @@ import StopClock from './stopclock'
 import magicDOM from './magic-dom'
 import zalib from './lib'
 import { $, $$ } from './jquery'
+import Glasium from './glasium'
 
 
 const starterSC = new StopClock()
@@ -241,6 +242,9 @@ class Console {
             })
 
             btn.onclick = callback
+            primary && Glasium.init(btn, {
+                color: Glasium.COLOR.BLUE
+            })
 
             return btn
         }

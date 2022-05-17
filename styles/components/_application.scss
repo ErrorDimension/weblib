@@ -151,7 +151,7 @@
         transition: width 0.3s ease, all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
 
-    &__tip {
+    &__tooltip {
         position: absolute;
         top: 100%;
 
@@ -172,7 +172,7 @@
             pointer-events: none;
         }
 
-        &__des {
+        &__description {
             font-family: var(--font-secondary);
             font-size: 14px;
             font-weight: 500;
@@ -200,7 +200,7 @@
         }
     }
 
-    &--has-tip {
+    &--has-tooltip {
         box-shadow: 0 40px 100px 30px var(--nav-hover-shadow, rgba(255, 255, 255, 90%));
     }
 }

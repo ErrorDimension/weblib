@@ -115,6 +115,16 @@ const lib = {
     },
 
 
+    urlExists(url: string): boolean {
+        var http = new XMLHttpRequest()
+        http.open('HEAD', url, false)
+        http.send()
+        if (http.status != 404 && http.status != 500)
+            return true
+        return false
+    },
+
+
     get isMobile(): boolean {
         if (typeof window === 'undefined') return false
 

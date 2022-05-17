@@ -20,7 +20,7 @@ declare const magicDOM: {
         attribute?: Record<string, string | number> | undefined;
         children?: string | HTMLElement | HTMLElement[] | undefined;
     }): HTMLElementTagNameMap[K];
-    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[] | undefined, attribute?: Record<string, string | number> | undefined, children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode> | undefined): HTMLElementTagNameMap[K_1] & {
+    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[] | undefined, attribute?: Record<string, string | number> | undefined, children?: string | HTMLElement | HTMLElement[] | Record<string, HTMLElement | DOMTreeNode> | undefined): HTMLElementTagNameMap[K_1] & {
         [key: string]: HTMLElement;
     };
     /**
@@ -44,20 +44,20 @@ declare const magicDOM: {
                 right?: HTMLDivElement;
             };
             input: HTMLInputElement;
-            "__#1@#left": HTMLDivElement;
-            "__#1@#thumb": HTMLDivElement;
-            "__#1@#right": HTMLDivElement;
-            "__#1@#inputHandlers": ((value: string, event: Event) => void)[];
-            "__#1@#changeHandlers": ((value: string, event: Event) => void)[];
-            "__#1@#removeDragState"(): void;
-            "__#1@#handleInputEvent"(event: Event): void;
-            "__#1@#handleChangeEvent"(event: Event): void;
-            "__#1@#min": number;
-            "__#1@#max": number;
-            "__#1@#comfortablePct": number;
-            "__#1@#slideTick": number;
-            "__#1@#reRender"(): void;
-            "__#1@#__usingTooltip": boolean;
+            "__#56814@#left": HTMLDivElement;
+            "__#56814@#thumb": HTMLDivElement;
+            "__#56814@#right": HTMLDivElement;
+            "__#56814@#inputHandlers": ((value: string, event: Event) => void)[];
+            "__#56814@#changeHandlers": ((value: string, event: Event) => void)[];
+            "__#56814@#removeDragState"(): void;
+            "__#56814@#handleInputEvent"(event: Event): void;
+            "__#56814@#handleChangeEvent"(event: Event): void;
+            "__#56814@#min": number;
+            "__#56814@#max": number;
+            "__#56814@#comfortablePct": number;
+            "__#56814@#slideTick": number;
+            "__#56814@#reRender"(): void;
+            "__#56814@#__usingTooltip": boolean;
             readonly usingTooltip: boolean;
             tooltip(decorationCallback?: (value: string) => string): this;
         };

@@ -56,6 +56,11 @@ const magicDOM = {
         }
         for (let key in children) {
             const child = children[key];
+            if (child instanceof HTMLElement) {
+                container.append(child);
+                Object.assign(container, { [key]: child });
+                continue;
+            }
             const tag_ = child.tag ? child.tag : 'div';
             const classList_ = child.classList;
             const attribute_ = child.attribute;

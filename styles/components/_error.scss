@@ -54,6 +54,7 @@
         width: 18em;
 
         .error__button {
+
             &--primary,
             &--secondary {
                 flex-grow: 1;
@@ -97,9 +98,9 @@ body {
     --error-btn-bg: hsl(229, 55%, 54%, 90%);
 }
 
-body > .error,
-body > * > .error,
-body > * > * > .error {
+body>.error,
+body>*>.error,
+body>*>*>.error {
     font-size: clamp(0.9em, calc(1vw + 1vh), 23px);
 }
 

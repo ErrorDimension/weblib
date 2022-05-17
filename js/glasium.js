@@ -89,19 +89,19 @@ class Glasium {
     static init(container, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd' }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 19, rotate = false } = {}) {
         if (!this.SHAPES.includes(shape))
             throw new Error(`'Glasium.init()' : '{shape}' is not valid`);
-        /** check if there was a background before to re-initialize */
-        container.querySelector('.glasium__background')?.remove();
         /** initial class list */
         const classList = [...container.classList];
         container.className = '';
         container.classList.add('glasium', ...classList);
         $('*', container).addClass('glasium__content');
         new MutationObserver(() => {
-            $('*', container).addClass('glasium__content');
+            $('*:not(.glasium__background)', container).addClass('glasium__content');
         }).observe(container, {
             childList: true,
             subtree: true
         });
+        /** check if there was a background before to re-initialize */
+        container.querySelector('.glasium__background')?.remove();
         /** initialize background */
         const background = magicDOM.createElement('div');
         $(background).css({

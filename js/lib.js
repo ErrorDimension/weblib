@@ -96,6 +96,14 @@ const lib = {
         format = format.replace('wd', fullWeekday().toLowerCase());
         return format;
     },
+    urlExists(url) {
+        var http = new XMLHttpRequest();
+        http.open('HEAD', url, false);
+        http.send();
+        if (http.status != 404 && http.status != 500)
+            return true;
+        return false;
+    },
     get isMobile() {
         if (typeof window === 'undefined')
             return false;

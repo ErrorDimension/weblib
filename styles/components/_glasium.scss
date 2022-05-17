@@ -103,3 +103,20 @@
         transform: translateY(calc(var(--moving-size) * -1)) rotate(var(--rotation));
     }
 }
+
+
+// custom elements
+button.glasium {
+    border-radius: 6px;
+
+    &:active {
+        filter: brightness(122%);
+    }
+}
+
+
+@media (hover: hover) {
+    button.glasium:hover {
+        filter: brightness(115%);
+    }
+}

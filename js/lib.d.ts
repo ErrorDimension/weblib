@@ -35,6 +35,7 @@ declare const lib: {
         time?: Date | undefined;
         format?: string | undefined;
     }): string;
+    urlExists(url: string): boolean;
     readonly isMobile: boolean;
     /**
      * Return a rounded number with a specified number of decimal places

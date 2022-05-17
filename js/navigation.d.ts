@@ -2,6 +2,10 @@ interface Tooltip {
     title?: string;
     description?: string;
     flip?: boolean;
+    container?: HTMLElement & {
+        t?: HTMLElement;
+        d?: HTMLElement;
+    };
     set({ title, description, flip }: {
         title?: string;
         description?: string;
@@ -12,7 +16,16 @@ interface Tooltip {
 }
 declare const navigation: {
     initialized: boolean;
-    container?: HTMLElement;
+    container?: HTMLElement & {
+        left?: HTMLElement;
+        right?: HTMLElement;
+        indicator?: HTMLElement;
+        tooltip?: HTMLElement & {
+            t?: HTMLElement;
+            d?: HTMLElement;
+        };
+        underlay?: HTMLElement;
+    };
     block: {
         left?: HTMLElement & {
             logo?: HTMLElement;
@@ -22,15 +35,17 @@ declare const navigation: {
     };
     readonly havingContent: boolean;
     init(query: string): void;
-    route(record?: Record<string, {
-        icon?: string;
-        title?: string;
-        description?: string;
-    }>): void;
-    logo({ title, src }: {
-        title?: string;
-        src?: string;
-    }): void;
+    component: {
+        logo({ title, src }: {
+            title?: string;
+            src?: string;
+        }): void;
+        route(record?: Record<string, {
+            icon?: string;
+            title?: string;
+            description?: string;
+        }>): void;
+    };
     Tooltip: {
         new (target: HTMLElement): Tooltip;
         prototype: Tooltip;

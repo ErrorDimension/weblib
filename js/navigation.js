@@ -10,7 +10,9 @@ const navigation = {
         right: undefined
     },
     get havingContent() {
-        return $$('.nav__underlay').classList.contains('.nav__underlay--active');
+        if (!(this.container && this.container.underlay))
+            return false;
+        return this.container.underlay.classList.contains('.nav__underlay--active');
     },
     init(query) {
         if (typeof window === 'undefined')
@@ -36,95 +38,90 @@ const navigation = {
             route: { classList: 'nav__component', attribute: { id: 'nav-route' } }
         });
         this.block.right = magicDOM.createTree('div', 'nav--right', {}, {});
-        this.container = magicDOM.createTree('nav', 'nav', { id: 'navigation' }, [
-            this.block.left,
-            this.block.right,
-            magicDOM.toHTMLElement('<div class="nav__indicator"></div>'),
-            magicDOM.toHTMLElement(`
-            <div class="nav__tip">
-                <div class="nav__tip__title"></div>
-                <div class="nav__tip__des"></div>
-            </div>
-            `),
-            magicDOM.toHTMLElement('<div class="nav__underlay"></div>'),
-        ]);
+        this.container = magicDOM.createTree('nav', 'nav', { id: 'navigation' }, {
+            left: this.block.left,
+            right: this.block.right,
+            indicator: magicDOM.toHTMLElement('<div class="nav__indicator"></div>'),
+            tooltip: magicDOM.createTree('div', 'nav__tooltip', {}, {
+                t: { classList: 'nav__tooltip__title' },
+                d: { classList: 'nav__tooltip__description' }
+            })
+        });
         $$(query).insertBefore(this.container, $$(query).firstChild);
         /** prevent second run */
         this.initialized = true;
     },
-    /** @brief navigation own components */
-    route(record = {}) {
-        if (typeof window === 'undefined')
-            return;
-        /** route initializing */
-        const route = $$('#nav-route');
-        /** current route */
-        let current;
-        $('a[name]')
-            .each(function () {
-            if (this.dataset.icon === 'done')
-                return;
-            /** get properties */
-            const key = this.getAttribute('name'); // because the query said it all
-            /** primary */
-            let { icon, title, description } = record[key] ? record[key] : {
-                icon: 'home',
-                title: this.getAttribute('href')?.substring(1),
-                description: ''
-            };
-            /** alternative */
-            icon = icon ? icon : 'home';
-            title = title ? title : this.getAttribute('href')?.substring(1);
-            description = description ? description : '';
-            /** icon on the anchor component */
-            this.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
-            /** tooltip on the anchor component */
-            new navigation.Tooltip(this).set({ title, description });
-            /** append */
-            route.appendChild(this);
-        })
-            .on('click', function () {
-            /** remove the previous current route */
-            current.classList.remove('nav__link--active');
-            /** initialize current route */
-            current = this;
-            current.classList.add('nav__link--active');
-            /** rerender the nav indicator */
-            indicate();
-        })
-            .addClass('nav__link')
-            .dataset('icon', 'done');
-        /** initializing current route */
-        current = $$(`.nav__link[href = '${window.location.pathname}']`);
-        current.classList.add('nav__link--active');
-        /** nav indicator render function */
-        function indicate() {
-            const { left, width } = current.getBoundingClientRect();
-            $('.nav__indicator').css({
-                left: `${left}px`,
-                width: `${width}px`
-            });
-        }
-        /** starting */
-        setTimeout(indicate, 1000);
-        /** background and background mutation */
-        const background = new Glasium(route, {
-            color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
-        });
-        new MutationObserver(() => {
-            background.change({
+    component: {
+        logo({ title = 'logo', src = 'favicon.png' } = {}) {
+            $$('.nav__logo__icon').src = src;
+            $$('.nav__logo__title').innerText = title;
+        },
+        route(record = {}) {
+            /** route initializing */
+            const route = $$('#nav-route');
+            $('a[name]')
+                .each(function () {
+                if (this.dataset.icon === 'done')
+                    return;
+                /** get properties */
+                const key = this.getAttribute('name'); // because the query said it all
+                /** primary */
+                let { icon, title, description } = record[key] ? record[key] : {
+                    icon: 'home',
+                    title: this.getAttribute('href')?.substring(1),
+                    description: ''
+                };
+                /** icon on the anchor component */
+                this.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
+                /** tooltip on the anchor component */
+                new navigation.Tooltip(this).set({ title, description });
+                /** append */
+                route.appendChild(this);
+            })
+                .on('click', function () {
+                if (!lib.urlExists(window.location.pathname))
+                    window.location.pathname = this.href.split('/').pop();
+                /** remove active class from previous navigation */
+                $('.nav__link--active').removeClass('.nav__link--active');
+                /** rerender the nav indicator */
+                indicate(this);
+            }, { passive: true })
+                .addClass('nav__link')
+                .dataset('icon', 'done');
+            /** nav indicator render function */
+            function indicate(current) {
+                if (!current)
+                    return;
+                const { left, width } = current.getBoundingClientRect();
+                /** active this navigation */
+                $(current).addClass('nav__link--active');
+                $('.nav__indicator').css({
+                    left: `${left}px`,
+                    width: `${width}px`
+                });
+            }
+            /** starting */
+            setTimeout(indicate, 1000, document
+                .querySelector(`.nav__link[href="${window.location.pathname}"]`));
+            /** background and background mutation */
+            Glasium.init(route, {
                 color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
             });
-        }).observe(document.body, { attributeFilter: ['data-theme'] });
+            new MutationObserver(() => {
+                Glasium.change(route, {
+                    color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
+                });
+            }).observe(document.body, { attributeFilter: ['data-theme'] });
+        },
     },
-    logo({ title = 'logo', src = 'favicon.png' } = {}) {
-        $$('.nav__logo__icon').src = src;
-        $$('.nav__logo__title').innerText = title;
-    },
-    /** @brief nav component */
     Tooltip: class {
         constructor(target) {
             if (lib.isMobile)
+                return;
+            if (!navigation.container)
+                return;
+            this.container = navigation.container.tooltip;
+            if (!this.container)
                 return;
             $(target)
                 .on('mouseenter', (event) => this.show(event))
@@ -134,6 +131,7 @@ const navigation = {
         title = '';
         description = '';
         flip = false;
+        container = undefined;
         set({ title = '', description = '', flip = false } = {}) {
             this.title = title !== '' ? title : this.title;
             this.description = description !== '' ? description : this.description;
@@ -142,23 +140,28 @@ const navigation = {
         show({ target }) {
             if (navigation.havingContent)
                 return;
+            if (!(this.container && this.container.t && this.container.d))
+                return;
             if (this.title === '' || typeof this.title === 'undefined')
                 return;
             const { innerWidth } = window;
             const { left, right } = target.getBoundingClientRect();
-            $$('.nav__tip__title').innerHTML = this.title;
-            $$('.nav__tip__des').innerHTML = this.description ? this.description : '';
-            $('.nav__tip').css({
+            const { width } = this.container.getBoundingClientRect();
+            this.container.t.innerText = this.title;
+            this.container.d.innerText = this.description ? this.description : '';
+            $(this.container).css({
                 left: this.flip ? null : `${left}px`,
                 right: this.flip ? `${innerWidth - right}px` : null,
-                textAlign: this.flip ? 'right' : 'left'
+                textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
             });
-            $('.nav__tip').addClass('nav__tip--active');
-            $('.nav').addClass('nav--has-tip');
+            $(this.container).addClass('nav__tooltip--active');
+            $(navigation.container).addClass('nav--has-tooltip');
         }
         hide() {
-            $('.nav__tip').removeClass('nav__tip--active');
-            $('.nav').removeClass('nav--has-tip');
+            if (!this.container)
+                return;
+            $(this.container).removeClass('nav__tooltip--active');
+            $(navigation.container).removeClass('nav--has-tooltip');
         }
     }
 };
