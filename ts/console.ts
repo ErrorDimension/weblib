@@ -236,7 +236,7 @@ class Console {
             primary: boolean,
             callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null
         ) => {
-            const btn = magicDOM.createElement('div', {
+            const btn = magicDOM.createElement('button', {
                 classList: `error__button--${primary ? 'primary' : 'secondary'}`,
                 children: text
             })

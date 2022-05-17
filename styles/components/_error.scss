@@ -61,34 +61,30 @@
 
                 margin: 10px;
 
-                height: 1.8em;
+                min-height: 2.4em;
 
-                font-family: var(--font-code);
+                font-family: 'consolas';
                 font-weight: bold;
-
-                text-align: center;
-                line-height: 1.8em;
-
-                border-color: var(--error-btn-bg);
-                border-radius: 6px;
-                border-style: solid;
-                border-width: 1px;
+                font-size: 0.75em;
 
                 cursor: pointer;
 
                 user-select: none;
 
                 transition: transform 200ms ease-out, filter 200ms ease-out, background-color 200ms ease-out;
+            }
+
+            &--secondary {
+                border-color: var(--error-btn-bg);
+                border-radius: 6px;
+                border-style: solid;
+                border-width: 1px;
+
+                color: var(--error-color);
 
                 &:active {
                     transform: scale(0.9);
                 }
-            }
-
-            &--primary {
-                background-color: var(--error-btn-bg);
-
-                color: white;
             }
         }
     }
@@ -108,14 +104,14 @@ body[theme="dark"],
 body[data-theme="dark"],
 body.dark {
     --error-color: white;
+
+    .error__button--secondary {
+        background-color: rgb(24, 24, 24);
+    }
 }
 
 @media (hover: hover) {
     .error__button {
-        &--primary:hover {
-            filter: brightness(115%);
-        }
-
         &--secondary:hover {
             background-color: hsl(229, 55%, 70%, 0.15);
         }

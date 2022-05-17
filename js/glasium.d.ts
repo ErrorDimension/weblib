@@ -4,6 +4,7 @@ interface Properties {
     color?: {
         background: string;
         shape: string;
+        invertContrast: boolean;
     };
     brightness?: [number, number];
     scale?: number;
@@ -31,6 +32,7 @@ declare class Glasium {
     static COLOR: Record<string, {
         background: string;
         shape: string;
+        invertContrast: boolean;
     }>;
     static init(container: HTMLElement & {
         glasiumBackground?: HTMLDivElement;

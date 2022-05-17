@@ -7,7 +7,7 @@ type Shape = 'triangle' | 'square' | 'hexagon' | 'all' | 'circle'
 
 interface Properties {
     shape?: Shape,
-    color?: { background: string, shape: string },
+    color?: { background: string, shape: string, invertContrast: boolean },
     brightness?: [number, number],
     scale?: number,
     speed?: number,
@@ -137,26 +137,26 @@ class Glasium {
         'all'
     ]
     static BRIGHTNESS: [number, number][] = [[1.15, 1.35], [0.9, 1.1], [0.87, 1.2]]
-    static COLOR: Record<string, { background: string, shape: string }> = {
-        BLUE: { background: '#44aadd', shape: '#44aadd' },
-        RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)' },
-        GREY: { background: '#485e74', shape: '#485e74' },
-        GREEN: { background: '#38e538', shape: '#38e538' },
-        PINK: { background: '#ff66aa', shape: '#ff66aa' },
-        DARKRED: { background: '#c52339', shape: '#c52339' },
-        ORANGE: { background: '#ffa502', shape: '#ffa502' },
-        NAVYBLUE: { background: '#333d79', shape: '#333d79' },
-        WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6' },
-        LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd' },
-        DARK: { background: '#1e1e1e', shape: '#242424' },
-        YELLOW: { background: '#ffc414', shape: '#fccc3de6' }
+    static COLOR: Record<string, { background: string, shape: string, invertContrast: boolean }> = {
+        BLUE: { background: '#44aadd', shape: '#44aadd', invertContrast: false },
+        RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)', invertContrast: false },
+        GREY: { background: '#485e74', shape: '#485e74', invertContrast: false },
+        GREEN: { background: '#38e538', shape: '#38e538', invertContrast: false },
+        PINK: { background: '#ff66aa', shape: '#ff66aa', invertContrast: false },
+        DARKRED: { background: '#c52339', shape: '#c52339', invertContrast: false },
+        ORANGE: { background: '#ffa502', shape: '#ffa502', invertContrast: false },
+        NAVYBLUE: { background: '#333d79', shape: '#333d79', invertContrast: false },
+        WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6', invertContrast: true },
+        LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd', invertContrast: true },
+        DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
+        YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
     }
 
     static init(container: HTMLElement & {
         glasiumBackground?: HTMLDivElement
     }, {
         shape = 'triangle',
-        color = { background: '#44aadd', shape: '#44aadd' },
+        color = { background: '#44aadd', shape: '#44aadd', invertContrast: false },
         brightness = [0.87, 1.2],
         scale = 2,
         speed = 34,
@@ -194,6 +194,8 @@ class Glasium {
             '--rotation': rotate ? '360deg' : '0deg'
         }).addClass('glasium__background')
 
+        $(container).css('--color', color.invertContrast ? 'black' : 'white')
+
         this.#fillBackground(background, { scale, speed, count, shape, brightness })
 
         container.insertBefore(background, container.firstChild)
@@ -209,7 +211,7 @@ class Glasium {
 
     constructor(queryOrContainer: string | HTMLElement, {
         shape = 'triangle',
-        color = { background: '#44aadd', shape: '#44aadd' },
+        color = { background: '#44aadd', shape: '#44aadd', invertContrast: false },
         brightness = [0.87, 1.2],
         scale = 2,
         speed = 34,

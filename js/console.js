@@ -165,7 +165,7 @@ class Console {
             c: { classList: 'error__callback' }
         });
         const createBtn = (text, primary, callback) => {
-            const btn = magicDOM.createElement('div', {
+            const btn = magicDOM.createElement('button', {
                 classList: `error__button--${primary ? 'primary' : 'secondary'}`,
                 children: text
             });
