@@ -86,7 +86,7 @@ class Glasium {
         DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
         YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
     };
-    static init(container, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd', invertContrast: false }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 19, rotate = false } = {}) {
+    static init(container, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd', invertContrast: false }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 9, rotate = false } = {}) {
         if (!this.SHAPES.includes(shape))
             throw new Error(`'Glasium.init()' : '{shape}' is not valid`);
         /** initial class list */

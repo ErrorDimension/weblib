@@ -1,72 +1,78 @@
-t-container {
-    --background-color: rgba(10, 10, 10, 0.4);
-    --background-blink-color: rgba(92, 92, 92, 0.4);
+t {
+    &-container {
+        --background-color: rgba(10, 10, 10, 0.4);
+        --background-blink-color: rgba(92, 92, 92, 0.4);
 
-    position: fixed;
-    inset: 0 auto auto 0;
+        position: fixed;
+        inset: 0 auto auto 0;
 
-    display: inline-block;
-    place-items: center;
-    place-content: center;
+        display: inline-block;
+        place-items: center;
+        place-content: center;
 
-    letter-spacing: 0.2px;
-    text-align: center;
-    white-space: pre-line;
-    word-wrap: break-word;
+        letter-spacing: 0.2px;
+        text-align: center;
+        white-space: pre-line;
+        word-wrap: break-word;
 
-    border-radius: 6px;
+        border-radius: 6px;
 
-    backdrop-filter: saturate(80%) blur(6px);
+        backdrop-filter: saturate(80%) blur(6px);
 
-    background-color: var(--background-color);
+        background-color: var(--background-color);
 
-    padding: 0;
+        padding: 0;
 
-    transform-origin: center;
+        transform-origin: center;
 
-    overflow: visible;
+        overflow: visible;
 
-    pointer-events: none;
-    user-select: none;
+        pointer-events: none;
+        user-select: none;
 
-    will-change: opacity, --position-x, --position-y;
+        will-change: opacity, --position-x, --position-y;
 
-    transition-duration: 450ms, 150ms;
-    transition-property: transform, opacity;
-    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-out;
+        transition-duration: 450ms, 150ms;
+        transition-property: transform, opacity;
+        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-out;
 
-    transform:
-        translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(1);
+        transform:
+            translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(1);
 
-    animation-name: none;
-    animation-duration: 300ms;
-    animation-timing-function: linear;
-    animation-fill-mode: forwards;
+        animation-name: none;
+        animation-duration: 300ms;
+        animation-timing-function: linear;
+        animation-fill-mode: forwards;
 
-    opacity: 0;
+        opacity: 0;
 
-    z-index: 999999;
+        z-index: 999999;
 
-    &[data-glow] {
-        animation-name: tooltip-blink;
-    }
 
-    &[data-activated] {
-        opacity: 1;
+        &[data-glow] {
+            animation-name: tooltip-blink;
+        }
 
-        transition-duration: 300ms, 300ms;
 
-        >t-content {
-            padding: var(--padding, 6px 9px);
+        &[data-activated] {
+            opacity: 1;
+
+            transition-duration: 300ms, 300ms;
+
+            >t-content {
+                padding: var(--padding, 6px 9px);
+            }
+        }
+
+
+        &[data-deactivated] {
+            transform:
+                translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(0);
         }
     }
 
-    &[data-deactivated] {
-        transform:
-            translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(0);
-    }
 
-    >t-content {
+    &-content {
         display: flex;
         flex-direction: row;
         place-items: center;
@@ -92,7 +98,10 @@ t-container {
 
         transition-property: padding, width, height;
         transition-duration: var(--padding-duration, 300ms), 300ms, 300ms;
-        transition-timing-function: ease-in, cubic-bezier(0.22, 1, 0.36, 1), cubic-bezier(0.22, 1, 0.36, 1);
+        transition-timing-function:
+            ease-in,
+            cubic-bezier(0.22, 1, 0.36, 1),
+            cubic-bezier(0.22, 1, 0.36, 1);
 
         transform-origin: center;
 

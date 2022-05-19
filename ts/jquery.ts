@@ -188,10 +188,10 @@ export function $$<T extends HTMLElement>(query: string, queryOrContainer?: stri
 
 
     if (typeof query === 'string' && typeof queryOrContainer === 'string') {
-        const container = document.querySelector<T>(queryOrContainer)
+        const container: T | null = document.querySelector<T>(queryOrContainer)
         if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
 
-        const element = container.querySelector<T>(query)
+        const element: T | null = container.querySelector<T>(query)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (string)`)
 
         return element
@@ -199,14 +199,14 @@ export function $$<T extends HTMLElement>(query: string, queryOrContainer?: stri
 
 
     if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
-        const element = queryOrContainer.querySelector<T>(query)
+        const element: T | null = queryOrContainer.querySelector<T>(query)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (html)`)
 
         return element
     }
 
 
-    const el = document.querySelector<T>(query)
+    const el: T | null = document.querySelector<T>(query)
     if (el === null) throw new Error(`'jqueryy()' : 'query' returned null (o string)`)
 
 

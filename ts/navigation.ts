@@ -1,216 +1,326 @@
-import { $, $$ } from './jquery'
 import Glasium from './glasium'
+import { $, $$ } from './jquery'
 import lib from './lib'
 import magicDOM from './magic-dom'
 
 
-interface Tooltip {
-    title?: string
-    description?: string
-    flip?: boolean
-    container?: HTMLElement & {
-        t?: HTMLElement,
-        d?: HTMLElement
-    }
-    set({ title, description, flip }: {
-        title?: string,
-        description?: string,
-        flip?: boolean
-    }): void
-    show(event: MouseEvent): void
-    hide(): void
+interface Component {
+    container: HTMLElement,
+    tooltip: Tooltip,
+    clicker: Clicker
 }
 
 
 const navigation: {
     initialized: boolean,
-    container?: HTMLElement & {
-        left?: HTMLElement,
-        right?: HTMLElement,
-        indicator?: HTMLElement,
-        tooltip?: HTMLElement & {
-            t?: HTMLElement,
-            d?: HTMLElement
-        },
-        underlay?: HTMLElement
-    },
+    container?: HTMLElement,
+    navbar?: HTMLElement,
     block: {
-        left?: HTMLElement & {
-            logo?: HTMLElement,
-            route?: HTMLElement
-        },
+        left?: HTMLElement,
         right?: HTMLElement
     },
-    readonly havingContent: boolean,
-    init(query: string): void,
+    tooltip?: HTMLElement & {
+        t?: HTMLElement,
+        d?: HTMLElement
+    },
+    underlay?: HTMLElement
+    init(containerQuery: string, contentQuery: string): void,
+    insert(component: {
+        container: HTMLElement,
+        [key: string]: any
+    }, location: 'left' | 'right', order?: number): void,
+    setUnderlay(activate?: boolean): void,
     component: {
-        logo({ title, src }: { title?: string, src?: string }): void,
-        route(record?: Record<string, { icon?: string, title?: string, description?: string }>): void,
+        logo({ icon, title }: { icon?: string, title?: string }): Component,
+        route(record: Record<string, {
+            href: string, icon?: string, tooltip?: {
+                title?: string,
+                description?: string
+            }
+        }>): void,
+        hamburger(func?: () => void): Component
     },
     Tooltip: {
         new(target: HTMLElement): Tooltip,
         prototype: Tooltip
+    },
+    Clicker: {
+        new(container: HTMLElement, onlyActive?: boolean): Clicker,
+        prototype: Clicker,
     }
 } = {
     initialized: false,
 
     container: undefined,
 
+    navbar: undefined,
+
     block: {
         left: undefined,
         right: undefined
     },
 
-    get havingContent(): boolean {
-        if (!(this.container && this.container.underlay)) return false
-        return this.container.underlay.classList.contains('.nav__underlay--active')
+    tooltip: undefined,
+
+    underlay: undefined,
+
+
+    init(containerQuery: string, contentQuery: string): void {
+        if (this.initialized) return
+        this.initialized = true
+
+
+        /** get container */
+        const container: HTMLElement = $$(containerQuery)
+        this.container = $$(contentQuery)
+
+
+        /** stylesheet */
+        const style: HTMLStyleElement = document.createElement('style')
+
+        style.textContent = `
+        ${containerQuery} {
+            position: absolute;
+            inset: 0;
+            
+            display: flex;
+            flex-direction: column;
+
+            place-items: center;
+
+            width: 100%;
+            height: calc(100% - var(--nav-height));
+
+            margin-block-start: var(--nav-height);
+        }
+
+        ${contentQuery} {
+            width: 100%;
+            height: 100%;
+        }
+        `
+
+        container.appendChild(style)
+
+
+        /** initialize nav component */
+        this.block.left = magicDOM.createElement('div', { classList: 'nav--left' })
+        this.block.right = magicDOM.createElement('div', { classList: 'nav--right' })
+
+        this.tooltip = magicDOM.createTree('div', 'nav__tooltip', {}, {
+            t: { classList: 'nav__tooltip__title' },
+            d: { classList: 'nav__tooltip__description' }
+        })
+
+        this.underlay = magicDOM.createElement('div', { classList: 'nav__underlay' })
+
+        this.navbar = magicDOM.createTree('div', 'nav', {}, {
+            left: this.block.left,
+            right: this.block.right,
+            tooltip: this.tooltip,
+            underlay: this.underlay
+        })
+
+        container.insertBefore(this.navbar, container.firstChild)
     },
 
 
-    init(query: string): void {
-        if (typeof window === 'undefined') return
-        if (this.initialized) return
+    insert(component: {
+        container: HTMLElement,
+        [key: string]: any
+    }, location: 'left' | 'right', order?: number): void {
+        if (!['left', 'right'].includes(location)) return
+        if (!this.block[location]) return
+
+        this.block[location]?.append(component.container)
+
+        if (order)
+            $(component.container).css('order', order)
+    },
 
 
-        /** initialize the navigation component */
-        this.block.left = magicDOM.createTree('div', 'nav--left', {}, {
-            logo: {
-                classList: 'nav__component', attribute: { id: 'nav-logo' }, children: {
-                    component: {
-                        classList: 'nav__logo', children: {
-                            icon: {
-                                tag: 'img', classList: 'nav__logo__icon', attribute: {
-                                    src: 'favicon.png', alt: 'logo', loading: 'lazy'
-                                }
-                            },
-                            boilerplate: { classList: 'nav__logo__title', children: 'logo' }
-                        }
-                    }
-                }
-            },
-            route: { classList: 'nav__component', attribute: { id: 'nav-route' } }
-        })
+    setUnderlay(activate: boolean = false): void {
+        if (!this.underlay) return
 
-        this.block.right = magicDOM.createTree('div', 'nav--right', {}, {
-        })
-
-        this.container = magicDOM.createTree('nav', 'nav', { id: 'navigation' }, {
-            left: this.block.left,
-            right: this.block.right,
-            indicator: magicDOM.toHTMLElement('<div class="nav__indicator"></div>'),
-            tooltip: magicDOM.createTree('div', 'nav__tooltip', {}, {
-                t: { classList: 'nav__tooltip__title' },
-                d: { classList: 'nav__tooltip__description' }
-            })
-        })
-
-        $$(query).insertBefore(this.container, $$(query).firstChild)
-
-
-        /** prevent second run */
-        this.initialized = true
+        this.underlay.classList[activate ? 'add' : 'remove']
+            ('nav__underlay--active')
     },
 
 
     component: {
-        logo({ title = 'logo', src = 'favicon.png' }: {
-            title?: string,
-            src?: string
-        } = {}): void {
-            $$<HTMLImageElement>('.nav__logo__icon').src = src
-            $$('.nav__logo__title').innerText = title
+        logo({ icon = 'favicon.png', title = 'app name' }: {
+            icon?: string,
+            title?: string
+        } = {}): Component {
+            const container: HTMLDivElement & {
+                i?: HTMLImageElement,
+                t?: HTMLDivElement
+            } = magicDOM.createTree('div', 'nav__logo', {}, {
+                i: {
+                    tag: 'img', classList: 'nav__logo__icon', attribute: {
+                        src: icon, alt: 'app logo', loading: 'lazy'
+                    }
+                },
+                t: { classList: 'nav__logo__title', children: title }
+            })
+            const tooltip: Tooltip = new navigation.Tooltip(container)
+            const clicker: Clicker = new navigation.Clicker(container, true)
+
+
+            navigation.insert({ container }, 'left', 1)
+
+
+            return {
+                container,
+                tooltip,
+                clicker
+            }
         },
 
 
         route(record: Record<string, {
-            icon?: string, title?: string, description?: string
-        }> = {}): void {
-            /** route initializing */
-            const route: HTMLElement = $$('#nav-route')
+            href: string, icon?: string, tooltip?: { title?: string, description?: string }
+        }>): void {
+            if (!navigation.navbar) return
 
-            $<HTMLAnchorElement>('a[name]')
-                .each(function (): void {
-                    if (this.dataset.icon === 'done') return
 
-                    /** get properties */
-                    const key: string = this.getAttribute('name') as string // because the query said it all
+            /** component */
+            const component: { container: HTMLElement } = {
+                container: magicDOM.createElement('div', { classList: 'nav__component' })
+            }
 
-                    /** primary */
-                    let { icon, title, description } = record[key] ? record[key] : {
-                        icon: 'home',
-                        title: this.getAttribute('href')?.substring(1),
-                        description: ''
-                    }
+            const indicator = magicDOM.createElement('div', {
+                classList: 'nav__indicator'
+            })
 
-                    /** icon on the anchor component */
-                    this.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`))
+            navigation.navbar.appendChild(indicator)
 
-                    /** tooltip on the anchor component */
-                    new navigation.Tooltip(this).set({ title, description })
 
-                    /** append */
-                    route.appendChild(this)
+            /** background for routes */
+            const isDark: () => boolean = (): boolean => document.body.dataset.theme === 'dark'
+
+            Glasium.init(component.container, {
+                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+            })
+
+            new MutationObserver((): void => Glasium.init(component.container, {
+                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+            })).observe(document.body, { attributeFilter: ['data-theme'] })
+
+
+            /** create routes */
+            for (let key in record) {
+                let { href, icon, tooltip } = record[key]
+
+                icon = icon ? icon : 'home'
+                tooltip = tooltip ? tooltip : { title: '', description: '' }
+
+
+                /** link */
+                const link: HTMLDivElement = magicDOM.createElement('div', {
+                    classList: 'nav__link',
+                    attribute: { 'data-href': href },
+                    children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
                 })
-                .on('click', function (): void {
-                    if (!lib.urlExists(window.location.pathname))
-                        window.location.pathname = this.href.split('/').pop() as string
 
-                    /** remove active class from previous navigation */
-                    $('.nav__link--active').removeClass('.nav__link--active')
-
-                    /** rerender the nav indicator */
-                    indicate(this)
-                }, { passive: true })
-                .addClass('nav__link')
-                .dataset('icon', 'done')
+                new navigation.Tooltip(link).set(tooltip)
 
 
-            /** nav indicator render function */
-            function indicate(current: HTMLElement): void {
-                if (!current) return
+                /** link's events */
+                $(link).on('click', (): void => {
+                    if (!navigation.container) return
 
-                const { left, width } = current.getBoundingClientRect()
 
-                /** active this navigation */
-                $(current).addClass('nav__link--active')
+                    /** loading state */
+                    navigation.container.append(magicDOM.toHTMLElement(
+                        '<div class="loading--cover"></div>'
+                    ))
 
-                $('.nav__indicator').css({
-                    left: `${left}px`,
-                    width: `${width}px`
+
+                    /** indicator and navigate */
+                    indicate(link).then((): string =>
+                        // the code said it
+                        window.location.pathname = link.dataset.href as string
+                    )
                 })
+
+
+                /** append link */
+                component.container.append(link)
             }
 
 
-            /** starting */
-            setTimeout(
-                indicate,
-                1000,
-                document
-                    .querySelector(`.nav__link[href="${window.location.pathname}"]`)
-            )
+            /** insert */
+            navigation.insert(component, 'left', 2)
 
 
-            /** background and background mutation */
-            Glasium.init(route, {
-                color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
+            /** indicate */
+            function indicate(current: HTMLElement): Promise<void> {
+                return new Promise<void>((resolve: (value: void | PromiseLike<void>) => void): void => {
+                    $('.nav__link--active').removeClass('nav__link--active')
+                    $(current).addClass('nav__link--active')
+
+                    const { left, width } = current.getBoundingClientRect()
+
+                    $(indicator).css({
+                        left: `${left}px`,
+                        width: `${width}px`
+                    })
+
+                    window.setTimeout((): void => resolve(), 200)
+                })
+            }
+
+            const currentLink: HTMLElement | null = document
+                .querySelector<HTMLElement>(`.nav__link[data-href="${window.location.pathname}"]`)
+
+            if (!currentLink) return
+
+            setTimeout(indicate, 200, currentLink)
+        },
+
+
+        hamburger(func: () => void = (): void => { /** empty */ }): Component {
+            const container: HTMLDivElement = magicDOM.createElement('div', {
+                classList: 'nav__hamburger', children: [
+                    magicDOM.toHTMLElement(
+                        `
+                        <div class='nav__hamburger__box'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        `
+                    )
+                ]
             })
 
-            new MutationObserver((): void => {
-                Glasium.change(route, {
-                    color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
-                })
-            }).observe(document.body, { attributeFilter: ['data-theme'] })
-        },
+            const tooltip: Tooltip = new navigation.Tooltip(container)
+            const clicker: Clicker = new navigation.Clicker(container)
+
+
+            clicker.onClick(func)
+
+
+            navigation.insert({ container }, 'right', 1)
+
+
+            return {
+                container,
+                tooltip,
+                clicker
+            }
+        }
     },
 
 
     Tooltip: class {
         constructor(target: HTMLElement) {
             if (lib.isMobile) return
-            if (!navigation.container) return
+            if (!navigation.tooltip) return
 
 
-            this.container = navigation.container.tooltip
+            this.container = navigation.tooltip
             if (!this.container) return
 
 
@@ -247,8 +357,19 @@ const navigation: {
 
 
         show({ target }: MouseEvent): void {
-            if (navigation.havingContent) return
-            if (!(this.container && this.container.t && this.container.d)) return
+            if (
+                navigation.underlay &&
+                navigation.underlay.classList.contains('nav__underlay--active')
+            ) return
+
+            if (!navigation.navbar) return
+
+            if (!(
+                this.container &&
+                this.container.t &&
+                this.container.d
+            )) return
+
             if (this.title === '' || typeof this.title === 'undefined') return
 
 
@@ -269,19 +390,119 @@ const navigation: {
 
 
             $(this.container).addClass('nav__tooltip--active')
-            $(navigation.container as HTMLElement).addClass('nav--has-tooltip')
+            $(navigation.navbar).addClass('nav--decorating')
+        }
+
+
+        hide(): void {
+            if (!navigation.navbar) return
+            if (!this.container) return
+
+
+            $(this.container).removeClass('nav__tooltip--active')
+            $(navigation.navbar).removeClass('nav--decorating')
+        }
+    },
+
+
+    Clicker: class {
+        constructor(container: HTMLElement, onlyActive: boolean = false) {
+            this.container = container
+            this.container.classList.add('nav__clicker')
+
+
+            $(this.container).on('click', (): void => {
+                if (!this.container) return
+
+
+                if (onlyActive) {
+                    for (let f of this.clickHandlers)
+                        f(true)
+
+                    this.activated = true
+                } else {
+                    let isActive: boolean = this.container.dataset.activated === ''
+
+                    for (let f of this.clickHandlers)
+                        f(!isActive)
+
+                    this.toggle(isActive)
+                }
+            })
+        }
+
+
+        container?: HTMLElement = undefined
+
+        clickHandlers: ((...args: any[]) => any)[] = []
+
+        activated: boolean = false
+
+
+        onClick(func: (...args: any[]) => any): number {
+            return this.clickHandlers.push(func)
+        }
+
+
+        offClick(index: number): void {
+            if (this.clickHandlers[index])
+                this.clickHandlers[index] = (): void => { /** none */ }
+        }
+
+
+        toggle(isActive: boolean = this.activated): void {
+            this.activated = !isActive
+
+
+            if (this.activated) this.show()
+            else this.hide()
+        }
+
+
+        show(): void {
+            if (!this.container) return
+
+            this.container.dataset.activated = ''
         }
 
 
         hide(): void {
             if (!this.container) return
 
-
-            $(this.container).removeClass('nav__tooltip--active')
-            $(navigation.container as HTMLElement).removeClass('nav--has-tooltip')
+            delete this.container.dataset.activated
         }
     }
 }
 
 
 export default navigation
+
+
+interface Tooltip {
+    title?: string
+    description?: string
+    flip?: boolean
+    container?: HTMLElement & {
+        t?: HTMLElement,
+        d?: HTMLElement
+    }
+    set({ title, description, flip }: {
+        title?: string,
+        description?: string,
+        flip?: boolean
+    }): void
+    show(event: MouseEvent): void
+    hide(): void
+}
+
+
+interface Clicker {
+    container?: HTMLElement
+    clickHandlers: ((...args: any[]) => any)[]
+    activated: boolean
+    onClick(func: (...args: any[]) => any): number
+    offClick(index: number): void
+    toggle(isActive?: boolean): void
+    show(): void
+    hide(): void
+}

@@ -1,126 +1,193 @@
-import { $, $$ } from './jquery';
 import Glasium from './glasium';
+import { $, $$ } from './jquery';
 import lib from './lib';
 import magicDOM from './magic-dom';
 const navigation = {
     initialized: false,
     container: undefined,
+    navbar: undefined,
     block: {
         left: undefined,
         right: undefined
     },
-    get havingContent() {
-        if (!(this.container && this.container.underlay))
-            return false;
-        return this.container.underlay.classList.contains('.nav__underlay--active');
-    },
-    init(query) {
-        if (typeof window === 'undefined')
-            return;
+    tooltip: undefined,
+    underlay: undefined,
+    init(containerQuery, contentQuery) {
         if (this.initialized)
             return;
-        /** initialize the navigation component */
-        this.block.left = magicDOM.createTree('div', 'nav--left', {}, {
-            logo: {
-                classList: 'nav__component', attribute: { id: 'nav-logo' }, children: {
-                    component: {
-                        classList: 'nav__logo', children: {
-                            icon: {
-                                tag: 'img', classList: 'nav__logo__icon', attribute: {
-                                    src: 'favicon.png', alt: 'logo', loading: 'lazy'
-                                }
-                            },
-                            boilerplate: { classList: 'nav__logo__title', children: 'logo' }
-                        }
-                    }
-                }
-            },
-            route: { classList: 'nav__component', attribute: { id: 'nav-route' } }
+        this.initialized = true;
+        /** get container */
+        const container = $$(containerQuery);
+        this.container = $$(contentQuery);
+        /** stylesheet */
+        const style = document.createElement('style');
+        style.textContent = `
+        ${containerQuery} {
+            position: absolute;
+            inset: 0;
+            
+            display: flex;
+            flex-direction: column;
+
+            place-items: center;
+
+            width: 100%;
+            height: calc(100% - var(--nav-height));
+
+            margin-block-start: var(--nav-height);
+        }
+
+        ${contentQuery} {
+            width: 100%;
+            height: 100%;
+        }
+        `;
+        container.appendChild(style);
+        /** initialize nav component */
+        this.block.left = magicDOM.createElement('div', { classList: 'nav--left' });
+        this.block.right = magicDOM.createElement('div', { classList: 'nav--right' });
+        this.tooltip = magicDOM.createTree('div', 'nav__tooltip', {}, {
+            t: { classList: 'nav__tooltip__title' },
+            d: { classList: 'nav__tooltip__description' }
         });
-        this.block.right = magicDOM.createTree('div', 'nav--right', {}, {});
-        this.container = magicDOM.createTree('nav', 'nav', { id: 'navigation' }, {
+        this.underlay = magicDOM.createElement('div', { classList: 'nav__underlay' });
+        this.navbar = magicDOM.createTree('div', 'nav', {}, {
             left: this.block.left,
             right: this.block.right,
-            indicator: magicDOM.toHTMLElement('<div class="nav__indicator"></div>'),
-            tooltip: magicDOM.createTree('div', 'nav__tooltip', {}, {
-                t: { classList: 'nav__tooltip__title' },
-                d: { classList: 'nav__tooltip__description' }
-            })
+            tooltip: this.tooltip,
+            underlay: this.underlay
         });
-        $$(query).insertBefore(this.container, $$(query).firstChild);
-        /** prevent second run */
-        this.initialized = true;
+        container.insertBefore(this.navbar, container.firstChild);
+    },
+    insert(component, location, order) {
+        if (!['left', 'right'].includes(location))
+            return;
+        if (!this.block[location])
+            return;
+        this.block[location]?.append(component.container);
+        if (order)
+            $(component.container).css('order', order);
+    },
+    setUnderlay(activate = false) {
+        if (!this.underlay)
+            return;
+        this.underlay.classList[activate ? 'add' : 'remove']('nav__underlay--active');
     },
     component: {
-        logo({ title = 'logo', src = 'favicon.png' } = {}) {
-            $$('.nav__logo__icon').src = src;
-            $$('.nav__logo__title').innerText = title;
+        logo({ icon = 'favicon.png', title = 'app name' } = {}) {
+            const container = magicDOM.createTree('div', 'nav__logo', {}, {
+                i: {
+                    tag: 'img', classList: 'nav__logo__icon', attribute: {
+                        src: icon, alt: 'app logo', loading: 'lazy'
+                    }
+                },
+                t: { classList: 'nav__logo__title', children: title }
+            });
+            const tooltip = new navigation.Tooltip(container);
+            const clicker = new navigation.Clicker(container, true);
+            navigation.insert({ container }, 'left', 1);
+            return {
+                container,
+                tooltip,
+                clicker
+            };
         },
-        route(record = {}) {
-            /** route initializing */
-            const route = $$('#nav-route');
-            $('a[name]')
-                .each(function () {
-                if (this.dataset.icon === 'done')
-                    return;
-                /** get properties */
-                const key = this.getAttribute('name'); // because the query said it all
-                /** primary */
-                let { icon, title, description } = record[key] ? record[key] : {
-                    icon: 'home',
-                    title: this.getAttribute('href')?.substring(1),
-                    description: ''
-                };
-                /** icon on the anchor component */
-                this.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
-                /** tooltip on the anchor component */
-                new navigation.Tooltip(this).set({ title, description });
-                /** append */
-                route.appendChild(this);
-            })
-                .on('click', function () {
-                if (!lib.urlExists(window.location.pathname))
-                    window.location.pathname = this.href.split('/').pop();
-                /** remove active class from previous navigation */
-                $('.nav__link--active').removeClass('.nav__link--active');
-                /** rerender the nav indicator */
-                indicate(this);
-            }, { passive: true })
-                .addClass('nav__link')
-                .dataset('icon', 'done');
-            /** nav indicator render function */
+        route(record) {
+            if (!navigation.navbar)
+                return;
+            /** component */
+            const component = {
+                container: magicDOM.createElement('div', { classList: 'nav__component' })
+            };
+            const indicator = magicDOM.createElement('div', {
+                classList: 'nav__indicator'
+            });
+            navigation.navbar.appendChild(indicator);
+            /** background for routes */
+            const isDark = () => document.body.dataset.theme === 'dark';
+            Glasium.init(component.container, {
+                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+            });
+            new MutationObserver(() => Glasium.init(component.container, {
+                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+            })).observe(document.body, { attributeFilter: ['data-theme'] });
+            /** create routes */
+            for (let key in record) {
+                let { href, icon, tooltip } = record[key];
+                icon = icon ? icon : 'home';
+                tooltip = tooltip ? tooltip : { title: '', description: '' };
+                /** link */
+                const link = magicDOM.createElement('div', {
+                    classList: 'nav__link',
+                    attribute: { 'data-href': href },
+                    children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
+                });
+                new navigation.Tooltip(link).set(tooltip);
+                /** link's events */
+                $(link).on('click', () => {
+                    if (!navigation.container)
+                        return;
+                    /** loading state */
+                    navigation.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'));
+                    /** indicator and navigate */
+                    indicate(link).then(() => 
+                    // the code said it
+                    window.location.pathname = link.dataset.href);
+                });
+                /** append link */
+                component.container.append(link);
+            }
+            /** insert */
+            navigation.insert(component, 'left', 2);
+            /** indicate */
             function indicate(current) {
-                if (!current)
-                    return;
-                const { left, width } = current.getBoundingClientRect();
-                /** active this navigation */
-                $(current).addClass('nav__link--active');
-                $('.nav__indicator').css({
-                    left: `${left}px`,
-                    width: `${width}px`
+                return new Promise((resolve) => {
+                    $('.nav__link--active').removeClass('nav__link--active');
+                    $(current).addClass('nav__link--active');
+                    const { left, width } = current.getBoundingClientRect();
+                    $(indicator).css({
+                        left: `${left}px`,
+                        width: `${width}px`
+                    });
+                    window.setTimeout(() => resolve(), 200);
                 });
             }
-            /** starting */
-            setTimeout(indicate, 1000, document
-                .querySelector(`.nav__link[href="${window.location.pathname}"]`));
-            /** background and background mutation */
-            Glasium.init(route, {
-                color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
-            });
-            new MutationObserver(() => {
-                Glasium.change(route, {
-                    color: Glasium.COLOR[document.body.dataset.theme === 'dark' ? 'DARK' : 'WHITESMOKE']
-                });
-            }).observe(document.body, { attributeFilter: ['data-theme'] });
+            const currentLink = document
+                .querySelector(`.nav__link[data-href="${window.location.pathname}"]`);
+            if (!currentLink)
+                return;
+            setTimeout(indicate, 200, currentLink);
         },
+        hamburger(func = () => { }) {
+            const container = magicDOM.createElement('div', {
+                classList: 'nav__hamburger', children: [
+                    magicDOM.toHTMLElement(`
+                        <div class='nav__hamburger__box'>
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                        `)
+                ]
+            });
+            const tooltip = new navigation.Tooltip(container);
+            const clicker = new navigation.Clicker(container);
+            clicker.onClick(func);
+            navigation.insert({ container }, 'right', 1);
+            return {
+                container,
+                tooltip,
+                clicker
+            };
+        }
     },
     Tooltip: class {
         constructor(target) {
             if (lib.isMobile)
                 return;
-            if (!navigation.container)
+            if (!navigation.tooltip)
                 return;
-            this.container = navigation.container.tooltip;
+            this.container = navigation.tooltip;
             if (!this.container)
                 return;
             $(target)
@@ -138,9 +205,14 @@ const navigation = {
             this.flip = flip;
         }
         show({ target }) {
-            if (navigation.havingContent)
+            if (navigation.underlay &&
+                navigation.underlay.classList.contains('nav__underlay--active'))
                 return;
-            if (!(this.container && this.container.t && this.container.d))
+            if (!navigation.navbar)
+                return;
+            if (!(this.container &&
+                this.container.t &&
+                this.container.d))
                 return;
             if (this.title === '' || typeof this.title === 'undefined')
                 return;
@@ -155,13 +227,63 @@ const navigation = {
                 textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
             });
             $(this.container).addClass('nav__tooltip--active');
-            $(navigation.container).addClass('nav--has-tooltip');
+            $(navigation.navbar).addClass('nav--decorating');
+        }
+        hide() {
+            if (!navigation.navbar)
+                return;
+            if (!this.container)
+                return;
+            $(this.container).removeClass('nav__tooltip--active');
+            $(navigation.navbar).removeClass('nav--decorating');
+        }
+    },
+    Clicker: class {
+        constructor(container, onlyActive = false) {
+            this.container = container;
+            this.container.classList.add('nav__clicker');
+            $(this.container).on('click', () => {
+                if (!this.container)
+                    return;
+                if (onlyActive) {
+                    for (let f of this.clickHandlers)
+                        f(true);
+                    this.activated = true;
+                }
+                else {
+                    let isActive = this.container.dataset.activated === '';
+                    for (let f of this.clickHandlers)
+                        f(!isActive);
+                    this.toggle(isActive);
+                }
+            });
+        }
+        container = undefined;
+        clickHandlers = [];
+        activated = false;
+        onClick(func) {
+            return this.clickHandlers.push(func);
+        }
+        offClick(index) {
+            if (this.clickHandlers[index])
+                this.clickHandlers[index] = () => { };
+        }
+        toggle(isActive = this.activated) {
+            this.activated = !isActive;
+            if (this.activated)
+                this.show();
+            else
+                this.hide();
+        }
+        show() {
+            if (!this.container)
+                return;
+            this.container.dataset.activated = '';
         }
         hide() {
             if (!this.container)
                 return;
-            $(this.container).removeClass('nav__tooltip--active');
-            $(navigation.container).removeClass('nav--has-tooltip');
+            delete this.container.dataset.activated;
         }
     }
 };

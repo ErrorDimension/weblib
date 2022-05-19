@@ -11,7 +11,9 @@
         animation: 0.75s rotate360 linear infinite;
     }
 
-    &--big {
+
+    &--big,
+    &--cover {
         position: relative;
         width: 4em;
         height: 4em;
@@ -42,6 +44,18 @@
             animation: 1s rotate360 linear infinite;
             z-index: 0;
         }
+    }
+
+
+    &--cover {
+        position: absolute;
+        inset: 0;
+
+        margin: auto;
+
+        box-shadow:
+            rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px inset,
+            rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px;
     }
 }
 
