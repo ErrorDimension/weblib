@@ -56,13 +56,23 @@ const tooltip: {
     init(): void,
     scan(_?: any): void,
     /**
-     * @param       hook                
-     * @param       hook.on             'attribute' or 'dataset'
-     * @param       hook.key            hook's key
-     * @param       hook.handler        return content for the tooltip
-     * @param       hook.follower       event to fired after mouseleave
-     * @param       hook.priority       ensure hook's priority
-     * @param       hook.padding        decide to render padding or not
+     * {@linkcode       Hook}
+     * 
+     * @param           hook                
+     * @param           hook.on             'attribute' or 'dataset'
+     * @param           hook.key            hook's key
+     * @param           hook.handler        return content for the tooltip
+     * @param           hook.follower       event to fired after mouseleave
+     * @param           hook.priority       ensure hook's priority
+     * @param           hook.padding        decide to render padding or not
+     * 
+     * @example
+     * ```typescript
+     * tooltip.addHook({
+     *  on: 'attribute',
+     *  key: 'title'
+     * })
+     * ```
      */
     addHook({ on, key, handler, follower, priority, padding }: Hook): void,
     process(target: HTMLElement, { on, key }: Hook): string | undefined,
