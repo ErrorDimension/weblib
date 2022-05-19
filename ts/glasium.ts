@@ -27,19 +27,17 @@ class Glasium {
     }
 
 
-    static async #fillBackground(container: HTMLDivElement, { scale, speed, count, shape, brightness }: {
+    static #fillBackground(container: HTMLDivElement, { scale, speed, count, shape, brightness }: {
         scale: number,
         speed: number,
         count: number,
         shape: Shape,
         brightness: [number, number]
-    }): Promise<void> {
-        speed = lib.max(count * 1.25, speed)
-
+    }): void {
         for (let i = 0; i < count; ++i) {
             let randomScale = lib.randomBetween(0.4, 2.0, false) * scale
 
-            let size = lib.clamp(140, 20 * randomScale, 235) * 1.9
+            let size = 30 * randomScale
 
             let maxBrightness = lib.max(...brightness)
             let minBrightness = lib.min(...brightness)
@@ -77,20 +75,8 @@ class Glasium {
     }
 
 
-    static #update(container: HTMLDivElement, scale: number): void {
-        let SCALE_STEP: number[] = [
-            100, 200, 300, 400, 500,
-            600, 700, 800, 900, 1000,
-            1100, 1200, 1300, 1400, 1500
-        ]
-
-        for (let step of SCALE_STEP)
-            if (step >= container.offsetHeight + 0.866 * 30 * scale) {
-                container.style.setProperty('--moving-size', `${step}px`)
-                return
-            }
-
-        container.style.setProperty('--moving-size', '1980px')
+    static #update(container: HTMLDivElement): void {
+        container.style.setProperty('--moving-size', `${container.offsetHeight}px`)
     }
 
 
@@ -152,15 +138,27 @@ class Glasium {
         YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
     }
 
+    /**
+     * glasium initialization
+     * @param       container                   
+     * @param       options                     
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness 
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
     static init(container: HTMLElement & {
         glasiumBackground?: HTMLDivElement
     }, {
         shape = 'triangle',
-        color = { background: '#44aadd', shape: '#44aadd', invertContrast: false },
-        brightness = [0.87, 1.2],
+        color = this.COLOR.BLUE,
+        brightness = this.BRIGHTNESS[2],
         scale = 2,
-        speed = 34,
-        count = 9,
+        speed = 9,
+        count = 15,
         rotate = false
     }: Properties = {}): void {
         if (!this.SHAPES.includes(shape))
@@ -203,12 +201,23 @@ class Glasium {
 
 
         /** watch container's size */
-        this.#update(background, scale)
-        new ResizeObserver((): void => this.#update(background, scale))
+        this.#update(background)
+        new ResizeObserver((): void => this.#update(background))
             .observe(container)
     }
 
 
+    /**
+     * 
+     * @param       queryOrContainer            select container
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness 
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
     constructor(queryOrContainer: string | HTMLElement, {
         shape = 'triangle',
         color = { background: '#44aadd', shape: '#44aadd', invertContrast: false },

@@ -27,6 +27,9 @@
             &--square,
             &--triangle,
             &--hexagon {
+                min-width: 80px;
+                min-height: 80px;
+
                 position: absolute;
                 top: 100%;
 
@@ -36,9 +39,9 @@
                 filter: brightness(var(--brightness));
 
                 animation-name: glasium-shape;
-                animation-timing-function: linear;
+                animation-timing-function: ease-out;
                 animation-iteration-count: infinite;
-                animation-direction: alternate;
+                animation-direction: forwards;
 
                 pointer-events: none;
 
@@ -102,7 +105,7 @@
     }
 
     100% {
-        transform: translateY(calc(var(--moving-size) * -1)) rotate(var(--rotation));
+        transform: translateY(calc((var(--moving-size) + var(--size) * 2) * -1)) rotate(var(--rotation));
     }
 }
 

@@ -34,9 +34,32 @@ declare class Glasium {
         shape: string;
         invertContrast: boolean;
     }>;
+    /**
+     * glasium initialization
+     * @param       container
+     * @param       options
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
     static init(container: HTMLElement & {
         glasiumBackground?: HTMLDivElement;
     }, { shape, color, brightness, scale, speed, count, rotate }?: Properties): void;
+    /**
+     *
+     * @param       queryOrContainer            select container
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
     constructor(queryOrContainer: string | HTMLElement, { shape, color, brightness, scale, speed, count, rotate }?: Properties);
     container: HTMLElement & {
         glasiumBackground?: HTMLDivElement;

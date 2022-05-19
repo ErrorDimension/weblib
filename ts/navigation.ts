@@ -199,12 +199,17 @@ const navigation: {
             /** background for routes */
             const isDark: () => boolean = (): boolean => document.body.dataset.theme === 'dark'
 
+            let color = () => isDark() ? 'DARK' : 'WHITESMOKE'
+            let brightness = () => isDark() ? 0 : 2
+
             Glasium.init(component.container, {
-                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+                color: Glasium.COLOR[color()],
+                brightness: Glasium.BRIGHTNESS[brightness()]
             })
 
             new MutationObserver((): void => Glasium.init(component.container, {
-                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+                color: Glasium.COLOR[color()],
+                brightness: Glasium.BRIGHTNESS[brightness()]
             })).observe(document.body, { attributeFilter: ['data-theme'] })
 
 
@@ -277,7 +282,7 @@ const navigation: {
             if (!currentLink) return
 
             setTimeout(indicate, 200, currentLink)
-        },
+        }, // todo glasium update
 
 
         hamburger(func: () => void = (): void => { /** empty */ }): Component {

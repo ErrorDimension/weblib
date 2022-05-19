@@ -10,11 +10,10 @@ class Glasium {
         this.__isWatching = true;
         $('[data-glasium]').each(function () { Glasium.init(this); });
     }
-    static async #fillBackground(container, { scale, speed, count, shape, brightness }) {
-        speed = lib.max(count * 1.25, speed);
+    static #fillBackground(container, { scale, speed, count, shape, brightness }) {
         for (let i = 0; i < count; ++i) {
             let randomScale = lib.randomBetween(0.4, 2.0, false) * scale;
-            let size = lib.clamp(140, 20 * randomScale, 235) * 1.9;
+            let size = 30 * randomScale;
             let maxBrightness = lib.max(...brightness);
             let minBrightness = lib.min(...brightness);
             let randomBrightness = lib.randomBetween(minBrightness, maxBrightness, false);
@@ -35,18 +34,8 @@ class Glasium {
             container.appendChild(filling);
         }
     }
-    static #update(container, scale) {
-        let SCALE_STEP = [
-            100, 200, 300, 400, 500,
-            600, 700, 800, 900, 1000,
-            1100, 1200, 1300, 1400, 1500
-        ];
-        for (let step of SCALE_STEP)
-            if (step >= container.offsetHeight + 0.866 * 30 * scale) {
-                container.style.setProperty('--moving-size', `${step}px`);
-                return;
-            }
-        container.style.setProperty('--moving-size', '1980px');
+    static #update(container) {
+        container.style.setProperty('--moving-size', `${container.offsetHeight}px`);
     }
     static change(container, { color = { background: '#44aadd', shape: '#44aadd' }, brightness = [0.87, 1.2], rotate = false } = {}) {
         if (!container.glasiumBackground)
@@ -86,7 +75,19 @@ class Glasium {
         DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
         YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
     };
-    static init(container, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd', invertContrast: false }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 9, rotate = false } = {}) {
+    /**
+     * glasium initialization
+     * @param       container
+     * @param       options
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
+    static init(container, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS[2], scale = 2, speed = 9, count = 15, rotate = false } = {}) {
         if (!this.SHAPES.includes(shape))
             throw new Error(`'Glasium.init()' : '{shape}' is not valid`);
         /** initial class list */
@@ -114,10 +115,21 @@ class Glasium {
         container.insertBefore(background, container.firstChild);
         container.glasiumBackground = background;
         /** watch container's size */
-        this.#update(background, scale);
-        new ResizeObserver(() => this.#update(background, scale))
+        this.#update(background);
+        new ResizeObserver(() => this.#update(background))
             .observe(container);
     }
+    /**
+     *
+     * @param       queryOrContainer            select container
+     * @param       options.shape               shape inside the background
+     * @param       options.color               color for the background
+     * @param       options.brightness          brightness
+     * @param       options.scale               scale size (bigger number is bigger size)
+     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.count               shape count
+     * @param       options.rotate              rotation
+     */
     constructor(queryOrContainer, { shape = 'triangle', color = { background: '#44aadd', shape: '#44aadd', invertContrast: false }, brightness = [0.87, 1.2], scale = 2, speed = 34, count = 38, rotate = false } = {}) {
         const findContainer = () => {
             if (typeof queryOrContainer === 'string') {

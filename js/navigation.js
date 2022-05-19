@@ -105,11 +105,15 @@ const navigation = {
             navigation.navbar.appendChild(indicator);
             /** background for routes */
             const isDark = () => document.body.dataset.theme === 'dark';
+            let color = () => isDark() ? 'DARK' : 'WHITESMOKE';
+            let brightness = () => isDark() ? 0 : 2;
             Glasium.init(component.container, {
-                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+                color: Glasium.COLOR[color()],
+                brightness: Glasium.BRIGHTNESS[brightness()]
             });
             new MutationObserver(() => Glasium.init(component.container, {
-                color: Glasium.COLOR[isDark() ? 'DARK' : 'WHITESMOKE']
+                color: Glasium.COLOR[color()],
+                brightness: Glasium.BRIGHTNESS[brightness()]
             })).observe(document.body, { attributeFilter: ['data-theme'] });
             /** create routes */
             for (let key in record) {
