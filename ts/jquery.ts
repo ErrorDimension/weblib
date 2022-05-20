@@ -104,6 +104,13 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
+    remove(): void {
+        this.forEach((element: Type): void => {
+            if (element instanceof HTMLElement) element.remove()
+        })
+    }
+
+
     /**
      * @param       event               event type 
      * @param       listener            listener function

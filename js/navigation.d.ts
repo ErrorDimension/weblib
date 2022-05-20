@@ -22,10 +22,11 @@ declare const navigation: {
         [key: string]: any;
     }, location: 'left' | 'right', order?: number): void;
     setUnderlay(activate?: boolean): void;
-    component: {
-        logo({ icon, title }: {
+    addComponent: {
+        logo({ icon, title, onlyActive }: {
             icon?: string;
             title?: string;
+            onlyActive?: boolean;
         }): Component;
         route(record: Record<string, {
             href: string;
@@ -36,6 +37,15 @@ declare const navigation: {
             };
         }>): void;
         hamburger(func?: () => void): Component;
+        button({ icon, colorName, alwaysActive, brightnessLevel, func }: {
+            icon?: string;
+            colorName?: string;
+            alwaysActive?: boolean;
+            brightnessLevel?: string;
+            func?: (...args: any[]) => any;
+        }): Component & {
+            set icon(icon: string);
+        };
     };
     Tooltip: {
         new (target: HTMLElement): Tooltip;

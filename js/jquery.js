@@ -64,6 +64,12 @@ class JHTMLElement extends Array {
         this.forEach((element, index) => func.call(element, index));
         return this;
     }
+    remove() {
+        this.forEach((element) => {
+            if (element instanceof HTMLElement)
+                element.remove();
+        });
+    }
     on(event, listener, option) {
         if (typeof event !== 'string')
             throw new Error(`'JQuery.on() : 'event' is not valid`);

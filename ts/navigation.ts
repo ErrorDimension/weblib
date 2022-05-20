@@ -30,15 +30,24 @@ const navigation: {
         [key: string]: any
     }, location: 'left' | 'right', order?: number): void,
     setUnderlay(activate?: boolean): void,
-    component: {
-        logo({ icon, title }: { icon?: string, title?: string }): Component,
+    addComponent: {
+        logo({ icon, title, onlyActive }: {
+            icon?: string, title?: string, onlyActive?: boolean
+        }): Component,
         route(record: Record<string, {
             href: string, icon?: string, tooltip?: {
                 title?: string,
                 description?: string
             }
         }>): void,
-        hamburger(func?: () => void): Component
+        hamburger(func?: () => void): Component,
+        button({ icon, colorName, alwaysActive, brightnessLevel, func }: {
+            icon?: string,
+            colorName?: string,
+            alwaysActive?: boolean,
+            brightnessLevel?: string,
+            func?: (...args: any[]) => any
+        }): Component & { set icon(icon: string) }
     },
     Tooltip: {
         new(target: HTMLElement): Tooltip,
@@ -147,10 +156,11 @@ const navigation: {
     },
 
 
-    component: {
-        logo({ icon = 'favicon.png', title = 'app name' }: {
+    addComponent: {
+        logo({ icon = 'favicon.png', title = 'app name', onlyActive = false }: {
             icon?: string,
-            title?: string
+            title?: string,
+            onlyActive?: boolean
         } = {}): Component {
             const container: HTMLDivElement & {
                 i?: HTMLImageElement,
@@ -164,7 +174,7 @@ const navigation: {
                 t: { classList: 'nav__logo__title', children: title }
             })
             const tooltip: Tooltip = new navigation.Tooltip(container)
-            const clicker: Clicker = new navigation.Clicker(container, true)
+            const clicker: Clicker = new navigation.Clicker(container, onlyActive)
 
 
             navigation.insert({ container }, 'left', 1)
@@ -235,7 +245,10 @@ const navigation: {
 
                 /** link's events */
                 $(link).on('click', (): void => {
-                    if (!navigation.container) return
+                    if (
+                        !navigation.container ||
+                        window.location.pathname === link.dataset.href
+                    ) return
 
 
                     /** loading state */
@@ -287,7 +300,7 @@ const navigation: {
         },
 
 
-        hamburger(func: () => void = (): void => { /** empty */ }): Component {
+        hamburger(func: (() => void) | undefined = undefined): Component {
             const container: HTMLDivElement = magicDOM.createElement('div', {
                 classList: 'nav__hamburger', children: [
                     magicDOM.toHTMLElement(
@@ -306,7 +319,7 @@ const navigation: {
             const clicker: Clicker = new navigation.Clicker(container)
 
 
-            clicker.onClick(func)
+            if (func) clicker.onClick(func)
 
 
             navigation.insert({ container }, 'right', 1)
@@ -316,6 +329,58 @@ const navigation: {
                 container,
                 tooltip,
                 clicker
+            }
+        },
+
+
+        button({
+            icon = 'code',
+            colorName = 'BLUE',
+            brightnessLevel = 'OTHER',
+            alwaysActive = false,
+            func = undefined
+        }: {
+            icon?: string,
+            colorName?: string,
+            brightnessLevel?: string,
+            alwaysActive?: boolean,
+            func?: (...args: any[]) => any
+        } = {}): Component & { set icon(icon: string) } {
+            const container: HTMLSpanElement = magicDOM.createElement('span', {
+                classList: ['nav__component', 'nav__button'],
+            })
+
+            const tooltip: Tooltip = new navigation.Tooltip(container)
+
+            const clicker: Clicker = new navigation.Clicker(container, alwaysActive)
+
+            if (func) clicker.onClick(func)
+
+
+            navigation.insert({ container }, 'right', 3)
+
+
+            Glasium.init(container, {
+                count: 8,
+                color: Glasium.COLOR[colorName], brightness: Glasium.BRIGHTNESS[brightnessLevel]
+            })
+
+
+            container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`))
+
+
+            return {
+                container,
+                tooltip,
+                clicker,
+
+
+                set icon(iconName: string) {
+                    $('i', this.container).remove()
+                    this.container.append(magicDOM.toHTMLElement(
+                        `<i class='fa-solid fa-${iconName}'></i>`)
+                    )
+                }
             }
         }
     },
@@ -418,6 +483,9 @@ const navigation: {
             this.container.classList.add('nav__clicker')
 
 
+            if (onlyActive) $(container).dataset('activated', '')
+
+
             $(this.container).on('click', (): void => {
                 if (!this.container) return
 
@@ -468,6 +536,7 @@ const navigation: {
 
         show(): void {
             if (!this.container) return
+            if (!this.clickHandlers.length) return
 
             this.container.dataset.activated = ''
         }

@@ -244,6 +244,32 @@ body[data-theme="dark"] {
         }
     }
 
+
+    &__button {
+        width: 55px;
+
+
+        .glasium__background {
+            filter: brightness(75%);
+
+            transition: 150ms filter ease-out;
+        }
+
+
+        &[data-activated] {
+            .glasium__background {
+                filter: brightness(105%);
+            }
+        }
+
+
+        &:active {
+            .glasium__background {
+                filter: brightness(115%);
+            }
+        }
+    }
+
     // utils components
     &__clicker {
         cursor: pointer;
@@ -354,6 +380,13 @@ body[data-theme="dark"] {
         }
 
 
+        &__button:hover {
+            .glasium__background {
+                filter: brightness(97%);
+            }
+        }
+
+
         &__hamburger {
             &:hover {
 
@@ -382,7 +415,8 @@ body[data-theme="dark"] {
 
         &__link,
         &__logo,
-        &__clicker {
+        &__clicker,
+        &__button {
             width: 45px;
         }
 

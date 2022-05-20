@@ -10,6 +10,7 @@ declare class JHTMLElement<Type extends Window | Document | HTMLElement | Node> 
     dataset(name: string, value: string | null): JHTMLElement<Type>;
     dataset(record: Record<string, string | null>): JHTMLElement<Type>;
     each(func: (this: Type, index: number) => any): JHTMLElement<Type>;
+    remove(): void;
     /**
      * @param       event               event type
      * @param       listener            listener function

@@ -73,8 +73,8 @@ const navigation = {
             return;
         this.underlay.classList[activate ? 'add' : 'remove']('nav__underlay--active');
     },
-    component: {
-        logo({ icon = 'favicon.png', title = 'app name' } = {}) {
+    addComponent: {
+        logo({ icon = 'favicon.png', title = 'app name', onlyActive = false } = {}) {
             const container = magicDOM.createTree('div', 'nav__logo', {}, {
                 i: {
                     tag: 'img', classList: 'nav__logo__icon', attribute: {
@@ -84,7 +84,7 @@ const navigation = {
                 t: { classList: 'nav__logo__title', children: title }
             });
             const tooltip = new navigation.Tooltip(container);
-            const clicker = new navigation.Clicker(container, true);
+            const clicker = new navigation.Clicker(container, onlyActive);
             navigation.insert({ container }, 'left', 1);
             return {
                 container,
@@ -130,7 +130,8 @@ const navigation = {
                 new navigation.Tooltip(link).set(tooltip);
                 /** link's events */
                 $(link).on('click', () => {
-                    if (!navigation.container)
+                    if (!navigation.container ||
+                        window.location.pathname === link.dataset.href)
                         return;
                     /** loading state */
                     navigation.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'));
@@ -163,7 +164,7 @@ const navigation = {
                 return;
             setTimeout(indicate, 200, currentLink);
         },
-        hamburger(func = () => { }) {
+        hamburger(func = undefined) {
             const container = magicDOM.createElement('div', {
                 classList: 'nav__hamburger', children: [
                     magicDOM.toHTMLElement(`
@@ -177,12 +178,37 @@ const navigation = {
             });
             const tooltip = new navigation.Tooltip(container);
             const clicker = new navigation.Clicker(container);
-            clicker.onClick(func);
+            if (func)
+                clicker.onClick(func);
             navigation.insert({ container }, 'right', 1);
             return {
                 container,
                 tooltip,
                 clicker
+            };
+        },
+        button({ icon = 'code', colorName = 'BLUE', brightnessLevel = 'OTHER', alwaysActive = false, func = undefined } = {}) {
+            const container = magicDOM.createElement('span', {
+                classList: ['nav__component', 'nav__button'],
+            });
+            const tooltip = new navigation.Tooltip(container);
+            const clicker = new navigation.Clicker(container, alwaysActive);
+            if (func)
+                clicker.onClick(func);
+            navigation.insert({ container }, 'right', 3);
+            Glasium.init(container, {
+                count: 8,
+                color: Glasium.COLOR[colorName], brightness: Glasium.BRIGHTNESS[brightnessLevel]
+            });
+            container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
+            return {
+                container,
+                tooltip,
+                clicker,
+                set icon(iconName) {
+                    $('i', this.container).remove();
+                    this.container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${iconName}'></i>`));
+                }
             };
         }
     },
@@ -247,6 +273,8 @@ const navigation = {
         constructor(container, onlyActive = false) {
             this.container = container;
             this.container.classList.add('nav__clicker');
+            if (onlyActive)
+                $(container).dataset('activated', '');
             $(this.container).on('click', () => {
                 if (!this.container)
                     return;
@@ -282,6 +310,8 @@ const navigation = {
         }
         show() {
             if (!this.container)
+                return;
+            if (!this.clickHandlers.length)
                 return;
             this.container.dataset.activated = '';
         }
