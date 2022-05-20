@@ -1,9 +1,8 @@
 .glasium {
     position: relative;
 
-    background: transparent;
-
     color: var(--color);
+
 
     &__background {
         position: absolute;
@@ -12,100 +11,96 @@
         width: 100%;
         height: 100%;
 
-        pointer-events: none;
-        z-index: -1;
+        background-color: var(--background-color);
 
         border-radius: inherit;
+
+        z-index: -1;
+
+        pointer-events: none;
 
         overflow: hidden;
 
         transition: 200ms background-color ease-out;
+    }
 
-        &__shape {
 
-            &--circle,
-            &--square,
-            &--triangle,
-            &--hexagon {
-                min-width: 80px;
-                min-height: 80px;
+    &__shape {
 
-                position: absolute;
-                top: 100%;
+        &--circle,
+        &--square,
+        &--triangle,
+        &--hexagon {
+            position: absolute;
+            top: calc(100%);
 
-                background: var(--shape-color);
-                opacity: 0.97;
+            min-width: 80px;
+            min-height: 80px;
+            width: var(--size);
+            height: var(--size);
 
-                filter: brightness(var(--brightness));
+            background-color: var(--shape-color);
 
-                animation-name: glasium-shape;
-                animation-timing-function: ease-out;
-                animation-iteration-count: infinite;
-                animation-direction: forwards;
+            filter: brightness(var(--brightness));
 
-                pointer-events: none;
+            transition: 200ms background-color ease-out;
 
-                transition: 200ms background-color ease-out;
-            }
+            animation-name: glasium-shape;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
 
-            &--circle {
-                border-radius: 50%;
-                width: var(--size);
-                height: var(--size);
-            }
+            will-change: transform, animation-delay, animation-duration;
 
-            &--square {
-                width: var(--size);
-                height: var(--size);
-            }
+            transform: translateY(0%) rotate(0deg);
+        }
 
-            &--triangle {
-                width: var(--size);
-                height: var(--size);
-                clip-path: polygon(50% 0, 0% 100%, 100% 100%);
-            }
 
-            &--hexagon {
-                width: var(--size);
-                height: var(--size);
-                clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
-            }
+        &--circle {
+            border-radius: 50%;
+            width: var(--size);
+            height: var(--size);
+        }
+
+
+        &--square {
+            width: var(--size);
+            height: var(--size);
+        }
+
+
+        &--triangle {
+            width: var(--size);
+            height: var(--size);
+            clip-path: polygon(50% 0, 0% 100%, 100% 100%);
+        }
+
+
+        &--hexagon {
+            width: var(--size);
+            height: var(--size);
+            clip-path: polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%);
         }
     }
 
-    &__content {
-        background: transparent;
-
-        z-index: 1;
-    }
-
-    .glasium__background {
-        background-color: var(--background-color);
-
-        &__shape {
-
-            &--circle,
-            &--triangle,
-            &--square,
-            &--hexagon {
-                background-color: var(--shape-color);
-            }
-        }
-    }
 
     &[data-disabled],
     &[disabled] {
-        filter: brightness(0.8);
+        .glasium__background {
+            filter: brightness(0.8);
+        }
     }
 }
 
+
 @keyframes glasium-shape {
     0% {
-        transform: translateY(0) rotate(0deg);
+        transform: translateY(calc(100% + var(--size))) rotate(0deg);
     }
 
+
     100% {
-        transform: translateY(calc((var(--moving-size) + var(--size) * 2) * -1)) rotate(var(--rotation));
+        --translate: calc((100% + var(--background-height)) * -1);
+        transform: translateY(var(--translate)) rotate(var(--rotation));
     }
 }
 
@@ -120,6 +115,7 @@ button.glasium {
     font-family: var(--font-secondary);
 
     transition: 150ms transform ease-out;
+
 
     .glasium__background {
         border-color: var(--background-color);

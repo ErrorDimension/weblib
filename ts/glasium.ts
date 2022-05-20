@@ -16,114 +16,21 @@ interface Properties {
 }
 
 class Glasium {
-    static __isWatching: boolean = false
-    static get isWatching(): boolean { return this.__isWatching }
-
-    static watch(): void {
-        if (this.__isWatching) return
-        this.__isWatching = true
-
-        $('[data-glasium]').each(function (): void { Glasium.init(this) })
-    }
-
-
-    static #fillBackground(container: HTMLDivElement, { scale, speed, count, shape, brightness }: {
-        scale: number,
-        speed: number,
-        count: number,
-        shape: Shape,
-        brightness: [number, number]
-    }): void {
-        for (let i = 0; i < count; ++i) {
-            let randomScale = lib.randomBetween(0.4, 2.0, false) * scale
-
-            let size = 30 * randomScale
-
-            let maxBrightness = lib.max(...brightness)
-            let minBrightness = lib.min(...brightness)
-            let randomBrightness = lib.randomBetween(
-                minBrightness,
-                maxBrightness,
-                false
-            )
-
-            let position = lib.randomBetween(0, 100, false)
-
-            let delay = lib.randomBetween(
-                -speed / 2.5,
-                speed / 2,
-                false,
-                [0.97, 1.03]
-            )
-
-            let shapeStyle: Shape = shape === 'all'
-                ? lib.randomItem(this.SHAPES) : shape
-            let filling = magicDOM.createElement('span', {
-                classList: `glasium__background__shape--${shapeStyle}`
-            })
-
-            $(filling).css({
-                '--size': `${size}px`,
-                '--brightness': randomBrightness,
-                left: `calc(${position}% - ${size}px / 2)`,
-                animationDelay: `${delay}s`,
-                animationDuration: `${speed / randomScale}s`
-            })
-
-            container.appendChild(filling)
-        }
-    }
-
-
-    static #update(container: HTMLDivElement): void {
-        container.style.setProperty('--moving-size', `${container.offsetHeight}px`)
-    }
-
-
-    static change(container: HTMLElement & {
-        glasiumBackground?: HTMLDivElement
-    }, {
-        color = { background: '#44aadd', shape: '#44aadd' },
-        brightness = [0.87, 1.2],
-        rotate = false
-    }: {
-        color?: { background: string, shape: string },
-        brightness?: [number, number],
-        rotate?: boolean
-    } = {}): void {
-        if (!container.glasiumBackground) return
-
-        const background = container.glasiumBackground
-
-        $(background).css({
-            '--background-color': color.background,
-            '--shape-color': color.shape,
-            '--rotation': rotate ? '360deg' : '0deg'
-        })
-
-        $('*', background).each(function () {
-            let maxBrightness = lib.max(...brightness)
-            let minBrightness = lib.min(...brightness)
-            let randomBrightness = lib.randomBetween(
-                minBrightness,
-                maxBrightness,
-                false
-            )
-
-            $(this).css('--brightness', randomBrightness)
-        })
-    }
-
-
-    static SHAPES: Shape[] = [
+    static SHAPES: GBackgroundShape[] = [
         'triangle',
         'square',
         'hexagon',
         'circle',
         'all'
     ]
-    static BRIGHTNESS: [number, number][] = [[1.15, 1.35], [0.9, 1.1], [0.87, 1.2]]
-    static COLOR: Record<string, { background: string, shape: string, invertContrast: boolean }> = {
+
+    static BRIGHTNESS: Record<string, [number, number]> = {
+        DARK: [1.14, 1.3],
+        LIGHT: [0.9, 1.05],
+        OTHER: [0.9, 1.2],
+    }
+
+    static COLOR: Record<string, GBackgroundColor> = {
         BLUE: { background: '#44aadd', shape: '#44aadd', invertContrast: false },
         RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)', invertContrast: false },
         GREY: { background: '#485e74', shape: '#485e74', invertContrast: false },
@@ -138,125 +45,204 @@ class Glasium {
         YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
     }
 
+
+    static #shape(background: HTMLElement, {
+        shape = 'triangle',
+        count = 10,
+        brightness = Glasium.BRIGHTNESS.OTHER,
+        scale = 2,
+        speed = 2
+    }: GBackground): void {
+        for (let i: number = 0; i < count; ++i) {
+            /** insert shape */
+            const shapeType: GBackgroundShape = shape === 'all'
+                ? lib.randomItem(Glasium.SHAPES) : shape
+
+            const item: HTMLElement = magicDOM.createElement('div', {
+                classList: `glasium__shape--${shapeType}`
+            })
+
+            background.append(item)
+
+
+            /** css value */
+            let randomScale: number = lib.randomBetween(0.4, 2, false) * scale
+            let randomBrightness: number = lib.randomBetween(
+                brightness[0], brightness[1], false,
+                [0.97, 1.03]
+            )
+            let size: number = 26 * randomScale
+            let position: number = lib.randomBetween(0, 100, false)
+            let speedPerFiveSeconds: number = lib.randomBetween(0.67, 1.35, false) * 5 / speed
+            let delay: number = lib.randomBetween(-speedPerFiveSeconds / 2, speedPerFiveSeconds / 2, false)
+
+
+            /** css */
+            $(item).css({
+                '--size': `${size}px`,
+                '--brightness': randomBrightness,
+                left: `calc(${position}% - ${size}px / 2)`,
+                animationDelay: `${delay}s`,
+                animationDuration: `${speedPerFiveSeconds}s`
+            })
+        }
+    }
+
+
+    static #background(element: HTMLElement, {
+        shape = 'triangle',
+        color = this.COLOR.BLUE,
+        brightness = this.BRIGHTNESS.OTHER,
+        scale = 2,
+        speed = 2,
+        count = 10,
+        rotate = false
+    }: GBackground): void {
+        /** insert background */
+        const background: HTMLDivElement = magicDOM.createElement('div', {
+            classList: 'glasium__background'
+        })
+
+        element.appendChild(background)
+
+
+        /** css for the background and element */
+        $(background).css({
+            '--background-color': color.background,
+            '--rotation': rotate ? '360deg' : '0deg',
+            '--shape-color': color.shape,
+            '--background-height': `${background.offsetHeight}px`
+        })
+
+        element.style.color = color.invertContrast ? 'black' : 'white'
+
+
+        /** watch size */
+        new ResizeObserver((): void => {
+            $(background).css('--background-height', `${background.offsetHeight}px`)
+        }).observe(background)
+
+
+        /** fill the background with shapes */
+        this.#shape(background, { shape, brightness, scale, speed, count })
+    }
+
+
     /**
-     * glasium initialization
-     * @param       container                   
-     * @param       options                     
+     * @param       element                     element
      * @param       options.shape               shape inside the background
      * @param       options.color               color for the background
      * @param       options.brightness          brightness 
      * @param       options.scale               scale size (bigger number is bigger size)
-     * @param       options.speed               speed (bigger number is smaller speed)
+     * @param       options.speed               speed (how many iterations per 5 seconds)
      * @param       options.count               shape count
      * @param       options.rotate              rotation
      */
-    static init(container: HTMLElement & {
-        glasiumBackground?: HTMLDivElement
-    }, {
+    static init(element: HTMLElement, {
         shape = 'triangle',
         color = this.COLOR.BLUE,
-        brightness = this.BRIGHTNESS[2],
+        brightness = this.BRIGHTNESS.OTHER,
         scale = 2,
-        speed = 9,
-        count = 15,
+        speed = 2,
+        count = 10,
         rotate = false
-    }: Properties = {}): void {
-        if (!this.SHAPES.includes(shape))
-            throw new Error(`'Glasium.init()' : '{shape}' is not valid`)
+    }: GBackground = {}): void {
+        /** remove current background */
+        let currentBackground: Element | null = element.querySelector('.glasium__background')
+
+        if (currentBackground) currentBackground.remove()
 
 
-        /** initial class list */
-        const classList = [...container.classList]
-        container.className = ''
-        container.classList.add('glasium', ...classList)
-
-        $('*', container).addClass('glasium__content')
-        new MutationObserver(() => {
-            $('*:not(.glasium__background)', container).addClass('glasium__content')
-        }).observe(container, {
-            childList: true,
-            subtree: true
-        })
-
-
-        /** check if there was a background before to re-initialize */
-        container.querySelector('.glasium__background')?.remove()
+        /** initialize class list */
+        const classList: string[] = [...element.classList]
+        element.className = ''
+        element.classList.add('glasium', ...classList)
 
 
         /** initialize background */
-        const background: HTMLDivElement = magicDOM.createElement('div')
+        this.#background(element, { shape, color, brightness, scale, speed, count, rotate })
+    }
 
+
+    static change(element: HTMLElement, {
+        shape = 'triangle',
+        color = this.COLOR.BLUE,
+        brightness = this.BRIGHTNESS.OTHER,
+        scale = 2,
+        speed = 2,
+        count = 10,
+        rotate = false
+    }: GBackground = {}): void {
+        const background: HTMLElement | null = element.querySelector('.glasium__background')
+
+        if (background === null) return
+
+
+        /** background css */
         $(background).css({
             '--background-color': color.background,
+            '--rotation': rotate ? '360deg' : '0deg',
             '--shape-color': color.shape,
-            '--rotation': rotate ? '360deg' : '0deg'
-        }).addClass('glasium__background')
+            '--background-height': `${background.offsetHeight}px`
+        })
 
-        $(container).css('--color', color.invertContrast ? 'black' : 'white')
-
-        this.#fillBackground(background, { scale, speed, count, shape, brightness })
-
-        container.insertBefore(background, container.firstChild)
-        container.glasiumBackground = background
+        element.style.color = color.invertContrast ? 'black' : 'white'
 
 
-        /** watch container's size */
-        this.#update(background)
-        new ResizeObserver((): void => this.#update(background))
-            .observe(container)
+        /** shape css */
+        $('*', background).each(function (): void {
+            /** change shape */
+            const shapeType: GBackgroundShape = shape === 'all'
+                ? lib.randomItem(Glasium.SHAPES) : shape
+
+            this.className = ''
+            this.classList.add(`glasium__shape--${shapeType}`)
+
+
+            /** css value */
+            let randomScale: number = lib.randomBetween(0.4, 2, false) * scale
+            let randomBrightness: number = lib.randomBetween(
+                brightness[0], brightness[1], false,
+                [0.97, 1.03]
+            )
+            let size: number = 26 * randomScale
+            let position: number = lib.randomBetween(0, 100, false)
+            let speedPerFiveSeconds: number = lib.randomBetween(0.67, 1.35, false) * 5 / speed
+            let delay: number = lib.randomBetween(-speedPerFiveSeconds / 2, speedPerFiveSeconds / 2, false)
+
+
+            /** css */
+            $(this).css({
+                '--size': `${size}px`,
+                '--brightness': randomBrightness,
+                left: `calc(${position}% - ${size}px / 2)`,
+                animationDelay: `${delay}s`,
+                animationDuration: `${speedPerFiveSeconds}s`
+            })
+        })
     }
-
-
-    /**
-     * 
-     * @param       queryOrContainer            select container
-     * @param       options.shape               shape inside the background
-     * @param       options.color               color for the background
-     * @param       options.brightness          brightness 
-     * @param       options.scale               scale size (bigger number is bigger size)
-     * @param       options.speed               speed (bigger number is smaller speed)
-     * @param       options.count               shape count
-     * @param       options.rotate              rotation
-     */
-    constructor(queryOrContainer: string | HTMLElement, {
-        shape = 'triangle',
-        color = { background: '#44aadd', shape: '#44aadd', invertContrast: false },
-        brightness = [0.87, 1.2],
-        scale = 2,
-        speed = 34,
-        count = 38,
-        rotate = false
-    }: Properties = {}) {
-        const findContainer = () => {
-            if (typeof queryOrContainer === 'string') {
-                const element = $$(queryOrContainer)
-                if (element === null)
-                    throw new Error(`'Glasium()' : 'queryOrContainer' returned null when selected`)
-                return element
-            }
-
-            return queryOrContainer
-        }
-
-        this.container = findContainer()
-
-        Glasium.init(this.container, { shape, color, brightness, rotate, scale, speed, count })
-    }
-
-
-    container: HTMLElement & { glasiumBackground?: HTMLDivElement }
-
-
-    change({
-        color = { background: '#44aadd', shape: '#44aadd' },
-        brightness = [0.87, 1.2],
-        rotate = false
-    }: {
-        color?: { background: string, shape: string },
-        brightness?: [number, number],
-        rotate?: boolean
-    } = {}): void { Glasium.change(this.container, { color, brightness, rotate }) }
 }
 
 
 export default Glasium
+
+
+interface GBackground {
+    shape?: GBackgroundShape,
+    color?: GBackgroundColor,
+    brightness?: [number, number],
+    scale?: number,
+    speed?: number,
+    count?: number,
+    rotate?: boolean
+}
+
+
+interface GBackgroundColor {
+    background: string,
+    shape: string,
+    invertContrast: boolean
+}
+
+
+type GBackgroundShape = 'circle' | 'triangle' | 'square' | 'hexagon' | 'all'

@@ -15,6 +15,7 @@
     &--big,
     &--cover {
         position: relative;
+
         width: 4em;
         height: 4em;
 
@@ -26,38 +27,67 @@
 
         &:before {
             background-color: var(--big-loading-bg, rgba(165, 165, 165, 0.6));
+
             width: 100%;
             height: 100%;
+
             border-radius: 0.9375em;
+
             animation: rotate90 1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+
             z-index: -1;
         }
 
         &:after {
             width: 50%;
             height: 50%;
+
             top: calc(50% - 1em);
             left: calc(50% - 1em);
+
             border: 3px solid var(--big-spinner-bg, white);
             border-right-color: transparent;
             border-radius: 50%;
+
             animation: 1s rotate360 linear infinite;
+
             z-index: 0;
         }
     }
 
 
     &--cover {
+        --size: 5em;
+
         position: absolute;
         inset: 0;
 
-        margin: auto;
+        width: 100%;
+        height: 100%;
 
         z-index: 178;
 
         box-shadow:
             rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px inset,
             rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px;
+
+
+        &:after {
+            width: calc(var(--size) / 2);
+            height: calc(var(--size) / 2);
+
+            top: calc(50% - var(--size) / 4);
+            left: calc(50% - var(--size) / 4);
+        }
+
+
+        &:before {
+            width: var(--size);
+            height: var(--size);
+
+            top: calc(50% - var(--size) / 2);
+            left: calc(50% - var(--size) / 2);
+        }
     }
 }
 

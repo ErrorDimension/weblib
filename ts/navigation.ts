@@ -189,6 +189,8 @@ const navigation: {
                 container: magicDOM.createElement('div', { classList: 'nav__component' })
             }
 
+
+            /** indicator */
             const indicator = magicDOM.createElement('div', {
                 classList: 'nav__indicator'
             })
@@ -199,15 +201,15 @@ const navigation: {
             /** background for routes */
             const isDark: () => boolean = (): boolean => document.body.dataset.theme === 'dark'
 
-            let color = () => isDark() ? 'DARK' : 'WHITESMOKE'
-            let brightness = () => isDark() ? 0 : 2
+            const color: () => string = (): string => isDark() ? 'DARK' : 'WHITESMOKE'
+            const brightness: () => string = (): string => isDark() ? 'DARK' : 'LIGHT'
 
             Glasium.init(component.container, {
                 color: Glasium.COLOR[color()],
                 brightness: Glasium.BRIGHTNESS[brightness()]
             })
 
-            new MutationObserver((): void => Glasium.init(component.container, {
+            new MutationObserver((): void => Glasium.change(component.container, {
                 color: Glasium.COLOR[color()],
                 brightness: Glasium.BRIGHTNESS[brightness()]
             })).observe(document.body, { attributeFilter: ['data-theme'] })
@@ -282,7 +284,7 @@ const navigation: {
             if (!currentLink) return
 
             setTimeout(indicate, 200, currentLink)
-        }, // todo glasium update
+        },
 
 
         hamburger(func: () => void = (): void => { /** empty */ }): Component {

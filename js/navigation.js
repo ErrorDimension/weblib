@@ -99,19 +99,20 @@ const navigation = {
             const component = {
                 container: magicDOM.createElement('div', { classList: 'nav__component' })
             };
+            /** indicator */
             const indicator = magicDOM.createElement('div', {
                 classList: 'nav__indicator'
             });
             navigation.navbar.appendChild(indicator);
             /** background for routes */
             const isDark = () => document.body.dataset.theme === 'dark';
-            let color = () => isDark() ? 'DARK' : 'WHITESMOKE';
-            let brightness = () => isDark() ? 0 : 2;
+            const color = () => isDark() ? 'DARK' : 'WHITESMOKE';
+            const brightness = () => isDark() ? 'DARK' : 'LIGHT';
             Glasium.init(component.container, {
                 color: Glasium.COLOR[color()],
                 brightness: Glasium.BRIGHTNESS[brightness()]
             });
-            new MutationObserver(() => Glasium.init(component.container, {
+            new MutationObserver(() => Glasium.change(component.container, {
                 color: Glasium.COLOR[color()],
                 brightness: Glasium.BRIGHTNESS[brightness()]
             })).observe(document.body, { attributeFilter: ['data-theme'] });

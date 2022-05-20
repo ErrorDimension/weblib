@@ -47,7 +47,8 @@ body[data-theme="dark"] {
 // component
 .nav {
     position: absolute;
-    inset: calc(-1 * var(--nav-height)) 0 auto 0;
+    inset-inline: 0;
+    inset-block-start: calc(-1 * var(--nav-height));
 
     width: 100%;
     height: var(--nav-height);

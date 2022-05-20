@@ -186,6 +186,11 @@ const lib = {
      * @param   { Number[2] }       opt.outRange
      */
     randomBetween(min, max, toInt = true, outRange = []) {
+        if (max < min) {
+            let tmp = max;
+            max = min;
+            min = tmp;
+        }
         let res = toInt
             ? Math.floor(Math.random() * (max - min + 1) + min)
             : Math.random() * (max - min) + min;
