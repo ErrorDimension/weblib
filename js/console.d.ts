@@ -20,22 +20,17 @@ declare class Console {
      * @param   { String | HTMLElement }    queryOrElement      selected query or element
      * @param   { Object | undefined }      detail              detail for the error as well as the callbacks
      */
-    static display(queryOrElement: string | HTMLElement, { code, icon, title, message, description, button }?: {
+    static display(queryOrElement: string | HTMLElement, { code, icon, title, message, description, buttons }?: {
         code?: number | string;
         icon?: string;
         description?: string;
         message?: string;
         title?: string;
-        button?: {
-            primary?: {
-                text?: string;
-                callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
-            };
-            secondary?: {
-                text?: string;
-                callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null;
-            };
-        };
+        buttons?: {
+            text: string;
+            colorName: string;
+            callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any;
+        }[];
     }): void;
     static info(...args: any[]): void;
     static debug(...args: any[]): void;

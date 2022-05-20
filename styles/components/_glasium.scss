@@ -107,22 +107,29 @@
 
 // custom elements
 button.glasium {
-    min-width: 55px;
-    min-height: 30px;
+    display: flex;
 
-    padding: 0;
+    place-items: center;
+    place-content: center;
 
-    font-family: var(--font-secondary);
+    min-height: 45px;
+
+    padding: 14px;
+
+    margin: 5px;
+
+    font-family: var(--font-secondary), "Open Sans", sans-serif;
+    font-weight: 900;
+    font-size: 13.75px;
+
+    text-transform: uppercase;
 
     transition: 150ms transform ease-out;
 
+    border-radius: 4px;
+
 
     .glasium__background {
-        border-color: var(--background-color);
-        border-radius: 6px;
-        border-style: solid;
-        border-width: 1px;
-
         transition-property: filter;
         transition-duration: 170ms;
         transition-timing-function: linear;

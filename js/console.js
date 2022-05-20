@@ -148,10 +148,7 @@ class Console {
      * @param   { String | HTMLElement }    queryOrElement      selected query or element
      * @param   { Object | undefined }      detail              detail for the error as well as the callbacks
      */
-    static display(queryOrElement, { code = -1, icon = '💣', title = `Oh dammyum, it's an ERROR !!!`, message = `Unknown`, description = 'Reload the page or maybe try reaching out to the creator', button = {
-        primary: { text: undefined, callback: () => { } },
-        secondary: { text: undefined, callback: () => { } }
-    } } = {}) {
+    static display(queryOrElement, { code = -1, icon = '💣', title = `Oh dammyum, it's an ERROR !!!`, message = `Unknown`, description = 'Reload the page or maybe try reaching out to the creator', buttons = [] } = {}) {
         let container = typeof queryOrElement === 'string'
             ? $$(queryOrElement)
             : $(queryOrElement)[0];
@@ -164,22 +161,23 @@ class Console {
             d: { classList: 'error__description', children: description },
             c: { classList: 'error__callback' }
         });
-        const createBtn = (text, primary, callback) => {
+        let colorIdx = 0;
+        const COLORS = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW'];
+        const createBtn = (text, colorName, callback) => {
             const btn = magicDOM.createElement('button', {
-                classList: `error__button--${primary ? 'primary' : 'secondary'}`,
                 children: text
             });
-            btn.onclick = callback;
-            primary && Glasium.init(btn, {
-                color: Glasium.COLOR.BLUE
-            });
+            let color = colorName ? colorName : COLORS[colorIdx];
+            btn.onclick = callback ? callback : () => { };
+            Glasium.init(btn, { color: Glasium.COLOR[color] });
+            colorIdx = (colorIdx + 1) % COLORS.length;
             return btn;
         };
         const callbackContainer = errorBlock.querySelector('.error__callback');
-        if (button && button.primary && button.primary.text)
-            callbackContainer?.appendChild(createBtn(button.primary.text, true, button.primary.callback));
-        if (button && button.secondary && button.secondary.text)
-            callbackContainer?.appendChild(createBtn(button.secondary.text, false, button.secondary.callback));
+        buttons.forEach(button => {
+            const btn = createBtn(button.text, button.colorName, button.callback);
+            callbackContainer.append(btn);
+        });
         container.append(errorBlock);
     }
     static info(...args) { return this.#log('info', this.infoLog, ...args); }

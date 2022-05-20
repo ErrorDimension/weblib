@@ -11,7 +11,7 @@ class Glasium {
     ];
     static BRIGHTNESS = {
         DARK: [1.14, 1.3],
-        LIGHT: [0.9, 1.05],
+        LIGHT: [0.94, 1.05],
         OTHER: [0.9, 1.2],
     };
     static COLOR = {
@@ -26,7 +26,8 @@ class Glasium {
         WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6', invertContrast: true },
         LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd', invertContrast: true },
         DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
-        YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false }
+        YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false },
+        PURPLE: { background: 'rgb(95, 57, 155)', shape: 'rgb(95, 57, 155)', invertContrast: false },
     };
     static #shape(background, { shape = 'triangle', count = 10, brightness = Glasium.BRIGHTNESS.OTHER, scale = 2, speed = 2 }) {
         for (let i = 0; i < count; ++i) {

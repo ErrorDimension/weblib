@@ -199,20 +199,14 @@ class Console {
         title = `Oh dammyum, it's an ERROR !!!`,
         message = `Unknown`,
         description = 'Reload the page or maybe try reaching out to the creator',
-        button = {
-            primary: { text: undefined, callback: () => { /* logic here */ } },
-            secondary: { text: undefined, callback: () => { /* logic here */ } }
-        }
+        buttons = []
     }: {
         code?: number | string,
         icon?: string,
         description?: string
         message?: string,
         title?: string,
-        button?: {
-            primary?: { text?: string, callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null },
-            secondary?: { text?: string, callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null }
-        }
+        buttons?: { text: string, colorName: string, callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any }[]
     } = {}) {
         let container = typeof queryOrElement === 'string'
             ? $$(queryOrElement)
@@ -231,31 +225,36 @@ class Console {
             c: { classList: 'error__callback' }
         })
 
+        let colorIdx = 0
+        const COLORS = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW']
+
+
         const createBtn = (
             text: string,
-            primary: boolean,
-            callback: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null
+            colorName?: string,
+            callback?: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null
         ) => {
             const btn = magicDOM.createElement('button', {
-                classList: `error__button--${primary ? 'primary' : 'secondary'}`,
                 children: text
             })
 
-            btn.onclick = callback
-            primary && Glasium.init(btn, {
-                color: Glasium.COLOR.BLUE
-            })
+            let color = colorName ? colorName : COLORS[colorIdx]
+
+            btn.onclick = callback ? callback : () => {/** empty */ }
+            Glasium.init(btn, { color: Glasium.COLOR[color] })
+
+            colorIdx = (colorIdx + 1) % COLORS.length
 
             return btn
         }
 
-        const callbackContainer = errorBlock.querySelector('.error__callback')
+        const callbackContainer = errorBlock.querySelector('.error__callback') as HTMLElement
 
-        if (button && button.primary && button.primary.text)
-            callbackContainer?.appendChild(createBtn(button.primary.text, true, button.primary.callback))
+        buttons.forEach(button => {
+            const btn = createBtn(button.text, button.colorName, button.callback)
 
-        if (button && button.secondary && button.secondary.text)
-            callbackContainer?.appendChild(createBtn(button.secondary.text, false, button.secondary.callback))
+            callbackContainer.append(btn)
+        })
 
         container.append(errorBlock)
     }
