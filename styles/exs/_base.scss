@@ -1,3 +1,15 @@
+*,
+*:after,
+*:before,
+*:active,
+*:focus,
+*:visited {
+    -webkit-tap-highlight-color: transparent;
+
+    outline: none;
+}
+
+
 body {
     --scrollbar-show-color: hsla(0, 0%, 60%, 0.6);
     --scrollbar-hover-color: rgba(90, 90, 90, 0.5);
