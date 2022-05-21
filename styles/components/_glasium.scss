@@ -108,6 +108,9 @@
 // custom elements
 button.glasium {
     display: flex;
+    flex-direction: row;
+
+    gap: 0.5em;
 
     place-items: center;
     place-content: center;
@@ -121,13 +124,21 @@ button.glasium {
 
     font-family: var(--font-secondary), "Open Sans", sans-serif;
     font-weight: 900;
-    font-size: 13.75px;
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
     text-transform: uppercase;
+    text-align: center;
 
     transition: 150ms transform ease-out;
 
     border-radius: 4px;
+
+
+    i {
+        font-size: 1.215em;
+    }
 
 
     .glasium__background {

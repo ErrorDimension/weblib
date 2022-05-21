@@ -28,7 +28,8 @@ declare class Console {
         title?: string;
         buttons?: {
             text: string;
-            colorName: string;
+            colorName?: string;
+            iconName?: string;
             callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any;
         }[];
     }): void;

@@ -12,8 +12,7 @@
     }
 
 
-    &--big,
-    &--cover {
+    &--big {
         position: relative;
 
         width: 4em;
@@ -31,6 +30,8 @@
             width: 100%;
             height: 100%;
 
+            inset: 0;
+
             border-radius: 0.9375em;
 
             animation: rotate90 1s cubic-bezier(0.22, 1, 0.36, 1) infinite;
@@ -42,8 +43,9 @@
             width: 50%;
             height: 50%;
 
-            top: calc(50% - 1em);
-            left: calc(50% - 1em);
+            inset: 0;
+
+            margin: auto;
 
             border: 3px solid var(--big-spinner-bg, white);
             border-right-color: transparent;
@@ -57,7 +59,7 @@
 
 
     &--cover {
-        --size: 5em;
+        --size: 5.5em;
 
         position: absolute;
         inset: 0;
@@ -67,26 +69,48 @@
 
         z-index: 178;
 
-        box-shadow:
-            rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px inset,
-            rgba(0, 0, 0, 0.16) 100px 100px 100px 1000px;
+        background-color: rgba(0, 0, 0, 0.16);
 
 
         &:after {
+            content: '';
+
+            position: absolute;
+            inset: 0;
+
+            margin: auto;
+
             width: calc(var(--size) / 2);
             height: calc(var(--size) / 2);
 
-            top: calc(50% - var(--size) / 4);
-            left: calc(50% - var(--size) / 4);
+            border: 3px solid var(--big-spinner-bg, white);
+            border-right-color: transparent;
+            border-radius: 50%;
+
+            animation: 1s rotate360 linear infinite;
+
+            z-index: 0;
         }
 
 
         &:before {
+            content: '';
+
+            position: absolute;
+            inset: 0;
+
+            margin: auto;
+
             width: var(--size);
             height: var(--size);
 
-            top: calc(50% - var(--size) / 2);
-            left: calc(50% - var(--size) / 2);
+            background-color: var(--big-loading-bg, rgba(165, 165, 165, 0.6));
+
+            border-radius: 0.9075em;
+
+            animation: 0.8s rotate90 cubic-bezier(0.22, 1, 0.36, 1) infinite;
+
+            z-index: -1;
         }
     }
 }

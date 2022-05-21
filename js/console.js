@@ -162,20 +162,23 @@ class Console {
             c: { classList: 'error__callback' }
         });
         let colorIdx = 0;
-        const COLORS = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW'];
-        const createBtn = (text, colorName, callback) => {
-            const btn = magicDOM.createElement('button', {
-                children: text
-            });
+        const COLORS = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW', "PINK"];
+        const createBtn = (text, colorName, iconName, callback) => {
+            const btn = magicDOM.toHTMLElement(`
+                        <button>
+                            <i class='fa-solid fa-${iconName ? iconName : 'circle'}'></i>
+                            <div>${text}</div>
+                        </button>
+                    `);
             let color = colorName ? colorName : COLORS[colorIdx];
-            btn.onclick = callback ? callback : () => { };
             Glasium.init(btn, { color: Glasium.COLOR[color] });
             colorIdx = (colorIdx + 1) % COLORS.length;
+            btn.onclick = callback ? callback : () => { };
             return btn;
         };
         const callbackContainer = errorBlock.querySelector('.error__callback');
         buttons.forEach(button => {
-            const btn = createBtn(button.text, button.colorName, button.callback);
+            const btn = createBtn(button.text, button.colorName, button.iconName, button.callback);
             callbackContainer.append(btn);
         });
         container.append(errorBlock);

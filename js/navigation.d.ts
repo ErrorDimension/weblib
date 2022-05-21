@@ -2,6 +2,7 @@ interface Component {
     container: HTMLElement;
     tooltip: Tooltip;
     clicker: Clicker;
+    subWindow?: SubWindow;
 }
 declare const navigation: {
     initialized: boolean;
@@ -55,6 +56,10 @@ declare const navigation: {
         new (container: HTMLElement, onlyActive?: boolean): Clicker;
         prototype: Clicker;
     };
+    SubWindow: {
+        new (): SubWindow;
+        prototype: SubWindow;
+    };
 };
 export default navigation;
 interface Tooltip {
@@ -82,5 +87,7 @@ interface Clicker {
     toggle(isActive?: boolean): void;
     show(): void;
     hide(): void;
+}
+interface SubWindow {
 }
 //# sourceMappingURL=navigation.d.ts.map

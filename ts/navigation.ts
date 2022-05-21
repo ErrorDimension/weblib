@@ -7,7 +7,8 @@ import magicDOM from './magic-dom'
 interface Component {
     container: HTMLElement,
     tooltip: Tooltip,
-    clicker: Clicker
+    clicker: Clicker,
+    subWindow?: SubWindow
 }
 
 
@@ -56,6 +57,10 @@ const navigation: {
     Clicker: {
         new(container: HTMLElement, onlyActive?: boolean): Clicker,
         prototype: Clicker,
+    },
+    SubWindow: {
+        new(): SubWindow,
+        prototype: SubWindow
     }
 } = {
     initialized: false,
@@ -547,6 +552,11 @@ const navigation: {
 
             delete this.container.dataset.activated
         }
+    },
+
+
+    SubWindow: class {
+
     }
 }
 
@@ -581,4 +591,9 @@ interface Clicker {
     toggle(isActive?: boolean): void
     show(): void
     hide(): void
+}
+
+
+interface SubWindow {
+    
 }

@@ -206,18 +206,26 @@ class Console {
         description?: string
         message?: string,
         title?: string,
-        buttons?: { text: string, colorName: string, callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any }[]
-    } = {}) {
+        buttons?: {
+            text: string,
+            colorName?: string,
+            iconName?: string,
+            callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any
+        }[]
+    } = {}): void {
         let container = typeof queryOrElement === 'string'
             ? $$(queryOrElement)
             : $(queryOrElement)[0]
 
+
         if (!(container instanceof HTMLElement))
             throw new Error(`'Console.display()' : 'queryOrElement' is not valid`)
 
+
         magicDOM.emptyNode(container)
 
-        const errorBlock = magicDOM.createTree(
+
+        const errorBlock: HTMLDivElement = magicDOM.createTree(
             'div', 'error', {}, {
             t: { classList: 'error__title', children: `${icon} ${title}` },
             m: { classList: 'error__message', children: `[${code}] >>> ${message}` },
@@ -225,47 +233,69 @@ class Console {
             c: { classList: 'error__callback' }
         })
 
-        let colorIdx = 0
-        const COLORS = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW']
+
+        let colorIdx: number = 0
+        const COLORS: string[] = ['BLUE', 'PURPLE', 'GREEN', 'YELLOW', "PINK"]
 
 
-        const createBtn = (
+        const createBtn: (
             text: string,
             colorName?: string,
-            callback?: ((this: GlobalEventHandlers, ev: MouseEvent) => any) | null
-        ) => {
-            const btn = magicDOM.createElement('button', {
-                children: text
-            })
+            iconName?: string,
+            callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any
+        ) => HTMLButtonElement = (
+            text: string,
+            colorName?: string,
+            iconName?: string,
+            callback?: (this: GlobalEventHandlers, ev: MouseEvent) => any
+        ): HTMLButtonElement => {
+                const btn: HTMLButtonElement = magicDOM.toHTMLElement(`
+                        <button>
+                            <i class='fa-solid fa-${iconName ? iconName : 'circle'}'></i>
+                            <div>${text}</div>
+                        </button>
+                    `)
 
-            let color = colorName ? colorName : COLORS[colorIdx]
 
-            btn.onclick = callback ? callback : () => {/** empty */ }
-            Glasium.init(btn, { color: Glasium.COLOR[color] })
+                let color: string = colorName ? colorName : COLORS[colorIdx]
 
-            colorIdx = (colorIdx + 1) % COLORS.length
+                Glasium.init(btn, { color: Glasium.COLOR[color] })
 
-            return btn
-        }
+                colorIdx = (colorIdx + 1) % COLORS.length
 
-        const callbackContainer = errorBlock.querySelector('.error__callback') as HTMLElement
+
+                btn.onclick = callback ? callback : (): void => {/** empty */ }
+
+
+                return btn
+            }
+
+
+        const callbackContainer: HTMLElement = errorBlock.querySelector('.error__callback') as HTMLElement
+
 
         buttons.forEach(button => {
-            const btn = createBtn(button.text, button.colorName, button.callback)
+            const btn: HTMLButtonElement = createBtn(
+                button.text,
+                button.colorName,
+                button.iconName,
+                button.callback
+            )
 
             callbackContainer.append(btn)
         })
+
 
         container.append(errorBlock)
     }
 
 
-    static info(...args: any[]) { return this.#log('info', this.infoLog, ...args) }
-    static debug(...args: any[]) { return this.#log('debug', this.debugLog, ...args) }
-    static warn(...args: any[]) { return this.#log('warn', this.warnLog, ...args) }
-    static crit(...args: any[]) { return this.#log('crit', this.critLog, ...args) }
-    static error(...args: any[]) { return this.#log('error', this.errorLog, ...args) }
-    static okay(...args: any[]) { return this.#log('okay', this.okayLog, ...args) }
+    static info(...args: any[]): void { return this.#log('info', this.infoLog, ...args) }
+    static debug(...args: any[]): void { return this.#log('debug', this.debugLog, ...args) }
+    static warn(...args: any[]): void { return this.#log('warn', this.warnLog, ...args) }
+    static crit(...args: any[]): void { return this.#log('crit', this.critLog, ...args) }
+    static error(...args: any[]): void { return this.#log('error', this.errorLog, ...args) }
+    static okay(...args: any[]): void { return this.#log('okay', this.okayLog, ...args) }
     static init(): void {
         if (typeof window === 'undefined') return
         if (this.initialized) return

@@ -67,6 +67,13 @@ body[data-theme="dark"] {
     z-index: 20;
 
 
+    // utils
+    i {
+        width: 100%;
+        height: 100%;
+    }
+
+
     // blocks
     &--left,
     &--right {
@@ -381,6 +388,9 @@ body[data-theme="dark"] {
 
 
         &__button:hover {
+            background-color: transparent;
+
+
             .glasium__background {
                 filter: brightness(97%);
             }

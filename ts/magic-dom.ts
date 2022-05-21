@@ -321,7 +321,7 @@ const magicDOM = {
     },
 
 
-    toHTMLElement(htmlString: string): HTMLElement {
+    toHTMLElement<T extends HTMLElement>(htmlString: string): T {
         const template: HTMLTemplateElement = document.createElement("template")
         template.innerHTML = htmlString.trim()
 
@@ -330,7 +330,7 @@ const magicDOM = {
             throw new Error(`'magicDOM.toHTMLElement()' : can't`)
         template.remove()
 
-        return fin as HTMLElement
+        return fin as T
     },
 
 

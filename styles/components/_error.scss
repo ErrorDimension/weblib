@@ -66,3 +66,8 @@ body>*>.error,
 body>*>*>.error {
     font-size: clamp(0.9em, calc(1vw + 1vh), 23px);
 }
+
+
+body[data-theme='dark'] {
+    --error-color: whitesmoke;
+}

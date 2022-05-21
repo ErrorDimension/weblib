@@ -320,6 +320,8 @@ const navigation = {
                 return;
             delete this.container.dataset.activated;
         }
+    },
+    SubWindow: class {
     }
 };
 export default navigation;
