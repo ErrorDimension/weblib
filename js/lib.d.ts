@@ -87,11 +87,6 @@ declare const lib: {
     preferDarkColorScheme: () => boolean;
     preferLightColorScheme: () => boolean;
 };
-/** this function return the recording of an animation frame callback */
-export declare const recordAnimationFrame: (callback: Function, autoStart?: boolean) => {
-    start: Function;
-    stop: Function;
-};
 /**
  * throttle a function
  * @param       { Function }          fn            function

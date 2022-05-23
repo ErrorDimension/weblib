@@ -318,37 +318,6 @@ const lib = {
 }
 
 
-/** this function return the recording of an animation frame callback */
-export const recordAnimationFrame =
-    (callback: Function, autoStart = true): { start: Function, stop: Function } => {
-        let running = false
-        let raf = -1
-
-        const stop = () => {
-            if (!running) return
-            running = false
-            cancelAnimationFrame(raf)
-        }
-
-        const run = () => {
-            raf = requestAnimationFrame(() => {
-                callback()
-                if (running) run()
-            })
-        }
-
-        const start = () => {
-            if (running) return
-            running = true
-            run()
-        }
-
-        if (autoStart) start()
-
-        return { start, stop }
-    }
-
-
 /** 
  * throttle a function
  * @param       { Function }          fn            function

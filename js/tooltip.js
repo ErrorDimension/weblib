@@ -1,5 +1,6 @@
 import { $ } from './jquery';
 import Console from './console';
+import RecordAnimationFrame from './record-animation-frame';
 import cursor from './cursor';
 import lib, { throttled } from './lib';
 import magicDOM from './magic-dom';
@@ -12,6 +13,7 @@ const LARGE_X_AXIS = 3 / 4;
 const LARGE_Y_AXIS = 77 / 100;
 const MOUSE_OFFSET_X = 13;
 const MOUSE_OFFSET_Y = 25;
+const SIZE_TRANSITION_DURATION = 305;
 const MOVE_THROTTLE = 55;
 const HIDE_DURATION = 200;
 const DEACTIVATE_DURATION = 300;
@@ -65,13 +67,15 @@ const tooltip = {
         this.container = document.createElement('t-container');
         this.content = document.createElement('t-content');
         this.container.append(this.content);
-        $(this.container).dataset({ deactivated: '' });
+        $(this.container).dataset({ deactivated: '' }).css({
+            '--width': '0px',
+            '--height': '0px'
+        });
         document.body.insertBefore(this.container, document.body.firstChild);
         /** observe the tooltip */
-        new ResizeObserver(this.move).observe(this.container);
-        new MutationObserver(this.scan).observe(document.body, {
-            childList: true,
-            subtree: true
+        new ResizeObserver(() => this.updateSize()).observe(this.content);
+        new MutationObserver(() => this.scan()).observe(document.body, {
+            childList: true, subtree: true
         });
         /** initialize move event */
         cursor.watch(true);
@@ -88,10 +92,10 @@ const tooltip = {
         /** scan for new elements in the document and attach tooltip events onto them */
         tooltip.hooks.forEach((hook) => tooltip.processor[hook.on].attach(hook));
     },
-    addHook({ on, key, handler = ({ target, value, update }) => value, follower = () => { }, priority = 1, padding = true }) {
+    addHook({ on, key, handler = ({ target, value, update }) => value, follower = () => { }, priority = 1, fit = false }) {
         if (!['attribute', 'dataset'].includes(on))
             throw new Error(`'tooltip.addHook()' : unexpected '${on}', expecting 'attribute' or 'dataset'`);
-        const hook = { on, key, handler, follower, priority, padding };
+        const hook = { on, key, handler, follower, priority, fit };
         this.hooks.push(hook);
         this.hooks.sort(function (a, b) {
             if (!(a.priority && b.priority))
@@ -134,7 +138,7 @@ const tooltip = {
         /** inform that the target is having a tooltip event attached */
         target.tooltipAttached = true;
     },
-    mouseenter(target, { on, key, handler, padding }) {
+    mouseenter(target, { on, key, handler, fit }) {
         if (!this.container)
             return;
         /** content of the tooltip */
@@ -145,25 +149,19 @@ const tooltip = {
             update: (content_) => this.update(content_)
         }) : undefined;
         /** handle padding option */
-        if (!padding)
-            $(this.container).css({
-                '--padding': '0px',
-                '--padding-duration': '0ms'
-            });
+        if (fit)
+            $(this.container).dataset('fit', '');
         /** display content */
         if (content)
             this.show(content);
     },
-    mouseleave({ follower, padding }) {
+    mouseleave({ follower, fit }) {
         if (!this.container)
             return;
         follower && follower();
         this.hide();
-        if (!padding)
-            $(this.container).css({
-                '--padding': null,
-                '--padding-duration': null
-            });
+        if (fit)
+            $(this.container).dataset('fit', null);
     },
     show(content) {
         if (!this.container)
@@ -194,17 +192,17 @@ const tooltip = {
             return;
         const { container } = tooltip;
         const { innerWidth, innerHeight } = window;
-        const { clientWidth, clientHeight } = container;
+        const { offsetWidth, offsetHeight } = container;
         const { positionX, positionY } = cursor;
         const isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX;
         const isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY;
-        const isLargerThanScreenX = innerWidth - clientWidth - OFFSET < positionX;
-        const isLargerThanScreenY = innerWidth - clientHeight - OFFSET < positionY;
+        const isLargerThanScreenX = innerWidth - offsetWidth - OFFSET < positionX;
+        const isLargerThanScreenY = innerWidth - offsetHeight - OFFSET < positionY;
         const posX = (isMoreOuterX || isLargerThanScreenX)
-            ? positionX - clientWidth - MOUSE_OFFSET_X
+            ? positionX - offsetWidth - MOUSE_OFFSET_X
             : positionX + MOUSE_OFFSET_X;
         const posY = (isMoreOuterY || isLargerThanScreenY)
-            ? positionY - clientHeight - MOUSE_OFFSET_Y
+            ? positionY - offsetHeight - MOUSE_OFFSET_Y
             : positionY + MOUSE_OFFSET_Y;
         lib.cssFrame(() => {
             $(container).css({
@@ -213,6 +211,17 @@ const tooltip = {
             });
         });
     }, MOVE_THROTTLE),
+    updateSize() {
+        if (!(this.container && this.content))
+            return;
+        $(this.container).css({
+            '--width': this.content.offsetWidth,
+            '--height': this.content.offsetHeight,
+        });
+        const raf = new RecordAnimationFrame(() => this.move());
+        raf.start();
+        window.setTimeout(() => raf.stop(), SIZE_TRANSITION_DURATION);
+    },
     update(content) {
         if (!this.content)
             return;

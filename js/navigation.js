@@ -116,6 +116,8 @@ const navigation = {
                 color: Glasium.COLOR[color()],
                 brightness: Glasium.BRIGHTNESS[brightness()]
             })).observe(document.body, { attributeFilter: ['data-theme'] });
+            /** navigation */
+            let navigating = false;
             /** create routes */
             for (let key in record) {
                 let { href, icon, tooltip } = record[key];
@@ -131,8 +133,10 @@ const navigation = {
                 /** link's events */
                 $(link).on('click', () => {
                     if (!navigation.container ||
-                        window.location.pathname === link.dataset.href)
+                        window.location.pathname === link.dataset.href ||
+                        navigating)
                         return;
+                    navigating = true;
                     /** loading state */
                     navigation.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'));
                     /** indicator and navigate */
@@ -162,7 +166,7 @@ const navigation = {
                 .querySelector(`.nav__link[data-href="${window.location.pathname}"]`);
             if (!currentLink)
                 return;
-            setTimeout(indicate, 200, currentLink);
+            window.setTimeout(indicate, 200, currentLink);
         },
         hamburger(func = undefined) {
             const container = magicDOM.createElement('div', {

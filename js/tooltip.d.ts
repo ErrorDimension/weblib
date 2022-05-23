@@ -8,7 +8,7 @@ interface Hook {
     }): undefined | string | HTMLElement;
     follower?(): void;
     priority?: number;
-    padding?: boolean;
+    fit?: boolean;
 }
 declare const tooltip: {
     readonly initialized: boolean;
@@ -48,16 +48,17 @@ declare const tooltip: {
      * })
      * ```
      */
-    addHook({ on, key, handler, follower, priority, padding }: Hook): void;
+    addHook({ on, key, handler, follower, priority, fit }: Hook): void;
     process(target: HTMLElement, { on, key }: Hook): string | undefined;
     attach(target: HTMLElement & {
         tooltipAttached?: boolean;
     }, hook: Hook): void;
-    mouseenter(target: HTMLElement, { on, key, handler, padding }: Hook): void;
-    mouseleave({ follower, padding }: Hook): void;
+    mouseenter(target: HTMLElement, { on, key, handler, fit }: Hook): void;
+    mouseleave({ follower, fit }: Hook): void;
     show(content: string | HTMLElement): void;
     hide(): void;
     move(_?: any): void;
+    updateSize(): void;
     update(content: string | HTMLElement): void;
     glow(): void;
 };

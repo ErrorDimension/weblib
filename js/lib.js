@@ -240,33 +240,6 @@ const lib = {
     preferDarkColorScheme: () => typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches,
     preferLightColorScheme: () => typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: light)').matches,
 };
-/** this function return the recording of an animation frame callback */
-export const recordAnimationFrame = (callback, autoStart = true) => {
-    let running = false;
-    let raf = -1;
-    const stop = () => {
-        if (!running)
-            return;
-        running = false;
-        cancelAnimationFrame(raf);
-    };
-    const run = () => {
-        raf = requestAnimationFrame(() => {
-            callback();
-            if (running)
-                run();
-        });
-    };
-    const start = () => {
-        if (running)
-            return;
-        running = true;
-        run();
-    };
-    if (autoStart)
-        start();
-    return { start, stop };
-};
 /**
  * throttle a function
  * @param       { Function }          fn            function

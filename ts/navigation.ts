@@ -230,6 +230,10 @@ const navigation: {
             })).observe(document.body, { attributeFilter: ['data-theme'] })
 
 
+            /** navigation */
+            let navigating: boolean = false
+
+
             /** create routes */
             for (let key in record) {
                 let { href, icon, tooltip } = record[key]
@@ -252,8 +256,11 @@ const navigation: {
                 $(link).on('click', (): void => {
                     if (
                         !navigation.container ||
-                        window.location.pathname === link.dataset.href
+                        window.location.pathname === link.dataset.href ||
+                        navigating
                     ) return
+
+                    navigating = true
 
 
                     /** loading state */
@@ -301,7 +308,7 @@ const navigation: {
 
             if (!currentLink) return
 
-            setTimeout(indicate, 200, currentLink)
+            window.setTimeout(indicate, 200, currentLink)
         },
 
 
@@ -595,5 +602,5 @@ interface Clicker {
 
 
 interface SubWindow {
-    
+
 }

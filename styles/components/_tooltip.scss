@@ -7,8 +7,11 @@ t {
         inset: 0 auto auto 0;
 
         display: inline-block;
+
         place-items: center;
         place-content: center;
+
+        padding: 6px 9px;
 
         letter-spacing: 0.2px;
         text-align: center;
@@ -21,23 +24,28 @@ t {
 
         background-color: var(--background-color);
 
-        padding: 0;
+        box-sizing: content-box;
 
         transform-origin: center;
 
-        overflow: visible;
+        overflow: hidden;
 
         pointer-events: none;
         user-select: none;
 
         will-change: opacity, --position-x, --position-y;
 
-        transition-duration: 450ms, 150ms;
-        transition-property: transform, opacity;
-        transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1), ease-out;
+        transition-duration: 300ms, 300ms, 300ms, 300ms, 300ms;
+        transition-property: transform, opacity, width, height, padding;
+        transition-timing-function:
+            cubic-bezier(0.22, 1, 0.36, 1),
+            ease-out,
+            ease,
+            ease,
+            cubic-bezier(0.22, 1, 0.36, 1);
 
         transform:
-            translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(1);
+            translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px));
 
         animation-name: none;
         animation-duration: 300ms;
@@ -55,19 +63,21 @@ t {
 
 
         &[data-activated] {
+            width: calc(var(--width) * 1px);
+            height: calc(var(--height) * 1px);
+
             opacity: 1;
-
-            transition-duration: 300ms, 300ms;
-
-            >t-content {
-                padding: var(--padding, 6px 9px);
-            }
         }
 
 
         &[data-deactivated] {
-            transform:
-                translate(calc(var(--position-x) * 1px), calc(var(--position-y) * 1px)) scale(0);
+            width: 0px;
+            height: 0px;
+        }
+
+
+        &[data-fit] {
+            padding: 0;
         }
     }
 
@@ -75,6 +85,7 @@ t {
     &-content {
         display: flex;
         flex-direction: row;
+
         place-items: center;
         place-content: center;
 
@@ -85,27 +96,15 @@ t {
 
         border-radius: inherit;
 
-        padding: var(--padding, 0);
-
         color: white;
 
         font-family: var(--font-secondary);
         font-size: 15px;
         font-weight: normal;
+
         text-align: center;
         letter-spacing: 0.2px;
         white-space: pre;
-
-        transition-property: padding, width, height;
-        transition-duration: var(--padding-duration, 300ms), 300ms, 300ms;
-        transition-timing-function:
-            ease-in,
-            cubic-bezier(0.22, 1, 0.36, 1),
-            cubic-bezier(0.22, 1, 0.36, 1);
-
-        transform-origin: center;
-
-        will-change: --padding, --padding-duration;
     }
 }
 
