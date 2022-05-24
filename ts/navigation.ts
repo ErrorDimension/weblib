@@ -763,6 +763,9 @@ const navigation: {
                 if (!(this.#contentNode && this.#windowNode)) return
 
 
+                const { innerWidth } = window
+
+
                 let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
                 $(this.#windowNode).css('--height', `${height}px`)
 
@@ -775,14 +778,9 @@ const navigation: {
                     let width: number = this.#contentNode.offsetWidth
 
 
-                    if (
-                        rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
-                        rect.left + rect.width / 2 > width / 2
-                    )
-                        this.#windowNode.dataset.align = 'center'
-                    else if (width - rect.right < 0)
+                    if (width - rect.right < 0)
                         this.#windowNode.dataset.align = 'right'
-                    else if (rect.left + width < window.innerWidth)
+                    else if (rect.left + width < innerWidth)
                         this.#windowNode.dataset.align = 'left'
                     else {
                         this.#windowNode.dataset.align = 'expanded'
@@ -824,6 +822,9 @@ const navigation: {
 
 
             this.#isShowing = true
+
+
+            this.update()
         }
 
 

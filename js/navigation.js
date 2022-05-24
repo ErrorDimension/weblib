@@ -437,6 +437,7 @@ const navigation = {
             lib.cssFrame(() => {
                 if (!(this.#contentNode && this.#windowNode))
                     return;
+                const { innerWidth } = window;
                 let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
                 $(this.#windowNode).css('--height', `${height}px`);
                 if (this.#isShowing) {
@@ -444,12 +445,9 @@ const navigation = {
                         return;
                     let rect = this.#container.getBoundingClientRect();
                     let width = this.#contentNode.offsetWidth;
-                    if (rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
-                        rect.left + rect.width / 2 > width / 2)
-                        this.#windowNode.dataset.align = 'center';
-                    else if (width - rect.right < 0)
+                    if (width - rect.right < 0)
                         this.#windowNode.dataset.align = 'right';
-                    else if (rect.left + width < window.innerWidth)
+                    else if (rect.left + width < innerWidth)
                         this.#windowNode.dataset.align = 'left';
                     else {
                         this.#windowNode.dataset.align = 'expanded';
@@ -475,6 +473,7 @@ const navigation = {
             $(this.#container)
                 .dataset('swActivated', '');
             this.#isShowing = true;
+            this.update();
         }
         hide(trusted = true) {
             if (!(this.#windowNode && this.#container))
