@@ -280,7 +280,7 @@ body[data-theme="dark"] {
         user-select: none;
 
 
-        .glasium__background {
+        >.glasium__background {
             filter: brightness(75%);
 
             transition: 150ms filter ease-out;
@@ -293,8 +293,6 @@ body[data-theme="dark"] {
             width: 1.75em;
 
             border-radius: 50%;
-
-            pointer-events: none;
 
             user-select: none;
 
@@ -332,14 +330,14 @@ body[data-theme="dark"] {
 
         &[data-activated],
         &[data-sw-activated] {
-            .glasium__background {
+            >.glasium__background {
                 filter: brightness(105%);
             }
         }
 
 
         &:active {
-            .glasium__background {
+            >.glasium__background {
                 filter: brightness(115%);
             }
         }
@@ -353,10 +351,7 @@ body[data-theme="dark"] {
 
         transition: background-color 200ms ease-out;
 
-
-        * {
-            pointer-events: none;
-        }
+        user-select: none;
 
 
         &:not(.nav__button):active {
@@ -391,7 +386,9 @@ body[data-theme="dark"] {
 
         opacity: 0;
 
-        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1), width 0s linear;
+        transition-property: height, opacity, border-bottom-width;
+        transition-duration: 400ms;
+        transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 
         border-bottom-width: 3px;
         border-style: solid;
@@ -564,7 +561,7 @@ body[data-theme="dark"] {
             background-color: transparent;
 
 
-            .glasium__background {
+            >.glasium__background {
                 filter: brightness(97%);
             }
         }

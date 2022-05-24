@@ -1,0 +1,49 @@
+.s-account {
+    display: flex;
+    flex-direction: column;
+
+    place-content: center;
+
+    font-weight: 900;
+    font-family: var(--font-secondary);
+
+    text-align: center;
+
+    white-space: nowrap;
+
+    color: var(--global-color);
+
+
+    >div {
+        display: flex;
+        flex-direction: row;
+
+        place-items: center;
+        place-content: center space-around;
+
+        width: 300px;
+        height: 80px;
+
+        margin-top: 15px;
+
+        font-size: 23px;
+        font-style: italic;
+        font-weight: 800;
+
+        border-radius: 8px;
+
+
+        @media (hover: hover) {
+            &:hover {
+                box-shadow: 0 0 0 2px var(--osc-color-lightBlue);
+            }
+        }
+
+
+        img {
+            max-height: 50%;
+
+            aspect-ratio: 1;
+        }
+    }
+}

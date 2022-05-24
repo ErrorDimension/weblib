@@ -41,10 +41,10 @@ declare class JHTMLElement<Type extends Window | Document | HTMLElement | Node> 
 }
 export declare function $$<T extends HTMLElement>(query: string): T;
 export declare function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T;
-export declare function $$<T extends HTMLElement>(query: string, containerQuery?: string): T;
+export declare function $$<T extends HTMLElement>(query: string, fromQuery?: string): T;
 export declare function $(doc: Document): JHTMLElement<Document>;
 export declare function $(win: Window): JHTMLElement<Window>;
-export declare function $<T extends HTMLElement>(query: string, containerQuery: string): JHTMLElement<T>;
+export declare function $<T extends HTMLElement>(query: string, fromQuery: string): JHTMLElement<T>;
 export declare function $<T extends HTMLElement>(query: string, element: HTMLElement): JHTMLElement<T>;
 export declare function $<T extends HTMLElement>(query: string): JHTMLElement<T>;
 export declare function $<T extends HTMLElement>(elements: NodeList): JHTMLElement<T>;

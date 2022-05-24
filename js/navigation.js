@@ -226,7 +226,16 @@ const navigation = {
                 clicker,
                 set icon(iconName) {
                     $('i', this.container).remove();
+                    $('img', this.container).remove();
                     this.container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${iconName}'></i>`));
+                },
+                set image(src) {
+                    $('i', this.container).remove();
+                    if (this.container.querySelector('img')) {
+                        $$('img', this.container).src = src;
+                        return;
+                    }
+                    this.container.append(magicDOM.toHTMLElement(`<img src='${src}' loading='lazy'></img>`));
                 }
             };
         },
@@ -237,11 +246,47 @@ const navigation = {
             });
             const { container, tooltip, clicker } = button;
             const subWindow = new navigation.SubWindow(container);
+            /** pre produced account section */
+            new Promise((res) => {
+                subWindow.content = magicDOM.toHTMLElement(`
+                    <div class='s-account'>
+                        Guest
+                        <div>
+                            <img src='guest.png' loading='lazy' />
+                            <span>guest user</span>
+                        </div>
+                    </div>
+                    `);
+                Glasium.init($$('.s-account div'), {
+                    color: Glasium.COLOR.LIGHTBLUE,
+                    brightness: Glasium.BRIGHTNESS.LIGHT,
+                    count: 28,
+                    scale: 6
+                });
+                Glasium.change(container, {
+                    color: Glasium.COLOR.RED
+                });
+                res();
+            }).then(() => {
+                subWindow.loaded = true;
+            });
             return {
                 container,
                 tooltip,
                 clicker,
-                subWindow
+                subWindow,
+                set avatar(src) {
+                    button.image = src;
+                },
+                set userName(userName) {
+                    $$('.nav__button__text').innerText = userName;
+                },
+                set background(colorName) {
+                    colorName = colorName.toUpperCase();
+                    Glasium.change(this.container, {
+                        color: Glasium.COLOR[colorName]
+                    });
+                }
             };
         }
     },
@@ -380,37 +425,40 @@ const navigation = {
             /** observer */
             new ResizeObserver(() => this.update()).observe(this.#contentNode);
             new ResizeObserver(() => this.update()).observe(this.#container);
+            $(window).on('resize', () => this.update());
             /** events */
             $(this.#container).on('click', ({ target }) => {
-                if (target != this.#container)
+                if (target.matches('.nav__sub-window *'))
                     return;
                 this.toggle();
             });
         }
         update() {
-            if (!(this.#contentNode && this.#windowNode))
-                return;
-            let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
-            $(this.#windowNode).css('--height', `${height}px`);
-            if (this.#isShowing) {
-                if (!(this.#container && this.#windowNode))
+            lib.cssFrame(() => {
+                if (!(this.#contentNode && this.#windowNode))
                     return;
-                let rect = this.#container.getBoundingClientRect();
-                let width = this.#contentNode.offsetWidth;
-                if (rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
-                    rect.left + rect.width / 2 > width / 2)
-                    this.#windowNode.dataset.align = 'center';
-                else if (width + rect.left > window.innerWidth)
-                    this.#windowNode.dataset.align = 'right';
-                else if (rect.left + width < window.innerWidth)
-                    this.#windowNode.dataset.align = 'left';
-                else {
-                    this.#windowNode.dataset.align = 'expanded';
-                    $(this.#windowNode).css('--width', null);
-                    return;
+                let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
+                $(this.#windowNode).css('--height', `${height}px`);
+                if (this.#isShowing) {
+                    if (!(this.#container && this.#windowNode))
+                        return;
+                    let rect = this.#container.getBoundingClientRect();
+                    let width = this.#contentNode.offsetWidth;
+                    if (rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
+                        rect.left + rect.width / 2 > width / 2)
+                        this.#windowNode.dataset.align = 'center';
+                    else if (width - rect.right < 0)
+                        this.#windowNode.dataset.align = 'right';
+                    else if (rect.left + width < window.innerWidth)
+                        this.#windowNode.dataset.align = 'left';
+                    else {
+                        this.#windowNode.dataset.align = 'expanded';
+                        $(this.#windowNode).css('--width', null);
+                        return;
+                    }
+                    $(this.#windowNode).css('--width', `${width}px`);
                 }
-                $(this.#windowNode).css('--width', `${width}px`);
-            }
+            });
         }
         show() {
             if (!(this.#windowNode && this.#container))

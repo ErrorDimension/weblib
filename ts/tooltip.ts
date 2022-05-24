@@ -326,35 +326,37 @@ const tooltip: {
 
 
     move: throttled(function (_?: any): void {
-        if (!tooltip.container) return
-
-        const { container } = tooltip
-
-
-        const { innerWidth, innerHeight } = window
-        const { offsetWidth, offsetHeight } = container
-        const { positionX, positionY } = cursor
-
-
-        const isMoreOuterX: boolean = innerWidth * LARGE_X_AXIS < positionX
-        const isMoreOuterY: boolean = innerHeight * LARGE_Y_AXIS < positionY
-        const isLargerThanScreenX: boolean = innerWidth - offsetWidth - OFFSET < positionX
-        const isLargerThanScreenY: boolean = innerWidth - offsetHeight - OFFSET < positionY
-
-
-        const posX: number = (isMoreOuterX || isLargerThanScreenX)
-            ? positionX - offsetWidth - MOUSE_OFFSET_X
-            : positionX + MOUSE_OFFSET_X
-
-        const posY: number = (isMoreOuterY || isLargerThanScreenY)
-            ? positionY - offsetHeight - MOUSE_OFFSET_Y
-            : positionY + MOUSE_OFFSET_Y
-
-
         lib.cssFrame((): void => {
-            $(container).css({
-                '--position-x': posX,
-                '--position-y': posY
+            if (!tooltip.container) return
+
+            const { container } = tooltip
+
+
+            const { innerWidth, innerHeight } = window
+            const { offsetWidth, offsetHeight } = container
+            const { positionX, positionY } = cursor
+
+
+            const isMoreOuterX: boolean = innerWidth * LARGE_X_AXIS < positionX
+            const isMoreOuterY: boolean = innerHeight * LARGE_Y_AXIS < positionY
+            const isLargerThanScreenX: boolean = innerWidth - offsetWidth - OFFSET < positionX
+            const isLargerThanScreenY: boolean = innerWidth - offsetHeight - OFFSET < positionY
+
+
+            const posX: number = (isMoreOuterX || isLargerThanScreenX)
+                ? positionX - offsetWidth - MOUSE_OFFSET_X
+                : positionX + MOUSE_OFFSET_X
+
+            const posY: number = (isMoreOuterY || isLargerThanScreenY)
+                ? positionY - offsetHeight - MOUSE_OFFSET_Y
+                : positionY + MOUSE_OFFSET_Y
+
+
+            lib.cssFrame((): void => {
+                $(container).css({
+                    '--position-x': posX,
+                    '--position-y': posY
+                })
             })
         })
     }, MOVE_THROTTLE),
@@ -382,10 +384,7 @@ const tooltip: {
         this.content.append(content)
 
 
-        const raf: RecordAnimationFrame = new RecordAnimationFrame((): void => this.move())
-
-        raf.start()
-        window.setTimeout((): void => raf.stop(), SIZE_TRANSITION_DURATION)
+        new RecordAnimationFrame((): void => this.move()).start(SIZE_TRANSITION_DURATION)
     },
 
 

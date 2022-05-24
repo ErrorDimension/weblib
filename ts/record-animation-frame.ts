@@ -13,11 +13,14 @@ export default class RecordAnimationFrame {
 
 
     /** start the callback */
-    start(): any {
+    start(timeout?: number): any {
         if (this.#__running) return
         this.#__running = true
 
         this.#run()
+
+        if (timeout)
+            window.setTimeout((): void => this.stop(), timeout)
     }
 
 

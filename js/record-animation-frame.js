@@ -7,11 +7,13 @@ export default class RecordAnimationFrame {
     get running() { return this.#__running; }
     #callback;
     /** start the callback */
-    start() {
+    start(timeout) {
         if (this.#__running)
             return;
         this.#__running = true;
         this.#run();
+        if (timeout)
+            window.setTimeout(() => this.stop(), timeout);
     }
     #run() {
         this.#raf = window.requestAnimationFrame(() => {

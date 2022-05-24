@@ -3,7 +3,7 @@ export default class RecordAnimationFrame {
     constructor(callback: (...args: any[]) => any);
     get running(): boolean;
     /** start the callback */
-    start(): any;
+    start(timeout?: number): any;
     /** stop the callback */
     stop(): any;
 }

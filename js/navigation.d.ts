@@ -49,8 +49,13 @@ declare const navigation: {
             text?: string;
         }): Component & {
             set icon(icon: string);
+            set image(src: string);
         };
-        account(): Component;
+        account(): Component & {
+            set avatar(src: string);
+            set userName(userName: string);
+            set background(colorName: string);
+        };
     };
     Tooltip: {
         new (target: HTMLElement): Tooltip;

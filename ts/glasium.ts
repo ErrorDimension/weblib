@@ -115,7 +115,7 @@ class Glasium {
             '--background-height': `${background.offsetHeight}px`
         })
 
-        element.style.color = color.invertContrast ? 'black' : 'white'
+        element.style.color = color.invertContrast ? 'rgb(28, 28, 28)' : 'whitesmoke'
 
 
         /** watch size */

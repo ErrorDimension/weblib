@@ -188,32 +188,32 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 
 export function $$<T extends HTMLElement>(query: string): T
 export function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T
-export function $$<T extends HTMLElement>(query: string, containerQuery?: string): T
-export function $$<T extends HTMLElement>(query: string, queryOrContainer?: string | HTMLElement): T {
-    if (query === undefined)
+export function $$<T extends HTMLElement>(query: string, fromQuery?: string): T
+export function $$<T extends HTMLElement>(a: string, b?: string | HTMLElement): T {
+    if (a === undefined)
         throw new Error(`'jqueryy()' : 'query' is not defined`)
 
 
-    if (typeof query === 'string' && typeof queryOrContainer === 'string') {
-        const container: T | null = document.querySelector<T>(queryOrContainer)
+    if (typeof a === 'string' && typeof b === 'string') {
+        const container: T | null = document.querySelector<T>(b)
         if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
 
-        const element: T | null = container.querySelector<T>(query)
+        const element: T | null = container.querySelector<T>(a)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (string)`)
 
         return element
     }
 
 
-    if (typeof query === 'string' && queryOrContainer instanceof HTMLElement) {
-        const element: T | null = queryOrContainer.querySelector<T>(query)
+    if (typeof a === 'string' && b instanceof HTMLElement) {
+        const element: T | null = b.querySelector<T>(a)
         if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (html)`)
 
         return element
     }
 
 
-    const el: T | null = document.querySelector<T>(query)
+    const el: T | null = document.querySelector<T>(a)
     if (el === null) throw new Error(`'jqueryy()' : 'query' returned null (o string)`)
 
 
@@ -225,39 +225,39 @@ type JSelection = string | NodeList | HTMLElement | Window | Document
 
 export function $(doc: Document): JHTMLElement<Document>
 export function $(win: Window): JHTMLElement<Window>
-export function $<T extends HTMLElement>(query: string, containerQuery: string): JHTMLElement<T>
+export function $<T extends HTMLElement>(query: string, fromQuery: string): JHTMLElement<T>
 export function $<T extends HTMLElement>(query: string, element: HTMLElement): JHTMLElement<T>
 export function $<T extends HTMLElement>(query: string): JHTMLElement<T>
 export function $<T extends HTMLElement>(elements: NodeList): JHTMLElement<T>
 export function $<T extends HTMLElement>(element: T): JHTMLElement<T>
-export function $(queryOrObj: JSelection, queryOrElement?: HTMLElement | string)
+export function $(a: JSelection, b?: HTMLElement | string)
     : JHTMLElement<Node | HTMLElement | Window | Document> {
-    if (typeof queryOrObj === 'string' && typeof queryOrElement === 'string') {
-        const container: Element | null = document.querySelector(queryOrElement)
-        const qsa: NodeListOf<Element> | undefined = container?.querySelectorAll(queryOrObj)
+    if (typeof a === 'string' && typeof b === 'string') {
+        const container: Element | null = document.querySelector(b)
+        const qsa: NodeListOf<Element> | undefined = container?.querySelectorAll(a)
         const elements: NodeListOf<Element> | never[] = qsa ? qsa : []
 
         return new JHTMLElement(...elements)
     }
 
 
-    if (typeof queryOrObj === 'string' && queryOrElement instanceof HTMLElement)
-        return new JHTMLElement(...queryOrElement.querySelectorAll<HTMLElement>(queryOrObj))
+    if (typeof a === 'string' && b instanceof HTMLElement)
+        return new JHTMLElement(...b.querySelectorAll<HTMLElement>(a))
 
 
-    if (typeof queryOrObj === 'string')
-        return new JHTMLElement(...document.querySelectorAll<HTMLElement>(queryOrObj))
+    if (typeof a === 'string')
+        return new JHTMLElement(...document.querySelectorAll<HTMLElement>(a))
 
 
-    if (queryOrObj instanceof NodeList)
-        return new JHTMLElement(...queryOrObj)
+    if (a instanceof NodeList)
+        return new JHTMLElement(...a)
 
 
-    if (queryOrObj instanceof HTMLElement)
-        return new JHTMLElement(queryOrObj)
+    if (a instanceof HTMLElement)
+        return new JHTMLElement(a)
 
 
-    return new JHTMLElement<Window | Document>(queryOrObj)
+    return new JHTMLElement<Window | Document>(a)
 }
 
 

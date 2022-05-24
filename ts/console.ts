@@ -302,7 +302,7 @@ class Console {
 
         this.okay(`Log started at : ${zalib.prettyTime()}`)
 
-        $(window).on('error', function ({ message, filename, lineno, colno, error }) {
+        $(window).on('error', function ({ message, filename, lineno, colno, error }: ErrorEvent): void {
             if (error instanceof Object) {
                 Console.crit(`Uncaught [object Object]\nat ${filename}:${lineno}:${colno}`, error)
                 return

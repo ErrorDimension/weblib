@@ -185,26 +185,28 @@ const tooltip = {
         }, HIDE_DURATION);
     },
     move: throttled(function (_) {
-        if (!tooltip.container)
-            return;
-        const { container } = tooltip;
-        const { innerWidth, innerHeight } = window;
-        const { offsetWidth, offsetHeight } = container;
-        const { positionX, positionY } = cursor;
-        const isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX;
-        const isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY;
-        const isLargerThanScreenX = innerWidth - offsetWidth - OFFSET < positionX;
-        const isLargerThanScreenY = innerWidth - offsetHeight - OFFSET < positionY;
-        const posX = (isMoreOuterX || isLargerThanScreenX)
-            ? positionX - offsetWidth - MOUSE_OFFSET_X
-            : positionX + MOUSE_OFFSET_X;
-        const posY = (isMoreOuterY || isLargerThanScreenY)
-            ? positionY - offsetHeight - MOUSE_OFFSET_Y
-            : positionY + MOUSE_OFFSET_Y;
         lib.cssFrame(() => {
-            $(container).css({
-                '--position-x': posX,
-                '--position-y': posY
+            if (!tooltip.container)
+                return;
+            const { container } = tooltip;
+            const { innerWidth, innerHeight } = window;
+            const { offsetWidth, offsetHeight } = container;
+            const { positionX, positionY } = cursor;
+            const isMoreOuterX = innerWidth * LARGE_X_AXIS < positionX;
+            const isMoreOuterY = innerHeight * LARGE_Y_AXIS < positionY;
+            const isLargerThanScreenX = innerWidth - offsetWidth - OFFSET < positionX;
+            const isLargerThanScreenY = innerWidth - offsetHeight - OFFSET < positionY;
+            const posX = (isMoreOuterX || isLargerThanScreenX)
+                ? positionX - offsetWidth - MOUSE_OFFSET_X
+                : positionX + MOUSE_OFFSET_X;
+            const posY = (isMoreOuterY || isLargerThanScreenY)
+                ? positionY - offsetHeight - MOUSE_OFFSET_Y
+                : positionY + MOUSE_OFFSET_Y;
+            lib.cssFrame(() => {
+                $(container).css({
+                    '--position-x': posX,
+                    '--position-y': posY
+                });
             });
         });
     }, MOVE_THROTTLE),
@@ -224,9 +226,7 @@ const tooltip = {
         this.glow();
         magicDOM.emptyNode(this.content);
         this.content.append(content);
-        const raf = new RecordAnimationFrame(() => this.move());
-        raf.start();
-        window.setTimeout(() => raf.stop(), SIZE_TRANSITION_DURATION);
+        new RecordAnimationFrame(() => this.move()).start(SIZE_TRANSITION_DURATION);
     },
     glow() {
         if (!this.container)

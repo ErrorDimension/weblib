@@ -51,8 +51,15 @@ const navigation: {
             brightnessLevel?: string,
             func?: (...args: any[]) => any,
             text?: string,
-        }): Component & { set icon(icon: string) },
-        account(): Component
+        }): Component & {
+            set icon(icon: string)
+            set image(src: string)
+        },
+        account(): Component & {
+            set avatar(src: string)
+            set userName(userName: string)
+            set background(colorName: string)
+        }
     },
     Tooltip: {
         new(target: HTMLElement): Tooltip,
@@ -382,7 +389,10 @@ const navigation: {
             alwaysActive?: boolean,
             text?: string,
             func?: (...args: any[]) => any
-        } = {}): Component & { set icon(icon: string) } {
+        } = {}): Component & {
+            set icon(icon: string)
+            set image(src: string)
+        } {
             const container: HTMLSpanElement = magicDOM.createElement('span', {
                 classList: ['nav__component', 'nav__button'],
             })
@@ -431,16 +441,38 @@ const navigation: {
 
                 set icon(iconName: string) {
                     $('i', this.container).remove()
+                    $('img', this.container).remove()
                     this.container.append(magicDOM.toHTMLElement(
                         `<i class='fa-solid fa-${iconName}'></i>`)
+                    )
+                },
+
+
+                set image(src: string) {
+                    $('i', this.container).remove()
+
+                    if (this.container.querySelector('img')) {
+                        $$<HTMLImageElement>('img', this.container).src = src
+                        return
+                    }
+
+                    this.container.append(magicDOM.toHTMLElement(
+                        `<img src='${src}' loading='lazy'></img>`)
                     )
                 }
             }
         },
 
 
-        account(): Component {
-            const button: Component & { set icon(icon: string) } = this.button({
+        account(): Component & {
+            set avatar(src: string)
+            set userName(userName: string)
+            set background(colorName: string)
+        } {
+            const button: Component & {
+                set icon(iconName: string)
+                set image(src: string)
+            } = this.button({
                 text: 'guest',
                 image: 'guest.png'
             })
@@ -449,14 +481,63 @@ const navigation: {
             const subWindow: SubWindow = new navigation.SubWindow(container)
 
 
+            /** pre produced account section */
+            new Promise<void>((res): void => {
+                subWindow.content = magicDOM.toHTMLElement(
+                    `
+                    <div class='s-account'>
+                        Guest
+                        <div>
+                            <img src='guest.png' loading='lazy' />
+                            <span>guest user</span>
+                        </div>
+                    </div>
+                    `
+                )
 
+
+                Glasium.init($$('.s-account div'), {
+                    color: Glasium.COLOR.LIGHTBLUE,
+                    brightness: Glasium.BRIGHTNESS.LIGHT,
+                    count: 28,
+                    scale: 6
+                })
+
+                Glasium.change(container, {
+                    color: Glasium.COLOR.RED
+                })
+
+
+                res()
+            }).then((): void => {
+                subWindow.loaded = true
+            })
 
 
             return {
                 container,
                 tooltip,
                 clicker,
-                subWindow
+                subWindow,
+
+
+                set avatar(src: string) {
+                    button.image = src
+                },
+
+
+                set userName(userName: string) {
+                    $$('.nav__button__text').innerText = userName
+                },
+
+
+                set background(colorName: string) {
+                    colorName = colorName.toUpperCase()
+
+                    Glasium.change(this.container, {
+                        color: Glasium.COLOR[colorName]
+                    })
+                }
             }
         }
     },
@@ -665,10 +746,12 @@ const navigation: {
             new ResizeObserver((): void => this.update()).observe(this.#contentNode)
             new ResizeObserver((): void => this.update()).observe(this.#container)
 
+            $(window).on('resize', (): void => this.update())
+
 
             /** events */
             $(this.#container).on('click', ({ target }: MouseEvent): void => {
-                if (target != this.#container) return
+                if ((target as HTMLElement).matches('.nav__sub-window *')) return
 
                 this.toggle()
             })
@@ -676,39 +759,41 @@ const navigation: {
 
 
         update(): void {
-            if (!(this.#contentNode && this.#windowNode)) return
+            lib.cssFrame((): void => {
+                if (!(this.#contentNode && this.#windowNode)) return
 
 
-            let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
-            $(this.#windowNode).css('--height', `${height}px`)
+                let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
+                $(this.#windowNode).css('--height', `${height}px`)
 
 
-            if (this.#isShowing) {
-                if (!(this.#container && this.#windowNode)) return
+                if (this.#isShowing) {
+                    if (!(this.#container && this.#windowNode)) return
 
 
-                let rect: DOMRect = this.#container.getBoundingClientRect()
-                let width: number = this.#contentNode.offsetWidth
+                    let rect: DOMRect = this.#container.getBoundingClientRect()
+                    let width: number = this.#contentNode.offsetWidth
 
 
-                if (
-                    rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
-                    rect.left + rect.width / 2 > width / 2
-                )
-                    this.#windowNode.dataset.align = 'center'
-                else if (width + rect.left > window.innerWidth)
-                    this.#windowNode.dataset.align = 'right'
-                else if (rect.left + width < window.innerWidth)
-                    this.#windowNode.dataset.align = 'left'
-                else {
-                    this.#windowNode.dataset.align = 'expanded'
-                    $(this.#windowNode).css('--width', null)
-                    return
+                    if (
+                        rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
+                        rect.left + rect.width / 2 > width / 2
+                    )
+                        this.#windowNode.dataset.align = 'center'
+                    else if (width - rect.right < 0)
+                        this.#windowNode.dataset.align = 'right'
+                    else if (rect.left + width < window.innerWidth)
+                        this.#windowNode.dataset.align = 'left'
+                    else {
+                        this.#windowNode.dataset.align = 'expanded'
+                        $(this.#windowNode).css('--width', null)
+                        return
+                    }
+
+
+                    $(this.#windowNode).css('--width', `${width}px`)
                 }
-
-
-                $(this.#windowNode).css('--width', `${width}px`)
-            }
+            })
         }
 
 
