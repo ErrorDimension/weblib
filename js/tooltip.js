@@ -67,10 +67,7 @@ const tooltip = {
         this.container = document.createElement('t-container');
         this.content = document.createElement('t-content');
         this.container.append(this.content);
-        $(this.container).dataset({ deactivated: '' }).css({
-            '--width': '0px',
-            '--height': '0px'
-        });
+        $(this.container).dataset({ deactivated: '' });
         document.body.insertBefore(this.container, document.body.firstChild);
         /** observe the tooltip */
         new ResizeObserver(() => this.updateSize()).observe(this.content);
@@ -218,9 +215,6 @@ const tooltip = {
             '--width': this.content.offsetWidth,
             '--height': this.content.offsetHeight,
         });
-        const raf = new RecordAnimationFrame(() => this.move());
-        raf.start();
-        window.setTimeout(() => raf.stop(), SIZE_TRANSITION_DURATION);
     },
     update(content) {
         if (!this.content)
@@ -230,6 +224,9 @@ const tooltip = {
         this.glow();
         magicDOM.emptyNode(this.content);
         this.content.append(content);
+        const raf = new RecordAnimationFrame(() => this.move());
+        raf.start();
+        window.setTimeout(() => raf.stop(), SIZE_TRANSITION_DURATION);
     },
     glow() {
         if (!this.container)

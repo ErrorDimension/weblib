@@ -145,10 +145,7 @@ const tooltip: {
         this.content = document.createElement('t-content')
 
         this.container.append(this.content)
-        $(this.container).dataset({ deactivated: '' }).css({
-            '--width': '0px',
-            '--height': '0px'
-        })
+        $(this.container).dataset({ deactivated: '' })
         document.body.insertBefore(this.container, document.body.firstChild)
 
 
@@ -370,11 +367,6 @@ const tooltip: {
             '--width': this.content.offsetWidth,
             '--height': this.content.offsetHeight,
         })
-
-        const raf: RecordAnimationFrame = new RecordAnimationFrame((): void => this.move())
-
-        raf.start()
-        window.setTimeout((): void => raf.stop(), SIZE_TRANSITION_DURATION)
     },
 
 
@@ -388,6 +380,12 @@ const tooltip: {
 
         magicDOM.emptyNode(this.content)
         this.content.append(content)
+
+
+        const raf: RecordAnimationFrame = new RecordAnimationFrame((): void => this.move())
+
+        raf.start()
+        window.setTimeout((): void => raf.stop(), SIZE_TRANSITION_DURATION)
     },
 
 

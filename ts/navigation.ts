@@ -25,6 +25,7 @@ const navigation: {
         d?: HTMLElement
     },
     underlay?: HTMLElement
+    subWindowList: SubWindow[],
     init(containerQuery: string, contentQuery: string): void,
     insert(component: {
         container: HTMLElement,
@@ -59,7 +60,11 @@ const navigation: {
         prototype: Clicker,
     },
     SubWindow: {
-        new(): SubWindow,
+        new(
+            container: HTMLElement,
+            content?: HTMLElement | string,
+            color?: string
+        ): SubWindow,
         prototype: SubWindow
     }
 } = {
@@ -77,6 +82,8 @@ const navigation: {
     tooltip: undefined,
 
     underlay: undefined,
+
+    subWindowList: [],
 
 
     init(containerQuery: string, contentQuery: string): void {
@@ -136,6 +143,17 @@ const navigation: {
         })
 
         container.insertBefore(this.navbar, container.firstChild)
+
+
+        /** events */
+        $(this.underlay).on('click', (): void => {
+            for (let item of this.subWindowList)
+                if (item.isShowing)
+                    item.hide(false)
+
+
+            this.setUnderlay(false)
+        })
     },
 
 
@@ -563,7 +581,202 @@ const navigation: {
 
 
     SubWindow: class {
+        constructor(
+            container: HTMLElement,
+            content: HTMLElement | string = 'blank'
+        ) {
+            /** initialize the html */
+            this.#container = container
 
+            this.#windowNode = magicDOM.createElement('div', {
+                classList: [
+                    'nav__sub-window',
+                    'nav__sub-window--deactivated'
+                ],
+                attribute: { 'data-id': this.#id }
+            })
+
+            this.#overlayNode = magicDOM.createElement('div', {
+                classList: 'nav__sub-window__overlay',
+                children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
+            })
+
+            this.#contentNode = magicDOM.createElement('div', {
+                classList: 'nav__sub-window__content'
+            })
+
+            this.content = content
+
+            this.#windowNode.append(this.#overlayNode, this.#contentNode)
+            this.#container.append(this.#windowNode)
+
+
+            /** list */
+            navigation.subWindowList.push(this)
+
+
+            /** observer */
+            new ResizeObserver((): void => this.update()).observe(this.#contentNode)
+            new ResizeObserver((): void => this.update()).observe(this.#container)
+
+
+            /** events */
+            $(this.#container).on('click', ({ target }: MouseEvent): void => {
+                if (target != this.#container) return
+
+                this.toggle()
+            })
+        }
+
+
+        update(): void {
+            if (!(this.#contentNode && this.#windowNode)) return
+
+
+            let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
+            $(this.#windowNode).css('--height', `${height}px`)
+
+
+            if (this.#isShowing) {
+                if (!(this.#container && this.#windowNode)) return
+
+
+                let rect: DOMRect = this.#container.getBoundingClientRect()
+                let width: number = this.#contentNode.offsetWidth
+
+
+                if (
+                    rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
+                    rect.left + rect.width / 2 > width / 2
+                )
+                    this.#windowNode.dataset.align = 'center'
+                else if (width + rect.left > window.innerWidth)
+                    this.#windowNode.dataset.align = 'right'
+                else if (rect.left + width < window.innerWidth)
+                    this.#windowNode.dataset.align = 'left'
+                else {
+                    this.#windowNode.dataset.align = 'expanded'
+                    $(this.#windowNode).css('--width', null)
+                    return
+                }
+
+
+                $(this.#windowNode).css('--width', `${width}px`)
+            }
+        }
+
+
+        show(): void {
+            if (!(this.#windowNode && this.#container)) return
+
+
+            window.clearTimeout(this.#hideTimeoutId)
+
+
+            for (let item of navigation.subWindowList)
+                if (item.id !== this.#id)
+                    item.hide(false)
+
+
+            navigation.setUnderlay(true)
+
+
+            this.update()
+
+
+            $(this.#windowNode)
+                .addClass('nav__sub-window--activated')
+                .removeClass('nav__sub-window--deactivated')
+
+            $(this.#container)
+                .dataset('swActivated', '')
+
+
+            this.#isShowing = true
+        }
+
+
+        hide(trusted: boolean = true): void {
+            if (!(this.#windowNode && this.#container)) return
+
+
+            window.clearTimeout(this.#hideTimeoutId)
+
+
+            if (trusted) navigation.setUnderlay(false)
+
+
+            this.#windowNode.classList.remove('nav__sub-window--activated')
+            this.#container.classList.remove('nav__sub-window__container--activated')
+
+            $(this.#container)
+                .dataset('swActivated', null)
+
+
+            this.#isShowing = false
+
+
+            this.update()
+
+
+            this.#hideTimeoutId = window.setTimeout((): void => {
+                if (!this.#windowNode) return
+
+                this.#windowNode.classList.add('nav__sub-window--deactivated')
+            }, 300)
+        }
+
+
+        toggle(): void {
+            this.#isShowing ? this.hide() : this.show()
+
+
+            this.#toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
+                handler(this.#isShowing)
+            })
+        }
+
+
+        onToggle(func: (...args: any[]) => any): void {
+            this.#toggleHandlers.push(func)
+        }
+
+
+        set loaded(loaded: boolean) {
+            if (!this.#overlayNode) return
+
+
+            $(this.#overlayNode).css('display', loaded ? 'none' : 'block')
+        }
+
+
+        set content(content: HTMLElement | string) {
+            if (!this.#contentNode) return
+
+
+            magicDOM.emptyNode(this.#contentNode)
+
+
+            this.#contentNode.append(content)
+        }
+
+
+        get isShowing(): boolean { return this.#isShowing }
+
+
+        get id(): string { return this.#id }
+
+
+        #id: string = lib.randomString(6)
+        #isShowing: boolean = false
+        #hideTimeoutId: number = -1
+
+        #toggleHandlers: ((...args: any[]) => any)[] = []
+
+        #container?: HTMLElement
+        #contentNode?: HTMLElement
+        #windowNode?: HTMLElement
+        #overlayNode?: HTMLElement
     }
 }
 
@@ -602,5 +815,13 @@ interface Clicker {
 
 
 interface SubWindow {
-
+    readonly id: string
+    readonly isShowing: boolean
+    set loaded(loaded: boolean)
+    set content(content: HTMLElement | string)
+    show(): void
+    hide(trusted?: boolean): void
+    update(): void
+    toggle(): void
+    onToggle(func: (...args: any[]) => any): void
 }

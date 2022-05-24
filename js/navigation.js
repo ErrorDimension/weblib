@@ -12,6 +12,7 @@ const navigation = {
     },
     tooltip: undefined,
     underlay: undefined,
+    subWindowList: [],
     init(containerQuery, contentQuery) {
         if (this.initialized)
             return;
@@ -58,6 +59,13 @@ const navigation = {
             underlay: this.underlay
         });
         container.insertBefore(this.navbar, container.firstChild);
+        /** events */
+        $(this.underlay).on('click', () => {
+            for (let item of this.subWindowList)
+                if (item.isShowing)
+                    item.hide(false);
+            this.setUnderlay(false);
+        });
     },
     insert(component, location, order) {
         if (!['left', 'right'].includes(location))
@@ -326,6 +334,127 @@ const navigation = {
         }
     },
     SubWindow: class {
+        constructor(container, content = 'blank') {
+            /** initialize the html */
+            this.#container = container;
+            this.#windowNode = magicDOM.createElement('div', {
+                classList: [
+                    'nav__sub-window',
+                    'nav__sub-window--deactivated'
+                ],
+                attribute: { 'data-id': this.#id }
+            });
+            this.#overlayNode = magicDOM.createElement('div', {
+                classList: 'nav__sub-window__overlay',
+                children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
+            });
+            this.#contentNode = magicDOM.createElement('div', {
+                classList: 'nav__sub-window__content'
+            });
+            this.content = content;
+            this.#windowNode.append(this.#overlayNode, this.#contentNode);
+            this.#container.append(this.#windowNode);
+            /** list */
+            navigation.subWindowList.push(this);
+            /** observer */
+            new ResizeObserver(() => this.update()).observe(this.#contentNode);
+            new ResizeObserver(() => this.update()).observe(this.#container);
+            /** events */
+            $(this.#container).on('click', ({ target }) => {
+                if (target != this.#container)
+                    return;
+                this.toggle();
+            });
+        }
+        update() {
+            if (!(this.#contentNode && this.#windowNode))
+                return;
+            let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
+            $(this.#windowNode).css('--height', `${height}px`);
+            if (this.#isShowing) {
+                if (!(this.#container && this.#windowNode))
+                    return;
+                let rect = this.#container.getBoundingClientRect();
+                let width = this.#contentNode.offsetWidth;
+                if (rect.left + rect.width / 2 + width / 2 < window.innerWidth &&
+                    rect.left + rect.width / 2 > width / 2)
+                    this.#windowNode.dataset.align = 'center';
+                else if (width + rect.left > window.innerWidth)
+                    this.#windowNode.dataset.align = 'right';
+                else if (rect.left + width < window.innerWidth)
+                    this.#windowNode.dataset.align = 'left';
+                else {
+                    this.#windowNode.dataset.align = 'expanded';
+                    $(this.#windowNode).css('--width', null);
+                    return;
+                }
+                $(this.#windowNode).css('--width', `${width}px`);
+            }
+        }
+        show() {
+            if (!(this.#windowNode && this.#container))
+                return;
+            window.clearTimeout(this.#hideTimeoutId);
+            for (let item of navigation.subWindowList)
+                if (item.id !== this.#id)
+                    item.hide(false);
+            navigation.setUnderlay(true);
+            this.update();
+            $(this.#windowNode)
+                .addClass('nav__sub-window--activated')
+                .removeClass('nav__sub-window--deactivated');
+            $(this.#container)
+                .dataset('swActivated', '');
+            this.#isShowing = true;
+        }
+        hide(trusted = true) {
+            if (!(this.#windowNode && this.#container))
+                return;
+            window.clearTimeout(this.#hideTimeoutId);
+            if (trusted)
+                navigation.setUnderlay(false);
+            this.#windowNode.classList.remove('nav__sub-window--activated');
+            this.#container.classList.remove('nav__sub-window__container--activated');
+            $(this.#container)
+                .dataset('swActivated', null);
+            this.#isShowing = false;
+            this.update();
+            this.#hideTimeoutId = window.setTimeout(() => {
+                if (!this.#windowNode)
+                    return;
+                this.#windowNode.classList.add('nav__sub-window--deactivated');
+            }, 300);
+        }
+        toggle() {
+            this.#isShowing ? this.hide() : this.show();
+            this.#toggleHandlers.forEach((handler) => {
+                handler(this.#isShowing);
+            });
+        }
+        onToggle(func) {
+            this.#toggleHandlers.push(func);
+        }
+        set loaded(loaded) {
+            if (!this.#overlayNode)
+                return;
+            $(this.#overlayNode).css('display', loaded ? 'none' : 'block');
+        }
+        set content(content) {
+            if (!this.#contentNode)
+                return;
+            magicDOM.emptyNode(this.#contentNode);
+            this.#contentNode.append(content);
+        }
+        get isShowing() { return this.#isShowing; }
+        get id() { return this.#id; }
+        #id = lib.randomString(6);
+        #isShowing = false;
+        #hideTimeoutId = -1;
+        #toggleHandlers = [];
+        #container;
+        #contentNode;
+        #windowNode;
+        #overlayNode;
     }
 };
 export default navigation;

@@ -17,6 +17,7 @@ declare const navigation: {
         d?: HTMLElement;
     };
     underlay?: HTMLElement;
+    subWindowList: SubWindow[];
     init(containerQuery: string, contentQuery: string): void;
     insert(component: {
         container: HTMLElement;
@@ -57,7 +58,7 @@ declare const navigation: {
         prototype: Clicker;
     };
     SubWindow: {
-        new (): SubWindow;
+        new (container: HTMLElement, content?: HTMLElement | string, color?: string): SubWindow;
         prototype: SubWindow;
     };
 };
@@ -89,5 +90,14 @@ interface Clicker {
     hide(): void;
 }
 interface SubWindow {
+    readonly id: string;
+    readonly isShowing: boolean;
+    set loaded(loaded: boolean);
+    set content(content: HTMLElement | string);
+    show(): void;
+    hide(trusted?: boolean): void;
+    update(): void;
+    toggle(): void;
+    onToggle(func: (...args: any[]) => any): void;
 }
 //# sourceMappingURL=navigation.d.ts.map
