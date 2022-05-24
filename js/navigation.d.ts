@@ -39,15 +39,18 @@ declare const navigation: {
             };
         }>): void;
         hamburger(func?: () => void): Component;
-        button({ icon, colorName, alwaysActive, brightnessLevel, func }: {
+        button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string;
+            image?: string;
             colorName?: string;
             alwaysActive?: boolean;
             brightnessLevel?: string;
             func?: (...args: any[]) => any;
+            text?: string;
         }): Component & {
             set icon(icon: string);
         };
+        account(): Component;
     };
     Tooltip: {
         new (target: HTMLElement): Tooltip;

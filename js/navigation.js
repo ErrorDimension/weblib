@@ -199,7 +199,7 @@ const navigation = {
                 clicker
             };
         },
-        button({ icon = 'code', colorName = 'BLUE', brightnessLevel = 'OTHER', alwaysActive = false, func = undefined } = {}) {
+        button({ icon = 'code', image = undefined, colorName = 'BLUE', brightnessLevel = 'OTHER', alwaysActive = false, text = undefined, func = undefined } = {}) {
             const container = magicDOM.createElement('span', {
                 classList: ['nav__component', 'nav__button'],
             });
@@ -212,7 +212,14 @@ const navigation = {
                 count: 8,
                 color: Glasium.COLOR[colorName], brightness: Glasium.BRIGHTNESS[brightnessLevel]
             });
-            container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
+            if (!image)
+                container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`));
+            if (image)
+                container.append(magicDOM.toHTMLElement(`<img src='${image}' loading='lazy'></img>`));
+            if (text) {
+                container.dataset.text = '';
+                container.append(magicDOM.toHTMLElement(`<div class='nav__button__text'>${text}</div>`));
+            }
             return {
                 container,
                 tooltip,
@@ -221,6 +228,20 @@ const navigation = {
                     $('i', this.container).remove();
                     this.container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${iconName}'></i>`));
                 }
+            };
+        },
+        account() {
+            const button = this.button({
+                text: 'guest',
+                image: 'guest.png'
+            });
+            const { container, tooltip, clicker } = button;
+            const subWindow = new navigation.SubWindow(container);
+            return {
+                container,
+                tooltip,
+                clicker,
+                subWindow
             };
         }
     },
@@ -352,7 +373,7 @@ const navigation = {
                 classList: 'nav__sub-window__content'
             });
             this.content = content;
-            this.#windowNode.append(this.#overlayNode, this.#contentNode);
+            this.#windowNode.append(this.#contentNode, this.#overlayNode);
             this.#container.append(this.#windowNode);
             /** list */
             navigation.subWindowList.push(this);

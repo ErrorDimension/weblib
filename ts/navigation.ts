@@ -43,13 +43,16 @@ const navigation: {
             }
         }>): void,
         hamburger(func?: () => void): Component,
-        button({ icon, colorName, alwaysActive, brightnessLevel, func }: {
+        button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string,
+            image?: string,
             colorName?: string,
             alwaysActive?: boolean,
             brightnessLevel?: string,
-            func?: (...args: any[]) => any
-        }): Component & { set icon(icon: string) }
+            func?: (...args: any[]) => any,
+            text?: string,
+        }): Component & { set icon(icon: string) },
+        account(): Component
     },
     Tooltip: {
         new(target: HTMLElement): Tooltip,
@@ -365,15 +368,19 @@ const navigation: {
 
         button({
             icon = 'code',
+            image = undefined,
             colorName = 'BLUE',
             brightnessLevel = 'OTHER',
             alwaysActive = false,
+            text = undefined,
             func = undefined
         }: {
             icon?: string,
+            image?: string,
             colorName?: string,
             brightnessLevel?: string,
             alwaysActive?: boolean,
+            text?: string,
             func?: (...args: any[]) => any
         } = {}): Component & { set icon(icon: string) } {
             const container: HTMLSpanElement = magicDOM.createElement('span', {
@@ -396,7 +403,24 @@ const navigation: {
             })
 
 
-            container.append(magicDOM.toHTMLElement(`<i class='fa-solid fa-${icon}'></i>`))
+            if (!image)
+                container.append(magicDOM.toHTMLElement(
+                    `<i class='fa-solid fa-${icon}'></i>`
+                ))
+
+
+            if (image)
+                container.append(magicDOM.toHTMLElement(
+                    `<img src='${image}' loading='lazy'></img>`
+                ))
+
+
+            if (text) {
+                container.dataset.text = ''
+                container.append(magicDOM.toHTMLElement(
+                    `<div class='nav__button__text'>${text}</div>`
+                ))
+            }
 
 
             return {
@@ -411,6 +435,28 @@ const navigation: {
                         `<i class='fa-solid fa-${iconName}'></i>`)
                     )
                 }
+            }
+        },
+
+
+        account(): Component {
+            const button: Component & { set icon(icon: string) } = this.button({
+                text: 'guest',
+                image: 'guest.png'
+            })
+
+            const { container, tooltip, clicker } = button
+            const subWindow: SubWindow = new navigation.SubWindow(container)
+
+
+
+
+
+            return {
+                container,
+                tooltip,
+                clicker,
+                subWindow
             }
         }
     },
@@ -607,7 +653,7 @@ const navigation: {
 
             this.content = content
 
-            this.#windowNode.append(this.#overlayNode, this.#contentNode)
+            this.#windowNode.append(this.#contentNode, this.#overlayNode)
             this.#container.append(this.#windowNode)
 
 
