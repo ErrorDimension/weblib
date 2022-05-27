@@ -86,7 +86,17 @@ class Glasium {
      * @param       options.count               shape count
      * @param       options.rotate              rotation
      */
-    static init(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, count = 10, rotate = false } = {}) {
+    static init(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, count = 10, rotate = false, onMutation = undefined } = {}) {
+        if (onMutation != undefined) {
+            new MutationObserver(() => {
+                Glasium.change(element, onMutation[onMutation.callback() ? 'true' : 'false']);
+            }).observe(onMutation.observing, onMutation.options);
+            Glasium.init(element, {
+                shape, color, brightness, scale, speed, count, rotate,
+                ...onMutation[onMutation.callback() ? 'true' : 'false'],
+            });
+            return;
+        }
         /** remove current background */
         let currentBackground = element.querySelector('.glasium__background');
         if (currentBackground)
@@ -98,7 +108,7 @@ class Glasium {
         /** initialize background */
         this.#background(element, { shape, color, brightness, scale, speed, count, rotate });
     }
-    static change(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, count = 10, rotate = false } = {}) {
+    static change(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, rotate = false } = {}) {
         const background = element.querySelector('.glasium__background');
         if (background === null)
             return;

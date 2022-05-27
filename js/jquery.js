@@ -65,7 +65,7 @@ class JHTMLElement extends Array {
         return this;
     }
     remove() {
-        this.forEach((element) => {
+        this.forEach(function (element) {
             if (element instanceof HTMLElement)
                 element.remove();
         });

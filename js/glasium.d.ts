@@ -13,8 +13,8 @@ declare class Glasium {
      * @param       options.count               shape count
      * @param       options.rotate              rotation
      */
-    static init(element: HTMLElement, { shape, color, brightness, scale, speed, count, rotate }?: GBackground): void;
-    static change(element: HTMLElement, { shape, color, brightness, scale, speed, count, rotate }?: GBackground): void;
+    static init(element: HTMLElement, { shape, color, brightness, scale, speed, count, rotate, onMutation }?: GBackground): void;
+    static change(element: HTMLElement, { shape, color, brightness, scale, speed, rotate }?: GBackground): void;
 }
 export default Glasium;
 interface GBackground {
@@ -25,6 +25,27 @@ interface GBackground {
     speed?: number;
     count?: number;
     rotate?: boolean;
+    onMutation?: {
+        true: {
+            shape?: GBackgroundShape;
+            color?: GBackgroundColor;
+            brightness?: [number, number];
+            scale?: number;
+            speed?: number;
+            rotate?: boolean;
+        };
+        false: {
+            shape?: GBackgroundShape;
+            color?: GBackgroundColor;
+            brightness?: [number, number];
+            scale?: number;
+            speed?: number;
+            rotate?: boolean;
+        };
+        callback(): boolean;
+        observing: HTMLElement;
+        options?: MutationObserverInit;
+    };
 }
 interface GBackgroundColor {
     background: string;

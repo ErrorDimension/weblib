@@ -58,7 +58,7 @@ class Console {
             return 10
 
         if (userAgent.match(/firefox|fxios/i))          /* Firefox */
-            return "firefox"
+            return 12
 
         if (userAgent.match(/safari/i))                 /* Safari */
             return "safari"
@@ -75,6 +75,8 @@ class Console {
             case 10:
                 return ' '
             case 16:
+                return '  '
+            case 12:
                 return '  '
             default:
                 return ' '

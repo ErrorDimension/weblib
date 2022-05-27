@@ -105,7 +105,7 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 
 
     remove(): void {
-        this.forEach((element: Type): void => {
+        this.forEach(function (element: Type): void {
             if (element instanceof HTMLElement) element.remove()
         })
     }

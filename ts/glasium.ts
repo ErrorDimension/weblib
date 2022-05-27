@@ -1,19 +1,7 @@
-import { $, $$ } from './jquery'
+import { $ } from './jquery'
 import lib from './lib'
 import magicDOM from './magic-dom'
 
-
-type Shape = 'triangle' | 'square' | 'hexagon' | 'all' | 'circle'
-
-interface Properties {
-    shape?: Shape,
-    color?: { background: string, shape: string, invertContrast: boolean },
-    brightness?: [number, number],
-    scale?: number,
-    speed?: number,
-    count?: number,
-    rotate?: boolean
-}
 
 class Glasium {
     static SHAPES: GBackgroundShape[] = [
@@ -146,8 +134,25 @@ class Glasium {
         scale = 2,
         speed = 2,
         count = 10,
-        rotate = false
+        rotate = false,
+        onMutation = undefined
     }: GBackground = {}): void {
+        if (onMutation != undefined) {
+            new MutationObserver((): void => {
+                Glasium.change(element, onMutation[onMutation.callback() ? 'true' : 'false'])
+            }).observe(onMutation.observing, onMutation.options)
+
+
+            Glasium.init(element, {
+                shape, color, brightness, scale, speed, count, rotate,
+                ...onMutation[onMutation.callback() ? 'true' : 'false'],
+            })
+
+
+            return
+        }
+
+
         /** remove current background */
         let currentBackground: Element | null = element.querySelector('.glasium__background')
 
@@ -171,7 +176,6 @@ class Glasium {
         brightness = this.BRIGHTNESS.OTHER,
         scale = 2,
         speed = 2,
-        count = 10,
         rotate = false
     }: GBackground = {}): void {
         const background: HTMLElement | null = element.querySelector('.glasium__background')
@@ -235,7 +239,28 @@ interface GBackground {
     scale?: number,
     speed?: number,
     count?: number,
-    rotate?: boolean
+    rotate?: boolean,
+    onMutation?: {
+        true: {
+            shape?: GBackgroundShape,
+            color?: GBackgroundColor,
+            brightness?: [number, number],
+            scale?: number,
+            speed?: number,
+            rotate?: boolean
+        },
+        false: {
+            shape?: GBackgroundShape,
+            color?: GBackgroundColor,
+            brightness?: [number, number],
+            scale?: number,
+            speed?: number,
+            rotate?: boolean
+        },
+        callback(): boolean,
+        observing: HTMLElement,
+        options?: MutationObserverInit
+    }
 }
 
 

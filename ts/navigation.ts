@@ -242,20 +242,26 @@ const navigation: {
 
 
             /** background for routes */
-            const isDark: () => boolean = (): boolean => document.body.dataset.theme === 'dark'
-
-            const color: () => string = (): string => isDark() ? 'DARK' : 'WHITESMOKE'
-            const brightness: () => string = (): string => isDark() ? 'DARK' : 'LIGHT'
-
             Glasium.init(component.container, {
-                color: Glasium.COLOR[color()],
-                brightness: Glasium.BRIGHTNESS[brightness()]
+                count: 8,
+                onMutation: {
+                    callback(): boolean {
+                        return document.body.dataset.theme === 'dark'
+                    },
+                    false: {
+                        color: Glasium.COLOR.WHITESMOKE,
+                        brightness: Glasium.BRIGHTNESS.LIGHT
+                    },
+                    true: {
+                        color: Glasium.COLOR.DARK,
+                        brightness: Glasium.BRIGHTNESS.DARK
+                    },
+                    observing: document.body,
+                    options: {
+                        attributeFilter: ['data-theme']
+                    }
+                }
             })
-
-            new MutationObserver((): void => Glasium.change(component.container, {
-                color: Glasium.COLOR[color()],
-                brightness: Glasium.BRIGHTNESS[brightness()]
-            })).observe(document.body, { attributeFilter: ['data-theme'] })
 
 
             /** navigation */
@@ -497,14 +503,29 @@ const navigation: {
 
 
                 Glasium.init($$('.s-account div'), {
-                    color: Glasium.COLOR.LIGHTBLUE,
-                    brightness: Glasium.BRIGHTNESS.LIGHT,
-                    count: 28,
-                    scale: 6
+                    count: 20,
+                    scale: 6.5,
+                    onMutation: {
+                        true: {
+                            color: Glasium.COLOR.DARK,
+                            brightness: Glasium.BRIGHTNESS.DARK
+                        },
+                        false: {
+                            color: Glasium.COLOR.WHITESMOKE,
+                            brightness: Glasium.BRIGHTNESS.LIGHT
+                        },
+                        observing: document.body,
+                        options: {
+                            attributeFilter: ['data-theme']
+                        },
+                        callback(): boolean {
+                            return document.body.dataset.theme === 'dark'
+                        }
+                    }
                 })
 
                 Glasium.change(container, {
-                    color: Glasium.COLOR.RED
+                    color: Glasium.COLOR.RED // because initially button is whitesmoke
                 })
 
 
