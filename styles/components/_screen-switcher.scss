@@ -1,0 +1,146 @@
+body {
+    --bg: rgb(100, 100, 100);
+    --op: 0.3;
+}
+
+
+body[data-theme="dark"] {
+    --op: 0.5;
+}
+
+
+.screen {
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+
+    padding-inline-start: 10px;
+    padding-inline-end: 10px;
+
+    margin-inline-start: auto;
+    margin-inline-end: auto;
+
+
+    &__header {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+
+        align-items: center;
+
+        padding-block-start: 40px;
+        padding-block-end: 20px;
+
+        background-color: var(--global-bg);
+
+        &__icon {
+            font-size: 2.65em;
+        }
+
+
+        &__switcher {
+            flex-grow: 1;
+
+            padding-inline-start: 1em;
+            padding-inline-end: 1em;
+
+
+            &__btn {
+                margin-block-end: 0.38em;
+
+
+                button {
+                    position: relative;
+
+                    font-family: var(--font-secondary);
+                    font-weight: 300;
+                    font-size: 2em;
+
+                    color: var(--global-color);
+
+                    user-select: none;
+
+                    z-index: 1;
+
+                    cursor: pointer;
+
+                    transition: 400ms all ease;
+
+
+                    &:before {
+                        content: '';
+
+                        position: absolute;
+                        inset-block-end: 0;
+                        inset-inline: 0;
+
+                        width: 0;
+                        height: 2px;
+
+                        background-color: var(--bg);
+
+                        z-index: -1;
+
+                        transition:
+                            400ms all cubic-bezier(0.87, 0, 0.13, 1),
+                            400ms width cubic-bezier(0.16, 1, 0.3, 1),
+                            400ms transform cubic-bezier(0.87, 0, 0.13, 1) 200ms;
+                    }
+
+
+                    @media (hover: hover) {
+                        &:hover:before {
+                            width: 100%;
+                        }
+                    }
+
+
+                    &[data-active] {
+                        font-weight: 700;
+
+
+                        &:before {
+                            width: 100%;
+                            height: 20px;
+
+                            opacity: var(--op);
+
+                            background-color: var(--osc-color-blue);
+
+                            transform: translate(-0.2em, 0.05em);
+                        }
+                    }
+                }
+
+
+                button+button {
+                    margin-inline-start: 0.5em;
+                }
+            }
+
+
+            &__des {
+                width: 100%;
+
+                font-family: var(--font-secondary);
+                font-weight: 500;
+                font-size: 1.075em;
+            }
+        }
+    }
+
+
+    &__content {
+        flex-grow: 1;
+
+        padding-block-start: 15px;
+        padding-block-end: 15px;
+
+
+        >* {
+            width: 100%;
+            height: 100%;
+        }
+    }
+}

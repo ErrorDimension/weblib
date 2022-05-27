@@ -72,7 +72,7 @@ body[data-theme="dark"] {
 
     background-color: var(--nav-bg);
 
-    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 20px 120px 20px;
 
     transition: box-shadow 200ms ease-out;
 
@@ -426,13 +426,6 @@ body[data-theme="dark"] {
         }
 
 
-        &[data-align='center'] {
-            left: 50%;
-
-            transform: translateX(-50%);
-        }
-
-
         &[data-align='left'] {
             inset-inline-start: 0;
         }
@@ -444,11 +437,7 @@ body[data-theme="dark"] {
 
 
         &[data-align='expanded'] {
-            position: fixed;
-            inset-inline: 0;
-            inset-block-start: var(--nav-height);
-
-            width: 100%;
+            left: calc(var(--left) * -1px);
         }
 
 

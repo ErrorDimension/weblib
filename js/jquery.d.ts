@@ -1,5 +1,4 @@
 declare type ELoELO = EventListenerOrEventListenerObject;
-declare type EOp = boolean | AddEventListenerOptions;
 declare type E<Type> = Type extends Window ? WindowEventMap : Type extends Document ? DocumentEventMap : Type extends HTMLElement ? HTMLElementEventMap : never;
 declare type K<Type> = keyof E<Type>;
 declare class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends Array<Type> {
@@ -10,31 +9,32 @@ declare class JHTMLElement<Type extends Window | Document | HTMLElement | Node> 
     dataset(name: string, value: string | null): JHTMLElement<Type>;
     dataset(record: Record<string, string | null>): JHTMLElement<Type>;
     each(func: (this: Type, index: number) => any): JHTMLElement<Type>;
-    remove(): void;
+    remove(): JHTMLElement<Type>;
+    append(...nodes: (string | Node)[]): JHTMLElement<Type>;
     /**
      * @param       event               event type
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>;
+    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>;
     /**
      * @param       event               event type
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>;
+    on(event: string, listener: ELoELO, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>;
     /**
      * @param       event               event type
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>;
+    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>;
     /**
      * @param       event               event type
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>;
+    off(event: string, listener: ELoELO, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>;
     addClass(...className: string[]): JHTMLElement<Type>;
     removeClass(...className: string[]): JHTMLElement<Type>;
     toggleClass(className: string): JHTMLElement<Type>;

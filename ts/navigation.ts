@@ -32,6 +32,11 @@ const navigation: {
         [key: string]: any
     }, location: 'left' | 'right', order?: number): void,
     setUnderlay(activate?: boolean): void,
+    set loading(loading: boolean)
+    account: {
+        userToken?: string,
+        [key: string]: any
+    }
     addComponent: {
         logo({ icon, title, onlyActive }: {
             icon?: string, title?: string, onlyActive?: boolean
@@ -41,7 +46,7 @@ const navigation: {
                 title?: string,
                 description?: string
             }
-        }>): void,
+        }>, spa?: boolean): void,
         hamburger(func?: () => void): Component,
         button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string,
@@ -97,7 +102,7 @@ const navigation: {
 
 
     init(containerQuery: string, contentQuery: string): void {
-        if (this.initialized) return
+        if (this.initialized || typeof window === "undefined") return
         this.initialized = true
 
 
@@ -189,6 +194,21 @@ const navigation: {
     },
 
 
+    set loading(loading: boolean) {
+        if (!this.container) return
+
+        if (loading)
+            this.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'))
+        else
+            this.container.querySelector('.loading--cover')?.remove()
+    },
+
+
+    account: {
+        userToken: undefined
+    },
+
+
     addComponent: {
         logo({ icon = 'favicon.png', title = 'app name', onlyActive = false }: {
             icon?: string,
@@ -223,14 +243,8 @@ const navigation: {
 
         route(record: Record<string, {
             href: string, icon?: string, tooltip?: { title?: string, description?: string }
-        }>): void {
+        }>, spa: boolean = false): void {
             if (!navigation.navbar) return
-
-
-            /** component */
-            const component: { container: HTMLElement } = {
-                container: magicDOM.createElement('div', { classList: 'nav__component' })
-            }
 
 
             /** indicator */
@@ -239,6 +253,12 @@ const navigation: {
             })
 
             navigation.navbar.appendChild(indicator)
+
+
+            /** component */
+            const component: { container: HTMLElement } = {
+                container: magicDOM.createElement('div', { classList: 'nav__component' })
+            }
 
 
             /** background for routes */
@@ -266,48 +286,73 @@ const navigation: {
 
             /** navigation */
             let navigating: boolean = false
+            let routes: string[] = []
 
 
             /** create routes */
             for (let key in record) {
                 let { href, icon, tooltip } = record[key]
 
+
+                /** specify which route is available */
+                routes.push(href)
+
+
+                /** init info from record */
                 icon = icon ? icon : 'home'
                 tooltip = tooltip ? tooltip : { title: '', description: '' }
 
 
                 /** link */
-                const link: HTMLDivElement = magicDOM.createElement('div', {
-                    classList: 'nav__link',
-                    attribute: { 'data-href': href },
-                    children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
-                })
+                const link: HTMLElement = spa
+                    ? $(`a[data-href='${href}']`)
+                        .addClass('nav__link')
+                        .append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`))[0]
+                    : magicDOM.createElement('div', {
+                        classList: 'nav__link',
+                        attribute: { 'data-href': href },
+                        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
+                    })
 
                 new navigation.Tooltip(link).set(tooltip)
 
 
                 /** link's events */
                 $(link).on('click', (): void => {
-                    if (
-                        !navigation.container ||
-                        window.location.pathname === link.dataset.href ||
-                        navigating
-                    ) return
+                    /** 404 and 500 handler */
+                    if (!routes.includes(window.location.pathname)) {
+                        navigating = true
 
-                    navigating = true
+                        navigation.loading = true
+                        indicate(link).then((): void => {
+                            // the code said it
+                            window.location.pathname = link.dataset.href as string
+                        })
+
+                        return
+                    }
 
 
-                    /** loading state */
-                    navigation.container.append(magicDOM.toHTMLElement(
-                        '<div class="loading--cover"></div>'
-                    ))
+                    /** needless handler */
+                    if (or(
+                        window.location.pathname === link.dataset.href, // no need for navigate
+                        navigating, // is navigating so return
+                        spa // spa doesn't need more
+                    )) {
+                        indicate(link)
+
+                        return
+                    }
 
 
                     /** indicator and navigate */
-                    indicate(link).then((): string =>
-                        // the code said it
+                    navigating = true
+
+                    navigation.loading = true
+                    indicate(link).then((): void => {
+                        /** the code said it */
                         window.location.pathname = link.dataset.href as string
-                    )
+                    })
                 })
 
 
@@ -320,11 +365,12 @@ const navigation: {
             navigation.insert(component, 'left', 2)
 
 
-            /** indicate */
+            /** indicate and initial indication */
             function indicate(current: HTMLElement): Promise<void> {
                 return new Promise<void>((resolve: (value: void | PromiseLike<void>) => void): void => {
                     $('.nav__link--active').removeClass('nav__link--active')
                     $(current).addClass('nav__link--active')
+
 
                     const { left, width } = current.getBoundingClientRect()
 
@@ -333,7 +379,8 @@ const navigation: {
                         width: `${width}px`
                     })
 
-                    window.setTimeout((): void => resolve(), 200)
+
+                    window.setTimeout(resolve, 200)
                 })
             }
 
@@ -781,10 +828,10 @@ const navigation: {
 
         update(): void {
             lib.cssFrame((): void => {
-                if (!(this.#contentNode && this.#windowNode)) return
+                if (!(this.#contentNode && this.#windowNode && navigation.container)) return
 
 
-                const { innerWidth } = window
+                const { clientWidth } = navigation.container
 
 
                 let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
@@ -801,11 +848,14 @@ const navigation: {
 
                     if (width - rect.right < 0)
                         this.#windowNode.dataset.align = 'right'
-                    else if (rect.left + width < innerWidth)
+                    else if (rect.left + width < clientWidth)
                         this.#windowNode.dataset.align = 'left'
                     else {
                         this.#windowNode.dataset.align = 'expanded'
-                        $(this.#windowNode).css('--width', null)
+                        $(this.#windowNode).css({
+                            '--width': `${clientWidth}px`,
+                            '--left': rect.left
+                        })
                         return
                     }
 
@@ -978,3 +1028,6 @@ interface SubWindow {
     toggle(): void
     onToggle(func: (...args: any[]) => any): void
 }
+
+
+const or: (...args: any[]) => boolean = (...args: any[]): boolean => args.some((arg: any): any => arg)

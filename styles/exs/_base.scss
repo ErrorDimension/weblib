@@ -16,6 +16,7 @@ body {
     --scrollbar-active-color: rgba(75, 75, 75, 0.6);
 
     background-color: whitesmoke;
+    --global-bg: whitesmoke;
 
     scroll-behavior: smooth;
 
@@ -36,6 +37,7 @@ body[data-theme="dark"] {
     --global-color: whitesmoke;
 
     background-color: rgb(24, 24, 24);
+    --global-bg: rgb(24, 24, 24);
 }
 
 :root {

@@ -8,5 +8,6 @@ export { default as lib } from './lib';
 export { default as magicDOM } from './magic-dom';
 export { default as modCase } from './modcase';
 export { default as navigation } from './navigation';
+export { default as screenSwitcher } from './screen-switcher';
 export { default as setting } from './setting';
 export { default as tooltip } from './tooltip';

@@ -24,6 +24,11 @@ declare const navigation: {
         [key: string]: any;
     }, location: 'left' | 'right', order?: number): void;
     setUnderlay(activate?: boolean): void;
+    set loading(loading: boolean);
+    account: {
+        userToken?: string;
+        [key: string]: any;
+    };
     addComponent: {
         logo({ icon, title, onlyActive }: {
             icon?: string;
@@ -37,7 +42,7 @@ declare const navigation: {
                 title?: string;
                 description?: string;
             };
-        }>): void;
+        }>, spa?: boolean): void;
         hamburger(func?: () => void): Component;
         button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string;

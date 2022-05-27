@@ -52,7 +52,7 @@ const magicDOM = {
 
         /** append child to the container */
         if (typeof children === 'string')
-            container.innerText = children
+            container.textContent = children
 
         if (children instanceof HTMLElement)
             container.appendChild(children)

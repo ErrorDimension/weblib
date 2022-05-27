@@ -69,21 +69,29 @@ class JHTMLElement extends Array {
             if (element instanceof HTMLElement)
                 element.remove();
         });
-    }
-    on(event, listener, option) {
-        if (typeof event !== 'string')
-            throw new Error(`'JQuery.on() : 'event' is not valid`);
-        if (typeof listener !== 'function')
-            throw new Error(`'JQuery.on() : 'listener' is not valid`);
-        this.forEach((element) => element.addEventListener(event, listener, option));
         return this;
     }
-    off(event, listener, option) {
-        if (typeof event !== 'string')
+    append(...nodes) {
+        this.forEach(function (element) {
+            if (element instanceof HTMLElement)
+                element.append(...nodes);
+        });
+        return this;
+    }
+    on(a, b, c) {
+        if (typeof a !== 'string')
             throw new Error(`'JQuery.on() : 'event' is not valid`);
-        if (typeof listener !== 'function')
+        if (typeof b !== 'function')
             throw new Error(`'JQuery.on() : 'listener' is not valid`);
-        this.forEach((element) => element.removeEventListener(event, listener, option));
+        this.forEach((element) => element.addEventListener(a, b, c));
+        return this;
+    }
+    off(a, b, c) {
+        if (typeof a !== 'string')
+            throw new Error(`'JQuery.on() : 'event' is not valid`);
+        if (typeof b !== 'function')
+            throw new Error(`'JQuery.on() : 'listener' is not valid`);
+        this.forEach((element) => element.removeEventListener(a, b, c));
         return this;
     }
     addClass(...className) {

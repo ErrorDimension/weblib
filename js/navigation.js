@@ -14,7 +14,7 @@ const navigation = {
     underlay: undefined,
     subWindowList: [],
     init(containerQuery, contentQuery) {
-        if (this.initialized)
+        if (this.initialized || typeof window === "undefined")
             return;
         this.initialized = true;
         /** get container */
@@ -81,6 +81,17 @@ const navigation = {
             return;
         this.underlay.classList[activate ? 'add' : 'remove']('nav__underlay--active');
     },
+    set loading(loading) {
+        if (!this.container)
+            return;
+        if (loading)
+            this.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'));
+        else
+            this.container.querySelector('.loading--cover')?.remove();
+    },
+    account: {
+        userToken: undefined
+    },
     addComponent: {
         logo({ icon = 'favicon.png', title = 'app name', onlyActive = false } = {}) {
             const container = magicDOM.createTree('div', 'nav__logo', {}, {
@@ -100,18 +111,18 @@ const navigation = {
                 clicker
             };
         },
-        route(record) {
+        route(record, spa = false) {
             if (!navigation.navbar)
                 return;
-            /** component */
-            const component = {
-                container: magicDOM.createElement('div', { classList: 'nav__component' })
-            };
             /** indicator */
             const indicator = magicDOM.createElement('div', {
                 classList: 'nav__indicator'
             });
             navigation.navbar.appendChild(indicator);
+            /** component */
+            const component = {
+                container: magicDOM.createElement('div', { classList: 'nav__component' })
+            };
             /** background for routes */
             Glasium.init(component.container, {
                 count: 8,
@@ -135,38 +146,60 @@ const navigation = {
             });
             /** navigation */
             let navigating = false;
+            let routes = [];
             /** create routes */
             for (let key in record) {
                 let { href, icon, tooltip } = record[key];
+                /** specify which route is available */
+                routes.push(href);
+                /** init info from record */
                 icon = icon ? icon : 'home';
                 tooltip = tooltip ? tooltip : { title: '', description: '' };
                 /** link */
-                const link = magicDOM.createElement('div', {
-                    classList: 'nav__link',
-                    attribute: { 'data-href': href },
-                    children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
-                });
+                const link = spa
+                    ? $(`a[data-href='${href}']`)
+                        .addClass('nav__link')
+                        .append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`))[0]
+                    : magicDOM.createElement('div', {
+                        classList: 'nav__link',
+                        attribute: { 'data-href': href },
+                        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
+                    });
                 new navigation.Tooltip(link).set(tooltip);
                 /** link's events */
                 $(link).on('click', () => {
-                    if (!navigation.container ||
-                        window.location.pathname === link.dataset.href ||
-                        navigating)
+                    /** 404 and 500 handler */
+                    if (!routes.includes(window.location.pathname)) {
+                        navigating = true;
+                        navigation.loading = true;
+                        indicate(link).then(() => {
+                            // the code said it
+                            window.location.pathname = link.dataset.href;
+                        });
                         return;
-                    navigating = true;
-                    /** loading state */
-                    navigation.container.append(magicDOM.toHTMLElement('<div class="loading--cover"></div>'));
+                    }
+                    /** needless handler */
+                    if (or(window.location.pathname === link.dataset.href, // no need for navigate
+                    navigating, // is navigating so return
+                    spa // spa doesn't need more
+                    )) {
+                        indicate(link);
+                        return;
+                    }
                     /** indicator and navigate */
-                    indicate(link).then(() => 
-                    // the code said it
-                    window.location.pathname = link.dataset.href);
+                    navigating = true;
+                    navigation.loading = true;
+                    indicate(link).then(() => {
+                        /** the code said it */
+                        window.location.pathname = link.dataset.href;
+                    });
                 });
                 /** append link */
                 component.container.append(link);
             }
             /** insert */
             navigation.insert(component, 'left', 2);
-            /** indicate */
+            /** indicate and initial indication */
             function indicate(current) {
                 return new Promise((resolve) => {
                     $('.nav__link--active').removeClass('nav__link--active');
@@ -176,7 +209,7 @@ const navigation = {
                         left: `${left}px`,
                         width: `${width}px`
                     });
-                    window.setTimeout(() => resolve(), 200);
+                    window.setTimeout(resolve, 200);
                 });
             }
             const currentLink = document
@@ -459,9 +492,9 @@ const navigation = {
         }
         update() {
             lib.cssFrame(() => {
-                if (!(this.#contentNode && this.#windowNode))
+                if (!(this.#contentNode && this.#windowNode && navigation.container))
                     return;
-                const { innerWidth } = window;
+                const { clientWidth } = navigation.container;
                 let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
                 $(this.#windowNode).css('--height', `${height}px`);
                 if (this.#isShowing) {
@@ -471,11 +504,14 @@ const navigation = {
                     let width = this.#contentNode.offsetWidth;
                     if (width - rect.right < 0)
                         this.#windowNode.dataset.align = 'right';
-                    else if (rect.left + width < innerWidth)
+                    else if (rect.left + width < clientWidth)
                         this.#windowNode.dataset.align = 'left';
                     else {
                         this.#windowNode.dataset.align = 'expanded';
-                        $(this.#windowNode).css('--width', null);
+                        $(this.#windowNode).css({
+                            '--width': `${clientWidth}px`,
+                            '--left': rect.left
+                        });
                         return;
                     }
                     $(this.#windowNode).css('--width', `${width}px`);
@@ -550,3 +586,4 @@ const navigation = {
     }
 };
 export default navigation;
+const or = (...args) => args.some((arg) => arg);

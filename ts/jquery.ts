@@ -2,7 +2,6 @@ import modCase from './modcase.js'
 
 
 type ELoELO = EventListenerOrEventListenerObject
-type EOp = boolean | AddEventListenerOptions
 
 type E<Type> =
     Type extends Window ? WindowEventMap :
@@ -104,30 +103,20 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     }
 
 
-    remove(): void {
+    remove(): JHTMLElement<Type> {
         this.forEach(function (element: Type): void {
             if (element instanceof HTMLElement) element.remove()
         })
+
+        return this
     }
 
 
-    /**
-     * @param       event               event type 
-     * @param       listener            listener function
-     * @param       option              options
-     */
-    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
-    /**
-     * @param       event               event type 
-     * @param       listener            listener function
-     * @param       option              options
-     */
-    on(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
-    on<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
-        if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
-        if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
-
-        this.forEach((element: Type): void => element.addEventListener(event, listener, option))
+    append(...nodes: (string | Node)[]): JHTMLElement<Type> {
+        this.forEach(function (element: Type): void {
+            if (element instanceof HTMLElement)
+                element.append(...nodes)
+        })
 
         return this
     }
@@ -136,20 +125,42 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
     /**
      * @param       event               event type 
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, option?: EOp): JHTMLElement<Type>
+    on<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>
     /**
      * @param       event               event type 
      * @param       listener            listener function
-     * @param       option              options
+     * @param       options             options
      */
-    off(event: string, listener: ELoELO, option?: EOp): JHTMLElement<Type>
-    off<Key extends K<Type>>(event: Ev<Key>, listener: Fn<Type, Key>, option?: EOp): JHTMLElement<Type> {
-        if (typeof event !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
-        if (typeof listener !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
+    on(event: string, listener: ELoELO, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>
+    on<Key extends K<Type>>(a: Ev<Key>, b: Fn<Type, Key>, c?: boolean | AddEventListenerOptions): JHTMLElement<Type> {
+        if (typeof a !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
+        if (typeof b !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
 
-        this.forEach((element: Type): void => element.removeEventListener(event, listener, option))
+        this.forEach((element: Type): void => element.addEventListener(a, b, c))
+
+        return this
+    }
+
+
+    /**
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       options             options
+     */
+    off<Key extends K<Type>>(event: Key, listener: (this: Type, ev: E<Type>[Key]) => any, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>
+    /**
+     * @param       event               event type 
+     * @param       listener            listener function
+     * @param       options             options
+     */
+    off(event: string, listener: ELoELO, options?: boolean | AddEventListenerOptions): JHTMLElement<Type>
+    off<Key extends K<Type>>(a: Ev<Key>, b: Fn<Type, Key>, c?: boolean | AddEventListenerOptions): JHTMLElement<Type> {
+        if (typeof a !== 'string') throw new Error(`'JQuery.on() : 'event' is not valid`)
+        if (typeof b !== 'function') throw new Error(`'JQuery.on() : 'listener' is not valid`)
+
+        this.forEach((element: Type): void => element.removeEventListener(a, b, c))
 
         return this
     }
@@ -221,8 +232,6 @@ export function $$<T extends HTMLElement>(a: string, b?: string | HTMLElement): 
 }
 
 
-type JSelection = string | NodeList | HTMLElement | Window | Document
-
 export function $(doc: Document): JHTMLElement<Document>
 export function $(win: Window): JHTMLElement<Window>
 export function $<T extends HTMLElement>(query: string, fromQuery: string): JHTMLElement<T>
@@ -230,7 +239,7 @@ export function $<T extends HTMLElement>(query: string, element: HTMLElement): J
 export function $<T extends HTMLElement>(query: string): JHTMLElement<T>
 export function $<T extends HTMLElement>(elements: NodeList): JHTMLElement<T>
 export function $<T extends HTMLElement>(element: T): JHTMLElement<T>
-export function $(a: JSelection, b?: HTMLElement | string)
+export function $<T extends HTMLElement>(a: Document | Window | string | NodeList | T, b?: HTMLElement | string)
     : JHTMLElement<Node | HTMLElement | Window | Document> {
     if (typeof a === 'string' && typeof b === 'string') {
         const container: Element | null = document.querySelector(b)
