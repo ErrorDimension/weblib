@@ -32,6 +32,13 @@ body[data-theme="dark"] {
         padding-block-start: 40px;
         padding-block-end: 20px;
 
+
+        @media (max-width: 650px) {
+            padding-block-start: 20px;
+            padding-block-end: 10px;
+        }
+
+
         background-color: var(--global-bg);
 
         &__icon {
@@ -56,6 +63,12 @@ body[data-theme="dark"] {
                     font-family: var(--font-secondary);
                     font-weight: 300;
                     font-size: 2em;
+
+
+                    @media (max-width: 650px) {
+                        font-size: 1.55em;
+                    }
+
 
                     color: var(--global-color);
 
@@ -126,6 +139,11 @@ body[data-theme="dark"] {
                 font-family: var(--font-secondary);
                 font-weight: 500;
                 font-size: 1.075em;
+
+
+                @media (max-width: 650px) {
+                    font-size: 0.95em;
+                }
             }
         }
     }
