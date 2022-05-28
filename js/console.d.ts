@@ -1,5 +1,4 @@
 declare class Console {
-    #private;
     text: string;
     color?: string;
     background?: string;
@@ -9,6 +8,13 @@ declare class Console {
         opacity?: number | undefined;
     });
     private static initialized;
+    private static get padding();
+    private static get space();
+    /**
+     * @param { object[] } args datas
+     */
+    private static dataChanneling;
+    private static log;
     private static infoLog;
     private static debugLog;
     private static okayLog;

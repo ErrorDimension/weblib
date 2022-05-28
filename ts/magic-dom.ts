@@ -177,24 +177,24 @@ const magicDOM = {
             })
 
             this.input = this.container.input as HTMLInputElement
-            this.#left = this.container.left as HTMLDivElement
-            this.#thumb = this.container.thumb as HTMLDivElement
-            this.#right = this.container.right as HTMLDivElement
+            this.left = this.container.left as HTMLDivElement
+            this.thumb = this.container.thumb as HTMLDivElement
+            this.right = this.container.right as HTMLDivElement
 
-            this.#min = min
-            this.#max = max
-            this.#comfortablePct = comfortablePct
+            this.min = min
+            this.max = max
+            this.comfortablePct = comfortablePct
 
 
             /** attach event handlers */
             const self: this = this
 
             const removeDragState: () => void = (): void =>
-                self.#removeDragState()
+                self.removeDragState()
             const handleInputEvent: (event: Event) => void = (event: Event): void =>
-                self.#handleInputEvent(event)
+                self.handleInputEvent(event)
             const handleChangeEvent: (event: Event) => void = (event: Event): void =>
-                self.#handleChangeEvent(event)
+                self.handleChangeEvent(event)
 
             $(this.input)
                 .on('mouseup', removeDragState)
@@ -218,62 +218,72 @@ const magicDOM = {
 
         input: HTMLInputElement
 
-        #left: HTMLDivElement
-        #thumb: HTMLDivElement
-        #right: HTMLDivElement
+        left: HTMLDivElement
+        thumb: HTMLDivElement
+        right: HTMLDivElement
 
 
-        #inputHandlers: ((value: string, event: Event) => void)[] = []
-        #changeHandlers: ((value: string, event: Event) => void)[] = []
+        inputHandlers: ((value: string, event: Event) => void)[] = []
+        changeHandlers: ((value: string, event: Event) => void)[] = []
 
 
-        #removeDragState(): void {
-            this.#slideTick = 0
+        onInput(func: (value: string, event: Event) => void): void {
+            this.inputHandlers.push(func)
+        }
+
+
+        onChange(func: (value: string, event: Event) => void): void {
+            this.changeHandlers.push(func)
+        }
+
+
+        removeDragState(): void {
+            this.slideTick = 0
             this.container.classList.remove('slider--dragging')
         }
 
-        #handleInputEvent(event: Event): void {
-            this.#inputHandlers.forEach((handler: (value: string, event: Event) => void): void => {
+        handleInputEvent(event: Event): void {
+            this.inputHandlers.forEach((handler: (value: string, event: Event) => void): void => {
                 handler(this.input.value, event)
             })
-            this.#reRender()
+            this.reRender()
         }
 
-        #handleChangeEvent(event: Event): void {
-            this.#changeHandlers.forEach((handler: (value: string, event: Event) => void): void => {
+        handleChangeEvent(event: Event): void {
+            this.changeHandlers.forEach((handler: (value: string, event: Event) => void): void => {
                 handler(this.input.value, event)
             })
         }
 
 
-        #min: number
-        #max: number
-        #comfortablePct: number
+        min: number
+        max: number
+        comfortablePct: number
 
-        #slideTick: number = -1
+        slideTick: number = -1
 
-        #reRender(): void {
-            ++this.#slideTick
-            if (this.#slideTick > 1) this.container.classList.add('slider--dragging')
+        reRender(): void {
+            ++this.slideTick
+            if (this.slideTick > 1) this.container.classList.add('slider--dragging')
 
             let value: number = parseInt(this.input.value)
-            let position: number = (value - this.#min) / (this.#max - this.#min)
+            let position: number = (value - this.min) / (this.max - this.min)
 
-            this.#thumb.style.left = `calc(20px + (100% - 40px) * ${position})`
-            this.#left.style.width = `calc(10px + (100% - 40px) * ${position})`
-            this.#right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`
+            this.thumb.style.left = `calc(20px + (100% - 40px) * ${position})`
+            this.left.style.width = `calc(10px + (100% - 40px) * ${position})`
+            this.right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`
 
-            if (this.#comfortablePct)
+            if (this.comfortablePct)
                 $(this.container)
                     .dataset(
                         'uncomfortable',
-                        (value / this.#max) >= this.#comfortablePct ? '' : null
+                        (value / this.max) >= this.comfortablePct ? '' : null
                     )
         }
 
 
-        #__usingTooltip: boolean = false
-        get usingTooltip(): boolean { return this.#__usingTooltip }
+        __usingTooltip: boolean = false
+        get usingTooltip(): boolean { return this.__usingTooltip }
 
         tooltip(decorationCallback: (value: string) => string = (value: string): string => value): this {
             if (typeof decorationCallback !== "function")
@@ -314,7 +324,7 @@ const magicDOM = {
                 $(this.input).on('input', handleInputEvent)
             })
 
-            this.#__usingTooltip = true
+            this.__usingTooltip = true
 
             return this
         }

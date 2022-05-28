@@ -29,7 +29,7 @@ class Glasium {
         YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false },
         PURPLE: { background: 'rgb(95, 57, 155)', shape: 'rgb(95, 57, 155)', invertContrast: false },
     };
-    static #shape(background, { shape = 'triangle', count = 10, brightness = Glasium.BRIGHTNESS.OTHER, scale = 2, speed = 2 }) {
+    static shape(background, { shape = 'triangle', count = 10, brightness = Glasium.BRIGHTNESS.OTHER, scale = 2, speed = 2 }) {
         for (let i = 0; i < count; ++i) {
             /** insert shape */
             const shapeType = shape === 'all'
@@ -55,7 +55,7 @@ class Glasium {
             });
         }
     }
-    static #background(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, count = 10, rotate = false }) {
+    static background(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, count = 10, rotate = false }) {
         /** insert background */
         const background = magicDOM.createElement('div', {
             classList: 'glasium__background'
@@ -74,7 +74,7 @@ class Glasium {
             $(background).css('--background-height', `${background.offsetHeight}px`);
         }).observe(background);
         /** fill the background with shapes */
-        this.#shape(background, { shape, brightness, scale, speed, count });
+        this.shape(background, { shape, brightness, scale, speed, count });
     }
     /**
      * @param       element                     element
@@ -106,7 +106,7 @@ class Glasium {
         element.className = '';
         element.classList.add('glasium', ...classList);
         /** initialize background */
-        this.#background(element, { shape, color, brightness, scale, speed, count, rotate });
+        this.background(element, { shape, color, brightness, scale, speed, count, rotate });
     }
     static change(element, { shape = 'triangle', color = this.COLOR.BLUE, brightness = this.BRIGHTNESS.OTHER, scale = 2, speed = 2, rotate = false } = {}) {
         const background = element.querySelector('.glasium__background');

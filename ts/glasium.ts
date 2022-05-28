@@ -35,7 +35,7 @@ class Glasium {
     }
 
 
-    static #shape(background: HTMLElement, {
+    private static shape(background: HTMLElement, {
         shape = 'triangle',
         count = 10,
         brightness = Glasium.BRIGHTNESS.OTHER,
@@ -78,7 +78,7 @@ class Glasium {
     }
 
 
-    static #background(element: HTMLElement, {
+    private static background(element: HTMLElement, {
         shape = 'triangle',
         color = this.COLOR.BLUE,
         brightness = this.BRIGHTNESS.OTHER,
@@ -113,7 +113,7 @@ class Glasium {
 
 
         /** fill the background with shapes */
-        this.#shape(background, { shape, brightness, scale, speed, count })
+        this.shape(background, { shape, brightness, scale, speed, count })
     }
 
 
@@ -166,7 +166,7 @@ class Glasium {
 
 
         /** initialize background */
-        this.#background(element, { shape, color, brightness, scale, speed, count, rotate })
+        this.background(element, { shape, color, brightness, scale, speed, count, rotate })
     }
 
 

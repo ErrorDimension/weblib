@@ -424,32 +424,32 @@ const navigation = {
     SubWindow: class {
         constructor(container, content = 'blank') {
             /** initialize the html */
-            this.#container = container;
-            this.#windowNode = magicDOM.createElement('div', {
+            this.__container = container;
+            this.__windowNode = magicDOM.createElement('div', {
                 classList: [
                     'nav__sub-window',
                     'nav__sub-window--deactivated'
                 ],
-                attribute: { 'data-id': this.#id }
+                attribute: { 'data-id': this.__id }
             });
-            this.#overlayNode = magicDOM.createElement('div', {
+            this.__overlayNode = magicDOM.createElement('div', {
                 classList: 'nav__sub-window__overlay',
                 children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
             });
-            this.#contentNode = magicDOM.createElement('div', {
+            this.__contentNode = magicDOM.createElement('div', {
                 classList: 'nav__sub-window__content'
             });
             this.content = content;
-            this.#windowNode.append(this.#contentNode, this.#overlayNode);
-            this.#container.append(this.#windowNode);
+            this.__windowNode.append(this.__contentNode, this.__overlayNode);
+            this.__container.append(this.__windowNode);
             /** list */
             navigation.subWindowList.push(this);
             /** observer */
-            new ResizeObserver(() => this.update()).observe(this.#contentNode);
-            new ResizeObserver(() => this.update()).observe(this.#container);
+            new ResizeObserver(() => this.update()).observe(this.__contentNode);
+            new ResizeObserver(() => this.update()).observe(this.__container);
             $(window).on('resize', () => this.update());
             /** events */
-            $(this.#container).on('click', ({ target }) => {
+            $(this.__container).on('click', ({ target }) => {
                 if (target.matches('.nav__sub-window *'))
                     return;
                 this.toggle();
@@ -457,98 +457,98 @@ const navigation = {
         }
         update() {
             lib.cssFrame(() => {
-                if (!(this.#contentNode && this.#windowNode && navigation.container))
+                if (!(this.__contentNode && this.__windowNode && navigation.container))
                     return;
                 const { clientWidth } = navigation.container;
-                let height = this.#isShowing ? this.#contentNode.offsetHeight : 0;
-                $(this.#windowNode).css('--height', `${height}px`);
-                if (this.#isShowing) {
-                    if (!(this.#container && this.#windowNode))
+                let height = this.__isShowing ? this.__contentNode.offsetHeight : 0;
+                $(this.__windowNode).css('--height', `${height}px`);
+                if (this.__isShowing) {
+                    if (!(this.__container && this.__windowNode))
                         return;
-                    let rect = this.#container.getBoundingClientRect();
-                    let width = this.#contentNode.offsetWidth;
+                    let rect = this.__container.getBoundingClientRect();
+                    let width = this.__contentNode.offsetWidth;
                     if (width - rect.right < 0)
-                        this.#windowNode.dataset.align = 'right';
+                        this.__windowNode.dataset.align = 'right';
                     else if (rect.left + width < clientWidth)
-                        this.#windowNode.dataset.align = 'left';
+                        this.__windowNode.dataset.align = 'left';
                     else {
-                        this.#windowNode.dataset.align = 'expanded';
-                        $(this.#windowNode).css({
+                        this.__windowNode.dataset.align = 'expanded';
+                        $(this.__windowNode).css({
                             '--width': `${clientWidth}px`,
                             '--left': rect.left
                         });
                         return;
                     }
-                    $(this.#windowNode).css('--width', `${width}px`);
+                    $(this.__windowNode).css('--width', `${width}px`);
                 }
             });
         }
         show() {
-            if (!(this.#windowNode && this.#container))
+            if (!(this.__windowNode && this.__container))
                 return;
-            window.clearTimeout(this.#hideTimeoutId);
+            window.clearTimeout(this.__hideTimeoutId);
             for (let item of navigation.subWindowList)
-                if (item.id !== this.#id)
+                if (item.id !== this.__id)
                     item.hide(false);
             navigation.setUnderlay(true);
             this.update();
-            $(this.#windowNode)
+            $(this.__windowNode)
                 .addClass('nav__sub-window--activated')
                 .removeClass('nav__sub-window--deactivated');
-            $(this.#container)
+            $(this.__container)
                 .dataset('swActivated', '');
-            this.#isShowing = true;
+            this.__isShowing = true;
             this.update();
         }
         hide(trusted = true) {
-            if (!(this.#windowNode && this.#container))
+            if (!(this.__windowNode && this.__container))
                 return;
-            window.clearTimeout(this.#hideTimeoutId);
+            window.clearTimeout(this.__hideTimeoutId);
             if (trusted)
                 navigation.setUnderlay(false);
-            this.#windowNode.classList.remove('nav__sub-window--activated');
-            this.#container.classList.remove('nav__sub-window__container--activated');
-            $(this.#container)
+            this.__windowNode.classList.remove('nav__sub-window--activated');
+            this.__container.classList.remove('nav__sub-window__container--activated');
+            $(this.__container)
                 .dataset('swActivated', null);
-            this.#isShowing = false;
+            this.__isShowing = false;
             this.update();
-            this.#hideTimeoutId = window.setTimeout(() => {
-                if (!this.#windowNode)
+            this.__hideTimeoutId = window.setTimeout(() => {
+                if (!this.__windowNode)
                     return;
-                this.#windowNode.classList.add('nav__sub-window--deactivated');
+                this.__windowNode.classList.add('nav__sub-window--deactivated');
             }, 300);
         }
         toggle() {
-            this.#isShowing ? this.hide() : this.show();
-            this.#toggleHandlers.forEach((handler) => {
-                handler(this.#isShowing);
+            this.__isShowing ? this.hide() : this.show();
+            this.__toggleHandlers.forEach((handler) => {
+                handler(this.__isShowing);
             });
         }
         onToggle(func) {
-            this.#toggleHandlers.push(func);
+            this.__toggleHandlers.push(func);
         }
         set loaded(loaded) {
-            if (!this.#overlayNode)
+            if (!this.__overlayNode)
                 return;
-            $(this.#overlayNode).css('display', loaded ? 'none' : 'block');
+            $(this.__overlayNode).css('display', loaded ? 'none' : 'block');
         }
         set content(content) {
-            if (!this.#contentNode)
+            if (!this.__contentNode)
                 return;
-            magicDOM.emptyNode(this.#contentNode);
-            this.#contentNode.append(content);
+            magicDOM.emptyNode(this.__contentNode);
+            this.__contentNode.append(content);
             this.update();
         }
-        get isShowing() { return this.#isShowing; }
-        get id() { return this.#id; }
-        #id = lib.randomString(6);
-        #isShowing = false;
-        #hideTimeoutId = -1;
-        #toggleHandlers = [];
-        #container;
-        #contentNode;
-        #windowNode;
-        #overlayNode;
+        get isShowing() { return this.__isShowing; }
+        get id() { return this.__id; }
+        __id = lib.randomString(6);
+        __isShowing = false;
+        __hideTimeoutId = -1;
+        __toggleHandlers = [];
+        __container;
+        __contentNode;
+        __windowNode;
+        __overlayNode;
     }
 };
 export default navigation;

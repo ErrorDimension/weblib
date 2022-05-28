@@ -107,17 +107,17 @@ const magicDOM = {
                 right: { classList: 'slider__track--right' },
             });
             this.input = this.container.input;
-            this.#left = this.container.left;
-            this.#thumb = this.container.thumb;
-            this.#right = this.container.right;
-            this.#min = min;
-            this.#max = max;
-            this.#comfortablePct = comfortablePct;
+            this.left = this.container.left;
+            this.thumb = this.container.thumb;
+            this.right = this.container.right;
+            this.min = min;
+            this.max = max;
+            this.comfortablePct = comfortablePct;
             /** attach event handlers */
             const self = this;
-            const removeDragState = () => self.#removeDragState();
-            const handleInputEvent = (event) => self.#handleInputEvent(event);
-            const handleChangeEvent = (event) => self.#handleChangeEvent(event);
+            const removeDragState = () => self.removeDragState();
+            const handleInputEvent = (event) => self.handleInputEvent(event);
+            const handleChangeEvent = (event) => self.handleChangeEvent(event);
             $(this.input)
                 .on('mouseup', removeDragState)
                 .on('touchend', removeDragState)
@@ -129,45 +129,51 @@ const magicDOM = {
         }
         container;
         input;
-        #left;
-        #thumb;
-        #right;
-        #inputHandlers = [];
-        #changeHandlers = [];
-        #removeDragState() {
-            this.#slideTick = 0;
+        left;
+        thumb;
+        right;
+        inputHandlers = [];
+        changeHandlers = [];
+        onInput(func) {
+            this.inputHandlers.push(func);
+        }
+        onChange(func) {
+            this.changeHandlers.push(func);
+        }
+        removeDragState() {
+            this.slideTick = 0;
             this.container.classList.remove('slider--dragging');
         }
-        #handleInputEvent(event) {
-            this.#inputHandlers.forEach((handler) => {
+        handleInputEvent(event) {
+            this.inputHandlers.forEach((handler) => {
                 handler(this.input.value, event);
             });
-            this.#reRender();
+            this.reRender();
         }
-        #handleChangeEvent(event) {
-            this.#changeHandlers.forEach((handler) => {
+        handleChangeEvent(event) {
+            this.changeHandlers.forEach((handler) => {
                 handler(this.input.value, event);
             });
         }
-        #min;
-        #max;
-        #comfortablePct;
-        #slideTick = -1;
-        #reRender() {
-            ++this.#slideTick;
-            if (this.#slideTick > 1)
+        min;
+        max;
+        comfortablePct;
+        slideTick = -1;
+        reRender() {
+            ++this.slideTick;
+            if (this.slideTick > 1)
                 this.container.classList.add('slider--dragging');
             let value = parseInt(this.input.value);
-            let position = (value - this.#min) / (this.#max - this.#min);
-            this.#thumb.style.left = `calc(20px + (100% - 40px) * ${position})`;
-            this.#left.style.width = `calc(10px + (100% - 40px) * ${position})`;
-            this.#right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`;
-            if (this.#comfortablePct)
+            let position = (value - this.min) / (this.max - this.min);
+            this.thumb.style.left = `calc(20px + (100% - 40px) * ${position})`;
+            this.left.style.width = `calc(10px + (100% - 40px) * ${position})`;
+            this.right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`;
+            if (this.comfortablePct)
                 $(this.container)
-                    .dataset('uncomfortable', (value / this.#max) >= this.#comfortablePct ? '' : null);
+                    .dataset('uncomfortable', (value / this.max) >= this.comfortablePct ? '' : null);
         }
-        #__usingTooltip = false;
-        get usingTooltip() { return this.#__usingTooltip; }
+        __usingTooltip = false;
+        get usingTooltip() { return this.__usingTooltip; }
         tooltip(decorationCallback = (value) => value) {
             if (typeof decorationCallback !== "function")
                 throw new Error("magicDOM().Slider().tooltip() : `decorationCallback` is not valid");
@@ -200,7 +206,7 @@ const magicDOM = {
                 };
                 $(this.input).on('input', handleInputEvent);
             });
-            this.#__usingTooltip = true;
+            this.__usingTooltip = true;
             return this;
         }
     },

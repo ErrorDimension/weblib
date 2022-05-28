@@ -1,45 +1,45 @@
 export default class RecordAnimationFrame {
     constructor(callback: (...args: any[]) => any) {
-        this.#callback = callback
+        this.callback = callback
     }
 
 
-    #raf: number = -1
-    #__running: boolean = false
+    private raf: number = -1
+    private __running: boolean = false
 
-    get running(): boolean { return this.#__running }
+    get running(): boolean { return this.__running }
 
-    #callback?: (...args: any[]) => any
+    private callback?: (...args: any[]) => any
 
 
     /** start the callback */
     start(timeout?: number): any {
-        if (this.#__running) return
-        this.#__running = true
+        if (this.__running) return
+        this.__running = true
 
-        this.#run()
+        this.run()
 
         if (timeout)
             window.setTimeout((): void => this.stop(), timeout)
     }
 
 
-    #run(): any {
-        this.#raf = window.requestAnimationFrame((): void => {
-            if (!this.#callback) return
+    private run(): any {
+        this.raf = window.requestAnimationFrame((): void => {
+            if (!this.callback) return
 
-            this.#callback()
+            this.callback()
 
-            if (this.#__running) this.#run()
+            if (this.__running) this.run()
         })
     }
 
 
     /** stop the callback */
     stop(): any {
-        if (!this.#__running) return
-        this.#__running = false
+        if (!this.__running) return
+        this.__running = false
 
-        window.cancelAnimationFrame(this.#raf)
+        window.cancelAnimationFrame(this.raf)
     }
 }

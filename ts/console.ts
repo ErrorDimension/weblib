@@ -46,7 +46,7 @@ class Console {
     private static initialized = false
 
 
-    static get #padding() {
+    private static get padding() {
         if (typeof window === 'undefined') return
 
         let userAgent = navigator.userAgent.toLowerCase()
@@ -70,8 +70,8 @@ class Console {
     }
 
 
-    static get #space() {
-        switch (this.#padding) {
+    private static get space() {
+        switch (this.padding) {
             case 10:
                 return ' '
             case 16:
@@ -87,9 +87,9 @@ class Console {
     /**
      * @param { object[] } args datas
      */
-    static #dataChanneling(args: Console[], id: Log) {
+    private static dataChanneling(args: Console[], id: Log) {
         const style: string[] = []
-        let text = `${this.#space}`
+        let text = `${this.space}`
 
 
         args.forEach((arg: Console, idx: number) => {
@@ -108,13 +108,13 @@ class Console {
 
 
         if (["info", "okay", "debug"].includes(id))
-            style[0] += `margin-inline-start: ${this.#padding}px`
+            style[0] += `margin-inline-start: ${this.padding}px`
 
         return { text, style }
     }
 
 
-    static #log(id: Log, ...args: any[]) {
+    private static log(id: Log, ...args: any[]) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -142,7 +142,7 @@ class Console {
             other.push(arg)
         }
 
-        const { text, style } = this.#dataChanneling(consoleClass, id)
+        const { text, style } = this.dataChanneling(consoleClass, id)
 
 
         switch (id) {
@@ -292,12 +292,12 @@ class Console {
     }
 
 
-    static info(...args: any[]): void { return this.#log('info', this.infoLog, ...args) }
-    static debug(...args: any[]): void { return this.#log('debug', this.debugLog, ...args) }
-    static warn(...args: any[]): void { return this.#log('warn', this.warnLog, ...args) }
-    static crit(...args: any[]): void { return this.#log('crit', this.critLog, ...args) }
-    static error(...args: any[]): void { return this.#log('error', this.errorLog, ...args) }
-    static okay(...args: any[]): void { return this.#log('okay', this.okayLog, ...args) }
+    static info(...args: any[]): void { return this.log('info', this.infoLog, ...args) }
+    static debug(...args: any[]): void { return this.log('debug', this.debugLog, ...args) }
+    static warn(...args: any[]): void { return this.log('warn', this.warnLog, ...args) }
+    static crit(...args: any[]): void { return this.log('crit', this.critLog, ...args) }
+    static error(...args: any[]): void { return this.log('error', this.errorLog, ...args) }
+    static okay(...args: any[]): void { return this.log('okay', this.okayLog, ...args) }
     static init(): void {
         if (typeof window === 'undefined') return
         if (this.initialized) return

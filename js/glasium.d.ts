@@ -1,8 +1,9 @@
 declare class Glasium {
-    #private;
     static SHAPES: GBackgroundShape[];
     static BRIGHTNESS: Record<string, [number, number]>;
     static COLOR: Record<string, GBackgroundColor>;
+    private static shape;
+    private static background;
     /**
      * @param       element                     element
      * @param       options.shape               shape inside the background

@@ -738,29 +738,29 @@ const navigation: {
             content: HTMLElement | string = 'blank'
         ) {
             /** initialize the html */
-            this.#container = container
+            this.__container = container
 
-            this.#windowNode = magicDOM.createElement('div', {
+            this.__windowNode = magicDOM.createElement('div', {
                 classList: [
                     'nav__sub-window',
                     'nav__sub-window--deactivated'
                 ],
-                attribute: { 'data-id': this.#id }
+                attribute: { 'data-id': this.__id }
             })
 
-            this.#overlayNode = magicDOM.createElement('div', {
+            this.__overlayNode = magicDOM.createElement('div', {
                 classList: 'nav__sub-window__overlay',
                 children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
             })
 
-            this.#contentNode = magicDOM.createElement('div', {
+            this.__contentNode = magicDOM.createElement('div', {
                 classList: 'nav__sub-window__content'
             })
 
             this.content = content
 
-            this.#windowNode.append(this.#contentNode, this.#overlayNode)
-            this.#container.append(this.#windowNode)
+            this.__windowNode.append(this.__contentNode, this.__overlayNode)
+            this.__container.append(this.__windowNode)
 
 
             /** list */
@@ -768,14 +768,14 @@ const navigation: {
 
 
             /** observer */
-            new ResizeObserver((): void => this.update()).observe(this.#contentNode)
-            new ResizeObserver((): void => this.update()).observe(this.#container)
+            new ResizeObserver((): void => this.update()).observe(this.__contentNode)
+            new ResizeObserver((): void => this.update()).observe(this.__container)
 
             $(window).on('resize', (): void => this.update())
 
 
             /** events */
-            $(this.#container).on('click', ({ target }: MouseEvent): void => {
+            $(this.__container).on('click', ({ target }: MouseEvent): void => {
                 if ((target as HTMLElement).matches('.nav__sub-window *')) return
 
                 this.toggle()
@@ -785,31 +785,31 @@ const navigation: {
 
         update(): void {
             lib.cssFrame((): void => {
-                if (!(this.#contentNode && this.#windowNode && navigation.container)) return
+                if (!(this.__contentNode && this.__windowNode && navigation.container)) return
 
 
                 const { clientWidth } = navigation.container
 
 
-                let height: number = this.#isShowing ? this.#contentNode.offsetHeight : 0
-                $(this.#windowNode).css('--height', `${height}px`)
+                let height: number = this.__isShowing ? this.__contentNode.offsetHeight : 0
+                $(this.__windowNode).css('--height', `${height}px`)
 
 
-                if (this.#isShowing) {
-                    if (!(this.#container && this.#windowNode)) return
+                if (this.__isShowing) {
+                    if (!(this.__container && this.__windowNode)) return
 
 
-                    let rect: DOMRect = this.#container.getBoundingClientRect()
-                    let width: number = this.#contentNode.offsetWidth
+                    let rect: DOMRect = this.__container.getBoundingClientRect()
+                    let width: number = this.__contentNode.offsetWidth
 
 
                     if (width - rect.right < 0)
-                        this.#windowNode.dataset.align = 'right'
+                        this.__windowNode.dataset.align = 'right'
                     else if (rect.left + width < clientWidth)
-                        this.#windowNode.dataset.align = 'left'
+                        this.__windowNode.dataset.align = 'left'
                     else {
-                        this.#windowNode.dataset.align = 'expanded'
-                        $(this.#windowNode).css({
+                        this.__windowNode.dataset.align = 'expanded'
+                        $(this.__windowNode).css({
                             '--width': `${clientWidth}px`,
                             '--left': rect.left
                         })
@@ -817,21 +817,21 @@ const navigation: {
                     }
 
 
-                    $(this.#windowNode).css('--width', `${width}px`)
+                    $(this.__windowNode).css('--width', `${width}px`)
                 }
             })
         }
 
 
         show(): void {
-            if (!(this.#windowNode && this.#container)) return
+            if (!(this.__windowNode && this.__container)) return
 
 
-            window.clearTimeout(this.#hideTimeoutId)
+            window.clearTimeout(this.__hideTimeoutId)
 
 
             for (let item of navigation.subWindowList)
-                if (item.id !== this.#id)
+                if (item.id !== this.__id)
                     item.hide(false)
 
 
@@ -841,15 +841,15 @@ const navigation: {
             this.update()
 
 
-            $(this.#windowNode)
+            $(this.__windowNode)
                 .addClass('nav__sub-window--activated')
                 .removeClass('nav__sub-window--deactivated')
 
-            $(this.#container)
+            $(this.__container)
                 .dataset('swActivated', '')
 
 
-            this.#isShowing = true
+            this.__isShowing = true
 
 
             this.update()
@@ -857,89 +857,89 @@ const navigation: {
 
 
         hide(trusted: boolean = true): void {
-            if (!(this.#windowNode && this.#container)) return
+            if (!(this.__windowNode && this.__container)) return
 
 
-            window.clearTimeout(this.#hideTimeoutId)
+            window.clearTimeout(this.__hideTimeoutId)
 
 
             if (trusted) navigation.setUnderlay(false)
 
 
-            this.#windowNode.classList.remove('nav__sub-window--activated')
-            this.#container.classList.remove('nav__sub-window__container--activated')
+            this.__windowNode.classList.remove('nav__sub-window--activated')
+            this.__container.classList.remove('nav__sub-window__container--activated')
 
-            $(this.#container)
+            $(this.__container)
                 .dataset('swActivated', null)
 
 
-            this.#isShowing = false
+            this.__isShowing = false
 
 
             this.update()
 
 
-            this.#hideTimeoutId = window.setTimeout((): void => {
-                if (!this.#windowNode) return
+            this.__hideTimeoutId = window.setTimeout((): void => {
+                if (!this.__windowNode) return
 
-                this.#windowNode.classList.add('nav__sub-window--deactivated')
+                this.__windowNode.classList.add('nav__sub-window--deactivated')
             }, 300)
         }
 
 
         toggle(): void {
-            this.#isShowing ? this.hide() : this.show()
+            this.__isShowing ? this.hide() : this.show()
 
 
-            this.#toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
-                handler(this.#isShowing)
+            this.__toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
+                handler(this.__isShowing)
             })
         }
 
 
         onToggle(func: (...args: any[]) => any): void {
-            this.#toggleHandlers.push(func)
+            this.__toggleHandlers.push(func)
         }
 
 
         set loaded(loaded: boolean) {
-            if (!this.#overlayNode) return
+            if (!this.__overlayNode) return
 
 
-            $(this.#overlayNode).css('display', loaded ? 'none' : 'block')
+            $(this.__overlayNode).css('display', loaded ? 'none' : 'block')
         }
 
 
         set content(content: HTMLElement | string) {
-            if (!this.#contentNode) return
+            if (!this.__contentNode) return
 
 
-            magicDOM.emptyNode(this.#contentNode)
+            magicDOM.emptyNode(this.__contentNode)
 
 
-            this.#contentNode.append(content)
+            this.__contentNode.append(content)
 
 
             this.update()
         }
 
 
-        get isShowing(): boolean { return this.#isShowing }
+        get isShowing(): boolean { return this.__isShowing }
 
 
-        get id(): string { return this.#id }
+        get id(): string { return this.__id }
 
 
-        #id: string = lib.randomString(6)
-        #isShowing: boolean = false
-        #hideTimeoutId: number = -1
+        __id: string = lib.randomString(6)
+        __isShowing: boolean = false
+        __hideTimeoutId: number = -1
 
-        #toggleHandlers: ((...args: any[]) => any)[] = []
+        __toggleHandlers: ((...args: any[]) => any)[] = []
 
-        #container?: HTMLElement
-        #contentNode?: HTMLElement
-        #windowNode?: HTMLElement
-        #overlayNode?: HTMLElement
+        __container?: HTMLElement
+        __contentNode?: HTMLElement
+        __windowNode?: HTMLElement
+        __overlayNode?: HTMLElement
     }
 }
 

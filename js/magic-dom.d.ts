@@ -20,7 +20,7 @@ declare const magicDOM: {
         attribute?: Record<string, string | number> | undefined;
         children?: string | HTMLElement | HTMLElement[] | undefined;
     }): HTMLElementTagNameMap[K];
-    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[] | undefined, attribute?: Record<string, string | number> | undefined, children?: string | HTMLElement | HTMLElement[] | Record<string, HTMLElement | DOMTreeNode> | undefined): HTMLElementTagNameMap[K_1] & {
+    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[] | undefined, attribute?: Record<string, string | number> | undefined, children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode | HTMLElement> | undefined): HTMLElementTagNameMap[K_1] & {
         [key: string]: HTMLElement;
     };
     /**
@@ -44,20 +44,22 @@ declare const magicDOM: {
                 right?: HTMLDivElement;
             };
             input: HTMLInputElement;
-            "__#2@#left": HTMLDivElement;
-            "__#2@#thumb": HTMLDivElement;
-            "__#2@#right": HTMLDivElement;
-            "__#2@#inputHandlers": ((value: string, event: Event) => void)[];
-            "__#2@#changeHandlers": ((value: string, event: Event) => void)[];
-            "__#2@#removeDragState"(): void;
-            "__#2@#handleInputEvent"(event: Event): void;
-            "__#2@#handleChangeEvent"(event: Event): void;
-            "__#2@#min": number;
-            "__#2@#max": number;
-            "__#2@#comfortablePct": number;
-            "__#2@#slideTick": number;
-            "__#2@#reRender"(): void;
-            "__#2@#__usingTooltip": boolean;
+            left: HTMLDivElement;
+            thumb: HTMLDivElement;
+            right: HTMLDivElement;
+            inputHandlers: ((value: string, event: Event) => void)[];
+            changeHandlers: ((value: string, event: Event) => void)[];
+            onInput(func: (value: string, event: Event) => void): void;
+            onChange(func: (value: string, event: Event) => void): void;
+            removeDragState(): void;
+            handleInputEvent(event: Event): void;
+            handleChangeEvent(event: Event): void;
+            min: number;
+            max: number;
+            comfortablePct: number;
+            slideTick: number;
+            reRender(): void;
+            __usingTooltip: boolean;
             readonly usingTooltip: boolean;
             tooltip(decorationCallback?: (value: string) => string): this;
         };

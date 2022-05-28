@@ -26,7 +26,7 @@ class Console {
         this.background = toRgba(background);
     }
     static initialized = false;
-    static get #padding() {
+    static get padding() {
         if (typeof window === 'undefined')
             return;
         let userAgent = navigator.userAgent.toLowerCase();
@@ -42,8 +42,8 @@ class Console {
             return "opera";
         return 'No browser detected';
     }
-    static get #space() {
-        switch (this.#padding) {
+    static get space() {
+        switch (this.padding) {
             case 10:
                 return ' ';
             case 16:
@@ -57,9 +57,9 @@ class Console {
     /**
      * @param { object[] } args datas
      */
-    static #dataChanneling(args, id) {
+    static dataChanneling(args, id) {
         const style = [];
-        let text = `${this.#space}`;
+        let text = `${this.space}`;
         args.forEach((arg, idx) => {
             const stylePallette = [
                 'border-radius: 4px;',
@@ -73,10 +73,10 @@ class Console {
             style.push(stylePallette.join(''), 'visibility: hidden');
         });
         if (["info", "okay", "debug"].includes(id))
-            style[0] += `margin-inline-start: ${this.#padding}px`;
+            style[0] += `margin-inline-start: ${this.padding}px`;
         return { text, style };
     }
-    static #log(id, ...args) {
+    static log(id, ...args) {
         const consoleClass = [
             new Console(zalib.prettyTime({ format: 'HH:mm:ss' }), {
                 background: zalib.hexCodeColor('blue'),
@@ -101,7 +101,7 @@ class Console {
             }
             other.push(arg);
         }
-        const { text, style } = this.#dataChanneling(consoleClass, id);
+        const { text, style } = this.dataChanneling(consoleClass, id);
         switch (id) {
             case 'debug':
                 return console.debug.call(console, text, ...style, ...other);
@@ -185,12 +185,12 @@ class Console {
         });
         container.append(errorBlock);
     }
-    static info(...args) { return this.#log('info', this.infoLog, ...args); }
-    static debug(...args) { return this.#log('debug', this.debugLog, ...args); }
-    static warn(...args) { return this.#log('warn', this.warnLog, ...args); }
-    static crit(...args) { return this.#log('crit', this.critLog, ...args); }
-    static error(...args) { return this.#log('error', this.errorLog, ...args); }
-    static okay(...args) { return this.#log('okay', this.okayLog, ...args); }
+    static info(...args) { return this.log('info', this.infoLog, ...args); }
+    static debug(...args) { return this.log('debug', this.debugLog, ...args); }
+    static warn(...args) { return this.log('warn', this.warnLog, ...args); }
+    static crit(...args) { return this.log('crit', this.critLog, ...args); }
+    static error(...args) { return this.log('error', this.errorLog, ...args); }
+    static okay(...args) { return this.log('okay', this.okayLog, ...args); }
     static init() {
         if (typeof window === 'undefined')
             return;
