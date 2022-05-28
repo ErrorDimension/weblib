@@ -1,7 +1,8 @@
 import { $, $$ } from './jquery';
+import Glasium from './glasium';
 import magicDOM from "./magic-dom";
 const screenSwitcher = {
-    init(query, collection, width = 1200) {
+    init({ query, collection, width = 1200, buttons = [] }) {
         if (typeof window === 'undefined')
             return;
         /** init container */
@@ -62,6 +63,23 @@ const screenSwitcher = {
             btn.onclick = () => this.switch(btn, { icon, element, description });
             /** append */
             this.switcherBtn.append(btn);
+        });
+        /** buttons */
+        buttons.forEach((buttonProps) => {
+            if (!this.buttons)
+                return;
+            /** make button */
+            let button = magicDOM.toHTMLElement(`
+                <button>
+                    <i class='fa-solid fa-${buttonProps.icon}'></i>
+                    <div>${buttonProps.text}</div>
+                </button>
+                `);
+            button.onclick = buttonProps.callback;
+            /** background */
+            Glasium.init(button);
+            /** insert */
+            this.buttons.append(button);
         });
         /** init first screen */
         this.switch(this.switcherBtn.firstElementChild, collection[0]);

@@ -107,8 +107,9 @@
 
 // custom elements
 button.glasium {
-    display: flex;
+    display: inline-flex;
     flex-direction: row;
+    flex-wrap: nowrap;
 
     gap: 0.5em;
 
@@ -133,9 +134,16 @@ button.glasium {
 
     border-radius: 4px;
 
+    z-index: 0;
+
 
     i {
         font-size: 1.215em;
+    }
+
+
+    div {
+        display: inline-block;
     }
 
 

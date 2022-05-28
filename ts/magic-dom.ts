@@ -321,6 +321,7 @@ const magicDOM = {
     },
 
 
+    /** this function only return the first child */
     toHTMLElement<T extends HTMLElement>(htmlString: string): T {
         const template: HTMLTemplateElement = document.createElement("template")
         template.innerHTML = htmlString.trim()

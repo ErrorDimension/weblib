@@ -1,4 +1,5 @@
 import { $, $$ } from './jquery'
+import Glasium from './glasium'
 import magicDOM from "./magic-dom"
 
 
@@ -13,18 +14,36 @@ const screenSwitcher: {
     switcherDes?: HTMLElement
     buttons?: HTMLElement
     firstInitialization?: boolean
-    init(query: string, collection: {
-        name: string, icon: string, element: HTMLElement, description?: string
-    }[], width?: number): void
+    init({ query, collection, width, buttons }: {
+        query: string
+        collection: {
+            name: string; icon: string; element: HTMLElement; description?: string
+        }[]
+        width?: number,
+        buttons?: {
+            icon: string
+            text: string
+            callback: () => void
+        }[]
+    }): void
     switch(btn: HTMLElement, { icon, element, description }: {
         icon: string,
         description?: string,
         element: HTMLElement
     }): void
 } = {
-    init(query: string, collection: {
-        name: string, icon: string, element: HTMLElement, description?: string
-    }[], width: number = 1200): void {
+    init({ query, collection, width = 1200, buttons = [] }: {
+        query: string
+        collection: {
+            name: string; icon: string; element: HTMLElement; description?: string
+        }[]
+        width?: number
+        buttons?: {
+            icon: string
+            text: string
+            callback: () => void
+        }[]
+    }): void {
         if (typeof window === 'undefined') return
 
 
@@ -110,6 +129,33 @@ const screenSwitcher: {
 
             /** append */
             this.switcherBtn!.append(btn)
+        })
+
+
+        /** buttons */
+        buttons.forEach((buttonProps: { text: string, icon: string, callback: () => void }): void => {
+            if (!this.buttons) return
+
+
+            /** make button */
+            let button: HTMLButtonElement = magicDOM.toHTMLElement(
+                `
+                <button>
+                    <i class='fa-solid fa-${buttonProps.icon}'></i>
+                    <div>${buttonProps.text}</div>
+                </button>
+                `
+            )
+
+            button.onclick = buttonProps.callback
+
+
+            /** background */
+            Glasium.init(button)
+
+
+            /** insert */
+            this.buttons.append(button)
         })
 
 

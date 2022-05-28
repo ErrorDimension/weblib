@@ -572,6 +572,7 @@ const navigation = {
                 return;
             magicDOM.emptyNode(this.#contentNode);
             this.#contentNode.append(content);
+            this.update();
         }
         get isShowing() { return this.#isShowing; }
         get id() { return this.#id; }

@@ -25,7 +25,6 @@ body[data-theme="dark"] {
     &__header {
         display: flex;
         flex-direction: row;
-        flex-wrap: wrap;
 
         align-items: center;
 
@@ -66,7 +65,7 @@ body[data-theme="dark"] {
 
 
                     @media (max-width: 650px) {
-                        font-size: 1.55em;
+                        font-size: 1.35em;
                     }
 
 
@@ -142,7 +141,34 @@ body[data-theme="dark"] {
 
 
                 @media (max-width: 650px) {
-                    font-size: 0.95em;
+                    font-size: 0.85em;
+                }
+            }
+        }
+
+
+        &__buttons {
+            button {
+                font-size: 15px;
+
+
+                @media (max-width: 650px) {
+                    >div:not(.glasium__background) {
+                        color: red;
+                        display: none;
+                    }
+                }
+
+
+                @media (max-width: 520px) {
+                    aspect-ratio: 1;
+
+                    font-size: 0.8em;
+                }
+
+
+                +button {
+                    margin-inline-start: 10px;
                 }
             }
         }

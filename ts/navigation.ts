@@ -961,6 +961,9 @@ const navigation: {
 
 
             this.#contentNode.append(content)
+
+
+            this.update()
         }
 
 

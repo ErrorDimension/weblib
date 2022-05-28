@@ -9,12 +9,21 @@ declare const screenSwitcher: {
     switcherDes?: HTMLElement;
     buttons?: HTMLElement;
     firstInitialization?: boolean;
-    init(query: string, collection: {
-        name: string;
-        icon: string;
-        element: HTMLElement;
-        description?: string;
-    }[], width?: number): void;
+    init({ query, collection, width, buttons }: {
+        query: string;
+        collection: {
+            name: string;
+            icon: string;
+            element: HTMLElement;
+            description?: string;
+        }[];
+        width?: number;
+        buttons?: {
+            icon: string;
+            text: string;
+            callback: () => void;
+        }[];
+    }): void;
     switch(btn: HTMLElement, { icon, element, description }: {
         icon: string;
         description?: string;
