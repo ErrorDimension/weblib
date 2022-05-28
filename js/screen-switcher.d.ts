@@ -22,6 +22,7 @@ declare const screenSwitcher: {
             icon: string;
             text: string;
             callback: () => void;
+            color?: string;
         }[];
     }): void;
     switch(btn: HTMLElement, { icon, element, description }: {

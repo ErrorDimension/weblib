@@ -24,6 +24,7 @@ const screenSwitcher: {
             icon: string
             text: string
             callback: () => void
+            color?: string
         }[]
     }): void
     switch(btn: HTMLElement, { icon, element, description }: {
@@ -42,6 +43,7 @@ const screenSwitcher: {
             icon: string
             text: string
             callback: () => void
+            color?: string
         }[]
     }): void {
         if (typeof window === 'undefined') return
@@ -133,7 +135,12 @@ const screenSwitcher: {
 
 
         /** buttons */
-        buttons.forEach((buttonProps: { text: string, icon: string, callback: () => void }): void => {
+        buttons.forEach((buttonProps: {
+            text: string
+            icon: string
+            callback: () => void
+            color?: string
+        }): void => {
             if (!this.buttons) return
 
 
@@ -151,7 +158,10 @@ const screenSwitcher: {
 
 
             /** background */
-            Glasium.init(button)
+            Glasium.init(button, {
+                count: 8,
+                color: Glasium.COLOR[buttonProps.color?.toUpperCase() ?? 'BLUE']
+            })
 
 
             /** insert */

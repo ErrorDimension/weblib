@@ -77,7 +77,10 @@ const screenSwitcher = {
                 `);
             button.onclick = buttonProps.callback;
             /** background */
-            Glasium.init(button);
+            Glasium.init(button, {
+                count: 8,
+                color: Glasium.COLOR[buttonProps.color?.toUpperCase() ?? 'BLUE']
+            });
             /** insert */
             this.buttons.append(button);
         });
