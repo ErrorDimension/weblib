@@ -89,25 +89,25 @@ declare const lib: {
 };
 /**
  * throttle a function
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
-export declare function throttle(this: any, fn: Function, throttleTime: number): (...args: any[]) => any;
+export declare function throttle(this: any, fn: (...args: any[]) => void, throttleTime: number): (...args: any[]) => any;
 /**
  * throttle a function and always run the last call
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
-export declare function throttled(this: any, fn: Function, throttleTime: number): (...args: any[]) => any;
+export declare function throttled(this: any, fn: (...args: any[]) => void, throttleTime: number): (...args: any[]) => any;
 /**
  * debounce a function
  * @param       { Function }          fn            function
- * @param       { Number }            t             debounce limit in milliseconds
+ * @param       { Number }            timeout       debounce limit in milliseconds
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export declare function debounce(this: any, fn: Function, timeout: number, firstCall?: boolean): (...args: any[]) => any;
+export declare function debounce(this: any, fn: (...args: any[]) => void, timeout: number, firstCall?: boolean): (...args: any[]) => any;
 export default lib;
 //# sourceMappingURL=lib.d.ts.map

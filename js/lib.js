@@ -242,40 +242,40 @@ const lib = {
 };
 /**
  * throttle a function
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
 export function throttle(fn, throttleTime) {
     let throttler = false;
     const context = this;
-    return function () {
+    return function (...args) {
         if (throttler)
             return;
         throttler = true;
         window.setTimeout(() => throttler = false, throttleTime);
-        return fn.call(context, ...arguments);
+        return fn.call(context, ...args);
     };
 }
 /**
  * throttle a function and always run the last call
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
 export function throttled(fn, throttleTime) {
     const context = this;
     const t = throttle.call(context, fn, throttleTime);
     const d = debounce.call(context, fn, throttleTime);
-    return function () {
-        t.call(context);
-        d.call(context);
+    return function (...args) {
+        t.call(context, ...args);
+        d.call(context, ...args);
     };
 }
 /**
  * debounce a function
  * @param       { Function }          fn            function
- * @param       { Number }            t             debounce limit in milliseconds
+ * @param       { Number }            timeout       debounce limit in milliseconds
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
@@ -285,13 +285,13 @@ export function debounce(fn, timeout, firstCall = false) {
     if (firstCall)
         toCall = true;
     const context = this;
-    return function () {
+    return function (...args) {
         if (toCall) {
             toCall = false;
-            fn.call(context, ...arguments);
+            fn.call(context, ...args);
         }
         window.clearTimeout(timer);
-        timer = window.setTimeout(() => fn.call(context, ...arguments), timeout);
+        timer = window.setTimeout(() => fn.call(context, ...args), timeout);
     };
 }
 export default lib;

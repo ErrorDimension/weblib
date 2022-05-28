@@ -320,40 +320,40 @@ const lib = {
 
 /** 
  * throttle a function
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
-export function throttle(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
+export function throttle(this: any, fn: (...args: any[]) => void, throttleTime: number): (...args: any[]) => any {
     let throttler: boolean = false
 
     const context: any = this
 
-    return function (): any {
+    return function (...args: any[]): any {
         if (throttler) return
         throttler = true
 
         window.setTimeout(() => throttler = false, throttleTime)
 
-        return fn.call(context, ...arguments)
+        return fn.call(context, ...args)
     }
 }
 
 
 /** 
  * throttle a function and always run the last call
- * @param       { Function }          fn            function
- * @param       { Number }            throttleTime             throttler delay in milliseconds
- * @returns     { Function }                        func(...args)
+ * @param       { Function }          fn                    function
+ * @param       { Number }            throttleTime          throttler delay in milliseconds
+ * @returns     { Function }                                func(...args)
  */
-export function throttled(this: any, fn: Function, throttleTime: number): (...args: any[]) => any {
+export function throttled(this: any, fn: (...args: any[]) => void, throttleTime: number): (...args: any[]) => any {
     const context: any = this
     const t: (...args: any[]) => any = throttle.call(context, fn, throttleTime)
     const d: (...args: any[]) => any = debounce.call(context, fn, throttleTime)
 
-    return function (): void {
-        t.call(context)
-        d.call(context)
+    return function (...args: any[]): void {
+        t.call(context, ...args)
+        d.call(context, ...args)
     }
 }
 
@@ -361,25 +361,25 @@ export function throttled(this: any, fn: Function, throttleTime: number): (...ar
 /** 
  * debounce a function
  * @param       { Function }          fn            function
- * @param       { Number }            t             debounce limit in milliseconds
+ * @param       { Number }            timeout       debounce limit in milliseconds
  * @param       { Boolean }           firstCall     debounce limit in milliseconds
  * @returns     { Function }                        func(...args)
  */
-export function debounce(this: any, fn: Function, timeout: number, firstCall: boolean = false): (...args: any[]) => any {
+export function debounce(this: any, fn: (...args: any[]) => void, timeout: number, firstCall: boolean = false): (...args: any[]) => any {
     let timer: number = -1
     let toCall: boolean = false
     if (firstCall) toCall = true
 
     const context: any = this
 
-    return function (): void {
+    return function (...args: any[]): void {
         if (toCall) {
             toCall = false
-            fn.call(context, ...arguments)
+            fn.call(context, ...args)
         }
 
         window.clearTimeout(timer)
-        timer = window.setTimeout(() => fn.call(context, ...arguments), timeout)
+        timer = window.setTimeout(() => fn.call(context, ...args), timeout)
     }
 }
 
