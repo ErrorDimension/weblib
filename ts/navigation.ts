@@ -189,8 +189,7 @@ const navigation: {
     setUnderlay(activate: boolean = false): void {
         if (!this.underlay) return
 
-        this.underlay.classList[activate ? 'add' : 'remove']
-            ('nav__underlay--active')
+        this.underlay.classList[activate ? 'add' : 'remove']('nav__underlay--active')
     },
 
 
@@ -534,51 +533,9 @@ const navigation: {
             const subWindow: SubWindow = new navigation.SubWindow(container)
 
 
-            /** pre produced account section */
-            new Promise<void>((res): void => {
-                subWindow.content = magicDOM.toHTMLElement(
-                    `
-                    <div class='s-account'>
-                        Guest
-                        <div>
-                            <img src='guest.png' loading='lazy' />
-                            <span>guest user</span>
-                        </div>
-                    </div>
-                    `
-                )
-
-
-                Glasium.init($$('.s-account div'), {
-                    count: 20,
-                    scale: 6.5,
-                    onMutation: {
-                        true: {
-                            color: Glasium.COLOR.DARK,
-                            brightness: Glasium.BRIGHTNESS.DARK
-                        },
-                        false: {
-                            color: Glasium.COLOR.WHITESMOKE,
-                            brightness: Glasium.BRIGHTNESS.LIGHT
-                        },
-                        observing: document.body,
-                        options: {
-                            attributeFilter: ['data-theme']
-                        },
-                        callback(): boolean {
-                            return document.body.dataset.theme === 'dark'
-                        }
-                    }
-                })
-
-                Glasium.change(container, {
-                    color: Glasium.COLOR.RED // because initially button is whitesmoke
-                })
-
-
-                res()
-            }).then((): void => {
-                subWindow.loaded = true
+            /** background color */
+            Glasium.change(container, {
+                color: Glasium.COLOR.RED // because initially button is whitesmoke
             })
 
 

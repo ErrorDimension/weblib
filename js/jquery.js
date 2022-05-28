@@ -1,4 +1,4 @@
-import modCase from './modcase.js';
+import modCase from './modcase';
 class JHTMLElement extends Array {
     css(property, val) {
         this.forEach((element) => {

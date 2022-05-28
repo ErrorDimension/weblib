@@ -3,8 +3,9 @@ import Glasium from './glasium';
 import magicDOM from "./magic-dom";
 const screenSwitcher = {
     init({ query, collection, width = 1200, buttons = [] }) {
-        if (typeof window === 'undefined')
+        if (typeof window === 'undefined' || this.initialized)
             return;
+        this.initialized = true;
         /** init container */
         this.container = $$(query);
         /** initial stylesheet */

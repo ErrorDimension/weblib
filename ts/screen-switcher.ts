@@ -4,6 +4,7 @@ import magicDOM from "./magic-dom"
 
 
 const screenSwitcher: {
+    initialized?: boolean
     current?: HTMLElement
     container?: HTMLElement
     header?: HTMLElement
@@ -46,7 +47,8 @@ const screenSwitcher: {
             color?: string
         }[]
     }): void {
-        if (typeof window === 'undefined') return
+        if (typeof window === 'undefined' || this.initialized) return
+        this.initialized = true
 
 
         /** init container */

@@ -288,44 +288,9 @@ const navigation = {
             });
             const { container, tooltip, clicker } = button;
             const subWindow = new navigation.SubWindow(container);
-            /** pre produced account section */
-            new Promise((res) => {
-                subWindow.content = magicDOM.toHTMLElement(`
-                    <div class='s-account'>
-                        Guest
-                        <div>
-                            <img src='guest.png' loading='lazy' />
-                            <span>guest user</span>
-                        </div>
-                    </div>
-                    `);
-                Glasium.init($$('.s-account div'), {
-                    count: 20,
-                    scale: 6.5,
-                    onMutation: {
-                        true: {
-                            color: Glasium.COLOR.DARK,
-                            brightness: Glasium.BRIGHTNESS.DARK
-                        },
-                        false: {
-                            color: Glasium.COLOR.WHITESMOKE,
-                            brightness: Glasium.BRIGHTNESS.LIGHT
-                        },
-                        observing: document.body,
-                        options: {
-                            attributeFilter: ['data-theme']
-                        },
-                        callback() {
-                            return document.body.dataset.theme === 'dark';
-                        }
-                    }
-                });
-                Glasium.change(container, {
-                    color: Glasium.COLOR.RED // because initially button is whitesmoke
-                });
-                res();
-            }).then(() => {
-                subWindow.loaded = true;
+            /** background color */
+            Glasium.change(container, {
+                color: Glasium.COLOR.RED // because initially button is whitesmoke
             });
             return {
                 container,

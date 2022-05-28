@@ -2,8 +2,9 @@ import { $$ } from './jquery'
 
 
 const setting: {
+    initialized?: boolean
     container?: HTMLElement,
-    init(query: string, { title, description }: {
+    init(query: string, { title, description }?: {
         title?: string,
         description?: string
     }): void
@@ -18,7 +19,8 @@ const setting: {
         title?: string,
         description?: string
     } = {}): void {
-        if (typeof window === 'undefined') return
+        if (typeof window === 'undefined' || this.initialized) return
+        this.initialized = true
 
 
         this.container = $$(query)

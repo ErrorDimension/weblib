@@ -1,4 +1,5 @@
 declare const screenSwitcher: {
+    initialized?: boolean;
     current?: HTMLElement;
     container?: HTMLElement;
     header?: HTMLElement;

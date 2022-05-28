@@ -1,4 +1,4 @@
-import modCase from './modcase.js'
+import modCase from './modcase'
 
 
 type ELoELO = EventListenerOrEventListenerObject
