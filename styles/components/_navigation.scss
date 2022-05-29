@@ -354,6 +354,16 @@ body[data-theme="dark"] {
         user-select: none;
 
 
+        &__box {
+            position: absolute;
+            inset: 0;
+
+            border-radius: inherit;
+
+            z-index: 15;
+        }
+
+
         &:not(.nav__button):active {
             background-color: var(--nav-link-a-bg);
         }

@@ -134,203 +134,6 @@ const magicDOM = {
     },
 
 
-    Slider: class {
-        /**
-        * @param           option                               option for the slider
-        * @param           option.color                         slider color ('pink' | 'blue')
-        * @param           option.startValue                    slider's start value
-        * @param           option.min                           slider's minimum value
-        * @param           option.max                           slider's maximum value
-        * @param           option.step                          slider's step
-        * @param           option.comfortablePercentage         percentage
-        */
-        constructor({
-            color = 'pink',
-            startValue = 0,
-            min = 0,
-            max = 10,
-            step = 1,
-            comfortablePct = 0
-        }: {
-            color: 'pink' | 'blue',
-            startValue: number,
-            min: number,
-            max: number,
-            step: number
-            comfortablePct: number
-        } = {
-                color: 'pink',
-                startValue: 0,
-                min: 0,
-                max: 10,
-                step: 1,
-                comfortablePct: 0
-            }) {
-            /** initialize the components */
-            this.container = magicDOM.createTree('div', 'slider', {
-                'data-color': color
-            }, {
-                input: { tag: 'input', attribute: { type: 'range', placeholder: 'none', min, max, step } },
-                left: { classList: 'slider__track--left' },
-                thumb: { classList: 'slider__thumb' },
-                right: { classList: 'slider__track--right' },
-            })
-
-            this.input = this.container.input as HTMLInputElement
-            this.left = this.container.left as HTMLDivElement
-            this.thumb = this.container.thumb as HTMLDivElement
-            this.right = this.container.right as HTMLDivElement
-
-            this.min = min
-            this.max = max
-            this.comfortablePct = comfortablePct
-
-
-            /** attach event handlers */
-            const self: this = this
-
-            const removeDragState: () => void = (): void =>
-                self.removeDragState()
-            const handleInputEvent: (event: Event) => void = (event: Event): void =>
-                self.handleInputEvent(event)
-            const handleChangeEvent: (event: Event) => void = (event: Event): void =>
-                self.handleChangeEvent(event)
-
-            $(this.input)
-                .on('mouseup', removeDragState)
-                .on('touchend', removeDragState)
-                .on('input', handleInputEvent)
-                .on('change', handleChangeEvent)
-
-
-            /** initialize the initial value */
-            this.input.value = startValue?.toString()
-            this.input.dispatchEvent(new Event("input"))
-        }
-
-
-        container: HTMLDivElement & {
-            input?: HTMLInputElement,
-            left?: HTMLDivElement
-            thumb?: HTMLDivElement
-            right?: HTMLDivElement
-        }
-
-        input: HTMLInputElement
-
-        left: HTMLDivElement
-        thumb: HTMLDivElement
-        right: HTMLDivElement
-
-
-        inputHandlers: ((value: string, event: Event) => void)[] = []
-        changeHandlers: ((value: string, event: Event) => void)[] = []
-
-
-        onInput(func: (value: string, event: Event) => void): void {
-            this.inputHandlers.push(func)
-        }
-
-
-        onChange(func: (value: string, event: Event) => void): void {
-            this.changeHandlers.push(func)
-        }
-
-
-        removeDragState(): void {
-            this.slideTick = 0
-            this.container.classList.remove('slider--dragging')
-        }
-
-        handleInputEvent(event: Event): void {
-            this.inputHandlers.forEach((handler: (value: string, event: Event) => void): void => {
-                handler(this.input.value, event)
-            })
-            this.reRender()
-        }
-
-        handleChangeEvent(event: Event): void {
-            this.changeHandlers.forEach((handler: (value: string, event: Event) => void): void => {
-                handler(this.input.value, event)
-            })
-        }
-
-
-        min: number
-        max: number
-        comfortablePct: number
-
-        slideTick: number = -1
-
-        reRender(): void {
-            ++this.slideTick
-            if (this.slideTick > 1) this.container.classList.add('slider--dragging')
-
-            let value: number = parseInt(this.input.value)
-            let position: number = (value - this.min) / (this.max - this.min)
-
-            this.thumb.style.left = `calc(20px + (100% - 40px) * ${position})`
-            this.left.style.width = `calc(10px + (100% - 40px) * ${position})`
-            this.right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`
-
-            if (this.comfortablePct)
-                $(this.container)
-                    .dataset(
-                        'uncomfortable',
-                        (value / this.max) >= this.comfortablePct ? '' : null
-                    )
-        }
-
-
-        __usingTooltip: boolean = false
-        get usingTooltip(): boolean { return this.__usingTooltip }
-
-        tooltip(decorationCallback: (value: string) => string = (value: string): string => value): this {
-            if (typeof decorationCallback !== "function")
-                throw new Error("magicDOM().Slider().tooltip() : `decorationCallback` is not valid")
-
-            let isHidden: boolean = true
-
-            import('./tooltip').then(module => {
-                const tooltip = module.default
-
-                const handleMousedownEvent: () => void = (): void => {
-                    if (!isHidden) return
-
-                    tooltip.show(decorationCallback(this.input.value))
-                    isHidden = false
-                }
-
-                const handleMousemoveEvent: () => void = (): void => {
-                    if (isHidden) return
-                    tooltip.move()
-                }
-
-                const handleMouseleaveEvent: () => void = (): void => {
-                    isHidden = true
-                    tooltip.hide()
-                }
-
-                $(this.container)
-                    .on('mousedown', handleMousedownEvent)
-                    .on('mousemove', handleMousemoveEvent)
-                    .on('mouseleave', handleMouseleaveEvent)
-
-                const handleInputEvent: () => void = (): void => {
-                    if (isHidden) return
-                    tooltip.update(decorationCallback(this.input.value))
-                }
-
-                $(this.input).on('input', handleInputEvent)
-            })
-
-            this.__usingTooltip = true
-
-            return this
-        }
-    },
-
-
     /** this function only return the first child */
     toHTMLElement<T extends HTMLElement>(htmlString: string): T {
         const template: HTMLTemplateElement = document.createElement("template")
@@ -343,55 +146,203 @@ const magicDOM = {
 
         return fin as T
     },
-
-
-    scrollable(container: HTMLElement & {
-        scrollBox: HTMLDivElement
-        scrollable?: boolean
-    }, maxPath: number = 100) {
-        if (container.dataset.scrollable === '' && container.scrollable) return
-
-        let scrollBox: HTMLDivElement = magicDOM.createElement('div', { classList: 'scrollable' })
-        while (container.firstChild) scrollBox.append(container.firstChild)
-
-        container.scrollBox = scrollBox
-        container.appendChild(scrollBox)
-
-        let translate: number = 0
-
-        const MINIMIZED: 0.075 = 0.075
-
-        const moveBack: Function = debounce(() => {
-            translate = 0
-            $(scrollBox).css('transform', 'translateY(0)')
-        }, 100)
-
-        const onWheelHandler: (event: WheelEvent) => void = (event: WheelEvent): void => {
-            let { deltaY } = event
-            translate = lib.clamp(-maxPath, translate - deltaY * MINIMIZED, maxPath)
-
-            $(scrollBox).css('transform', `translateY(${translate}px)`)
-
-            moveBack()
-        }
-
-        $(container)
-            .dataset('scrollable', '')
-            .on('wheel', onWheelHandler, { passive: true })
-
-        container.scrollable = true
-
-        return {
-            container,
-            scrollBox,
-
-            append(...children: string[] | HTMLElement[]) {
-                this.scrollBox.append(...children)
-                return this
-            }
-        }
-    }
 }
 
+
+export class Slider {
+    /**
+    * @param           option                               option for the slider
+    * @param           option.color                         slider color ('pink' | 'blue')
+    * @param           option.startValue                    slider's start value
+    * @param           option.min                           slider's minimum value
+    * @param           option.max                           slider's maximum value
+    * @param           option.step                          slider's step
+    * @param           option.comfortablePercentage         percentage
+    */
+    constructor({
+        color = 'pink',
+        startValue = 0,
+        min = 0,
+        max = 10,
+        step = 1,
+        comfortablePct = 0
+    }: {
+        color: 'pink' | 'blue',
+        startValue: number,
+        min: number,
+        max: number,
+        step: number
+        comfortablePct: number
+    } = {
+            color: 'pink',
+            startValue: 0,
+            min: 0,
+            max: 10,
+            step: 1,
+            comfortablePct: 0
+        }) {
+        /** initialize the components */
+        this.container = magicDOM.createTree('div', 'slider', {
+            'data-color': color
+        }, {
+            input: { tag: 'input', attribute: { type: 'range', placeholder: 'none', min, max, step } },
+            left: { classList: 'slider__track--left' },
+            thumb: { classList: 'slider__thumb' },
+            right: { classList: 'slider__track--right' },
+        })
+
+        this.input = this.container.input as HTMLInputElement
+        this.left = this.container.left as HTMLDivElement
+        this.thumb = this.container.thumb as HTMLDivElement
+        this.right = this.container.right as HTMLDivElement
+
+        this.min = min
+        this.max = max
+        this.comfortablePct = comfortablePct
+
+
+        /** attach event handlers */
+        const self: this = this
+
+        const removeDragState: () => void = (): void =>
+            self.removeDragState()
+        const handleInputEvent: (event: Event) => void = (event: Event): void =>
+            self.handleInputEvent(event)
+        const handleChangeEvent: (event: Event) => void = (event: Event): void =>
+            self.handleChangeEvent(event)
+
+        $(this.input)
+            .on('mouseup', removeDragState)
+            .on('touchend', removeDragState)
+            .on('input', handleInputEvent)
+            .on('change', handleChangeEvent)
+
+
+        /** initialize the initial value */
+        this.input.value = startValue?.toString()
+        this.input.dispatchEvent(new Event("input"))
+    }
+
+
+    container: HTMLDivElement & {
+        input?: HTMLInputElement,
+        left?: HTMLDivElement
+        thumb?: HTMLDivElement
+        right?: HTMLDivElement
+    }
+
+    input: HTMLInputElement
+
+    private left: HTMLDivElement
+    private thumb: HTMLDivElement
+    private right: HTMLDivElement
+
+
+    private inputHandlers: ((value: string, event: Event) => void)[] = []
+    private changeHandlers: ((value: string, event: Event) => void)[] = []
+
+
+    onInput(func: (value: string, event: Event) => void): void {
+        this.inputHandlers.push(func)
+    }
+
+
+    onChange(func: (value: string, event: Event) => void): void {
+        this.changeHandlers.push(func)
+    }
+
+
+    private removeDragState(): void {
+        this.slideTick = 0
+        this.container.classList.remove('slider--dragging')
+    }
+
+    private handleInputEvent(event: Event): void {
+        this.inputHandlers.forEach((handler: (value: string, event: Event) => void): void => {
+            handler(this.input.value, event)
+        })
+        this.reRender()
+    }
+
+    private handleChangeEvent(event: Event): void {
+        this.changeHandlers.forEach((handler: (value: string, event: Event) => void): void => {
+            handler(this.input.value, event)
+        })
+    }
+
+
+    private min: number
+    private max: number
+    private comfortablePct: number
+
+    private slideTick: number = -1
+
+    private reRender(): void {
+        ++this.slideTick
+        if (this.slideTick > 1) this.container.classList.add('slider--dragging')
+
+        let value: number = parseInt(this.input.value)
+        let position: number = (value - this.min) / (this.max - this.min)
+
+        this.thumb.style.left = `calc(20px + (100% - 40px) * ${position})`
+        this.left.style.width = `calc(10px + (100% - 40px) * ${position})`
+        this.right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`
+
+        if (this.comfortablePct)
+            $(this.container)
+                .dataset(
+                    'uncomfortable',
+                    (value / this.max) >= this.comfortablePct ? '' : null
+                )
+    }
+
+
+    private __usingTooltip: boolean = false
+    get usingTooltip(): boolean { return this.__usingTooltip }
+
+    tooltip(decorationCallback: (value: string) => string = (value: string): string => value): this {
+        if (typeof decorationCallback !== "function")
+            throw new Error("magicDOM().Slider().tooltip() : `decorationCallback` is not valid")
+
+        let isHidden: boolean = true
+
+        import('./tooltip').then(module => {
+            const tooltip = module.default
+
+            const handleMousedownEvent: () => void = (): void => {
+                if (!isHidden) return
+
+                tooltip.show(decorationCallback(this.input.value))
+                isHidden = false
+            }
+
+            const handleMousemoveEvent: () => void = (): void => {
+                if (isHidden) return
+                tooltip.move()
+            }
+
+            const handleMouseleaveEvent: () => void = (): void => {
+                isHidden = true
+                tooltip.hide()
+            }
+
+            $(this.container)
+                .on('mousedown', handleMousedownEvent)
+                .on('mousemove', handleMousemoveEvent)
+                .on('mouseleave', handleMouseleaveEvent)
+
+            const handleInputEvent: () => void = (): void => {
+                if (isHidden) return
+                tooltip.update(decorationCallback(this.input.value))
+            }
+
+            $(this.input).on('input', handleInputEvent)
+        })
+
+        this.__usingTooltip = true
+
+        return this
+    }
+}
 
 export default magicDOM

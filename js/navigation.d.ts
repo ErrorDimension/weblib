@@ -2,7 +2,7 @@ interface Component {
     container: HTMLElement;
     tooltip: Tooltip;
     clicker: Clicker;
-    subWindow?: SubWindow;
+    subWindow: SubWindow;
 }
 declare const navigation: {
     initialized: boolean;
@@ -62,55 +62,52 @@ declare const navigation: {
             set background(colorName: string);
         };
     };
-    Tooltip: {
-        new (target: HTMLElement): Tooltip;
-        prototype: Tooltip;
-    };
-    Clicker: {
-        new (container: HTMLElement, onlyActive?: boolean): Clicker;
-        prototype: Clicker;
-    };
-    SubWindow: {
-        new (container: HTMLElement, content?: HTMLElement | string, color?: string): SubWindow;
-        prototype: SubWindow;
-    };
 };
-export default navigation;
-interface Tooltip {
-    title?: string;
-    description?: string;
-    flip?: boolean;
-    container?: HTMLElement & {
-        t?: HTMLElement;
-        d?: HTMLElement;
-    };
-    set({ title, description, flip }: {
+export declare class Tooltip {
+    constructor(target: HTMLElement);
+    private title?;
+    private description?;
+    private flip?;
+    private container?;
+    set({ title, description, flip }?: {
         title?: string;
         description?: string;
         flip?: boolean;
     }): void;
-    show(event: MouseEvent): void;
+    show({ target }: MouseEvent): void;
     hide(): void;
 }
-interface Clicker {
-    container?: HTMLElement;
-    clickHandlers: ((...args: any[]) => any)[];
-    activated: boolean;
+export declare class Clicker {
+    constructor(container: HTMLElement, onlyActive?: boolean);
+    private container?;
+    private clickHandlers;
+    private __activated;
+    get activated(): boolean;
     onClick(func: (...args: any[]) => any): number;
     offClick(index: number): void;
     toggle(isActive?: boolean): void;
     show(): void;
     hide(): void;
 }
-interface SubWindow {
-    readonly id: string;
-    readonly isShowing: boolean;
-    set loaded(loaded: boolean);
-    set content(content: HTMLElement | string);
+export declare class SubWindow {
+    constructor(container: HTMLElement, content?: HTMLElement | string);
+    update(): void;
     show(): void;
     hide(trusted?: boolean): void;
-    update(): void;
     toggle(): void;
     onToggle(func: (...args: any[]) => any): void;
+    set loaded(loaded: boolean);
+    set content(content: HTMLElement | string);
+    get isShowing(): boolean;
+    get id(): string;
+    private __id;
+    private __isShowing;
+    private __hideTimeoutId;
+    private __toggleHandlers;
+    private __container?;
+    private __contentNode?;
+    private __windowNode?;
+    private __overlayNode?;
 }
+export default navigation;
 //# sourceMappingURL=navigation.d.ts.map

@@ -102,13 +102,15 @@ const navigation = {
                 },
                 t: { classList: 'nav__logo__title', children: title }
             });
-            const tooltip = new navigation.Tooltip(container);
-            const clicker = new navigation.Clicker(container, onlyActive);
+            const tooltip = new Tooltip(container);
+            const clicker = new Clicker(container, onlyActive);
+            const subWindow = new SubWindow(container);
             navigation.insert({ container }, 'left', 1);
             return {
                 container,
                 tooltip,
-                clicker
+                clicker,
+                subWindow
             };
         },
         route(record, spa = false) {
@@ -165,7 +167,7 @@ const navigation = {
                         attribute: { 'data-href': href },
                         children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
                     });
-                new navigation.Tooltip(link).set(tooltip);
+                new Tooltip(link).set(tooltip);
                 /** link's events */
                 $(link).on('click', () => {
                     /** 404 and 500 handler */
@@ -230,23 +232,26 @@ const navigation = {
                         `)
                 ]
             });
-            const tooltip = new navigation.Tooltip(container);
-            const clicker = new navigation.Clicker(container);
+            const tooltip = new Tooltip(container);
+            const clicker = new Clicker(container);
+            const subWindow = new SubWindow(container);
             if (func)
                 clicker.onClick(func);
             navigation.insert({ container }, 'right', 1);
             return {
                 container,
                 tooltip,
-                clicker
+                clicker,
+                subWindow
             };
         },
         button({ icon = 'code', image = undefined, colorName = 'BLUE', brightnessLevel = 'OTHER', alwaysActive = false, text = undefined, func = undefined } = {}) {
             const container = magicDOM.createElement('span', {
                 classList: ['nav__component', 'nav__button'],
             });
-            const tooltip = new navigation.Tooltip(container);
-            const clicker = new navigation.Clicker(container, alwaysActive);
+            const tooltip = new Tooltip(container);
+            const clicker = new Clicker(container, alwaysActive);
+            const subWindow = new SubWindow(container);
             if (func)
                 clicker.onClick(func);
             navigation.insert({ container }, 'right', 3);
@@ -266,6 +271,7 @@ const navigation = {
                 container,
                 tooltip,
                 clicker,
+                subWindow,
                 set icon(iconName) {
                     $('i', this.container).remove();
                     $('img', this.container).remove();
@@ -287,7 +293,8 @@ const navigation = {
                 image: 'guest.png'
             });
             const { container, tooltip, clicker } = button;
-            const subWindow = new navigation.SubWindow(container);
+            const subWindow = new SubWindow(container);
+            clicker.onClick(() => subWindow.toggle());
             /** background color */
             Glasium.change(container, {
                 color: Glasium.COLOR.RED // because initially button is whitesmoke
@@ -312,244 +319,238 @@ const navigation = {
             };
         }
     },
-    Tooltip: class {
-        constructor(target) {
-            if (lib.isMobile)
-                return;
-            if (!navigation.tooltip)
-                return;
-            this.container = navigation.tooltip;
-            if (!this.container)
-                return;
-            $(target)
-                .on('mouseenter', (event) => this.show(event))
-                .on('mouseleave', () => this.hide())
-                .on('mousedown', () => this.hide());
-        }
-        title = '';
-        description = '';
-        flip = false;
-        container = undefined;
-        set({ title = '', description = '', flip = false } = {}) {
-            this.title = title !== '' ? title : this.title;
-            this.description = description !== '' ? description : this.description;
-            this.flip = flip;
-        }
-        show({ target }) {
-            if (navigation.underlay &&
-                navigation.underlay.classList.contains('nav__underlay--active'))
-                return;
-            if (!navigation.navbar)
-                return;
-            if (!(this.container &&
-                this.container.t &&
-                this.container.d))
-                return;
-            if (this.title === '' || typeof this.title === 'undefined')
-                return;
-            const { innerWidth } = window;
-            const { left, right } = target.getBoundingClientRect();
-            const { width } = this.container.getBoundingClientRect();
-            this.container.t.innerText = this.title;
-            this.container.d.innerText = this.description ? this.description : '';
-            $(this.container).css({
-                left: this.flip ? null : `${left}px`,
-                right: this.flip ? `${innerWidth - right}px` : null,
-                textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
-            });
-            $(this.container).addClass('nav__tooltip--active');
-            $(navigation.navbar).addClass('nav--decorating');
-        }
-        hide() {
-            if (!navigation.navbar)
-                return;
-            if (!this.container)
-                return;
-            $(this.container).removeClass('nav__tooltip--active');
-            $(navigation.navbar).removeClass('nav--decorating');
-        }
-    },
-    Clicker: class {
-        constructor(container, onlyActive = false) {
-            this.container = container;
-            this.container.classList.add('nav__clicker');
-            if (onlyActive)
-                $(container).dataset('activated', '');
-            $(this.container).on('click', () => {
-                if (!this.container)
-                    return;
-                if (onlyActive) {
-                    for (let f of this.clickHandlers)
-                        f(true);
-                    this.activated = true;
-                }
-                else {
-                    let isActive = this.container.dataset.activated === '';
-                    for (let f of this.clickHandlers)
-                        f(!isActive);
-                    this.toggle(isActive);
-                }
-            });
-        }
-        container = undefined;
-        clickHandlers = [];
-        activated = false;
-        onClick(func) {
-            return this.clickHandlers.push(func);
-        }
-        offClick(index) {
-            if (this.clickHandlers[index])
-                this.clickHandlers[index] = () => { };
-        }
-        toggle(isActive = this.activated) {
-            this.activated = !isActive;
-            if (this.activated)
-                this.show();
-            else
-                this.hide();
-        }
-        show() {
-            if (!this.container)
-                return;
-            if (!this.clickHandlers.length)
-                return;
-            this.container.dataset.activated = '';
-        }
-        hide() {
-            if (!this.container)
-                return;
-            delete this.container.dataset.activated;
-        }
-    },
-    SubWindow: class {
-        constructor(container, content = 'blank') {
-            /** initialize the html */
-            this.__container = container;
-            this.__windowNode = magicDOM.createElement('div', {
-                classList: [
-                    'nav__sub-window',
-                    'nav__sub-window--deactivated'
-                ],
-                attribute: { 'data-id': this.__id }
-            });
-            this.__overlayNode = magicDOM.createElement('div', {
-                classList: 'nav__sub-window__overlay',
-                children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
-            });
-            this.__contentNode = magicDOM.createElement('div', {
-                classList: 'nav__sub-window__content'
-            });
-            this.content = content;
-            this.__windowNode.append(this.__contentNode, this.__overlayNode);
-            this.__container.append(this.__windowNode);
-            /** list */
-            navigation.subWindowList.push(this);
-            /** observer */
-            new ResizeObserver(() => this.update()).observe(this.__contentNode);
-            new ResizeObserver(() => this.update()).observe(this.__container);
-            $(window).on('resize', () => this.update());
-            /** events */
-            $(this.__container).on('click', ({ target }) => {
-                if (target.matches('.nav__sub-window *'))
-                    return;
-                this.toggle();
-            });
-        }
-        update() {
-            lib.cssFrame(() => {
-                if (!(this.__contentNode && this.__windowNode && navigation.container))
-                    return;
-                const { clientWidth } = navigation.container;
-                let height = this.__isShowing ? this.__contentNode.offsetHeight : 0;
-                $(this.__windowNode).css('--height', `${height}px`);
-                if (this.__isShowing) {
-                    if (!(this.__container && this.__windowNode))
-                        return;
-                    let rect = this.__container.getBoundingClientRect();
-                    let width = this.__contentNode.offsetWidth;
-                    if (width - rect.right < 0)
-                        this.__windowNode.dataset.align = 'right';
-                    else if (rect.left + width < clientWidth)
-                        this.__windowNode.dataset.align = 'left';
-                    else {
-                        this.__windowNode.dataset.align = 'expanded';
-                        $(this.__windowNode).css({
-                            '--width': `${clientWidth}px`,
-                            '--left': rect.left
-                        });
-                        return;
-                    }
-                    $(this.__windowNode).css('--width', `${width}px`);
-                }
-            });
-        }
-        show() {
-            if (!(this.__windowNode && this.__container))
-                return;
-            window.clearTimeout(this.__hideTimeoutId);
-            for (let item of navigation.subWindowList)
-                if (item.id !== this.__id)
-                    item.hide(false);
-            navigation.setUnderlay(true);
-            this.update();
-            $(this.__windowNode)
-                .addClass('nav__sub-window--activated')
-                .removeClass('nav__sub-window--deactivated');
-            $(this.__container)
-                .dataset('swActivated', '');
-            this.__isShowing = true;
-            this.update();
-        }
-        hide(trusted = true) {
-            if (!(this.__windowNode && this.__container))
-                return;
-            window.clearTimeout(this.__hideTimeoutId);
-            if (trusted)
-                navigation.setUnderlay(false);
-            this.__windowNode.classList.remove('nav__sub-window--activated');
-            this.__container.classList.remove('nav__sub-window__container--activated');
-            $(this.__container)
-                .dataset('swActivated', null);
-            this.__isShowing = false;
-            this.update();
-            this.__hideTimeoutId = window.setTimeout(() => {
-                if (!this.__windowNode)
-                    return;
-                this.__windowNode.classList.add('nav__sub-window--deactivated');
-            }, 300);
-        }
-        toggle() {
-            this.__isShowing ? this.hide() : this.show();
-            this.__toggleHandlers.forEach((handler) => {
-                handler(this.__isShowing);
-            });
-        }
-        onToggle(func) {
-            this.__toggleHandlers.push(func);
-        }
-        set loaded(loaded) {
-            if (!this.__overlayNode)
-                return;
-            $(this.__overlayNode).css('display', loaded ? 'none' : 'block');
-        }
-        set content(content) {
-            if (!this.__contentNode)
-                return;
-            magicDOM.emptyNode(this.__contentNode);
-            this.__contentNode.append(content);
-            this.update();
-        }
-        get isShowing() { return this.__isShowing; }
-        get id() { return this.__id; }
-        __id = lib.randomString(6);
-        __isShowing = false;
-        __hideTimeoutId = -1;
-        __toggleHandlers = [];
-        __container;
-        __contentNode;
-        __windowNode;
-        __overlayNode;
-    }
 };
+export class Tooltip {
+    constructor(target) {
+        if (lib.isMobile)
+            return;
+        if (!navigation.tooltip)
+            return;
+        this.container = navigation.tooltip;
+        if (!this.container)
+            return;
+        $(target)
+            .on('mouseenter', (event) => this.show(event))
+            .on('mouseleave', () => this.hide())
+            .on('mousedown', () => this.hide());
+    }
+    title = '';
+    description = '';
+    flip = false;
+    container = undefined;
+    set({ title = '', description = '', flip = false } = {}) {
+        this.title = title !== '' ? title : this.title;
+        this.description = description !== '' ? description : this.description;
+        this.flip = flip;
+    }
+    show({ target }) {
+        if (navigation.underlay &&
+            navigation.underlay.classList.contains('nav__underlay--active'))
+            return;
+        if (!navigation.navbar)
+            return;
+        if (!(this.container &&
+            this.container.t &&
+            this.container.d))
+            return;
+        if (this.title === '' || typeof this.title === 'undefined')
+            return;
+        const { innerWidth } = window;
+        const { left, right } = target.getBoundingClientRect();
+        const { width } = this.container.getBoundingClientRect();
+        this.container.t.innerText = this.title;
+        this.container.d.innerText = this.description ? this.description : '';
+        $(this.container).css({
+            left: this.flip ? null : `${left}px`,
+            right: this.flip ? `${innerWidth - right}px` : null,
+            textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
+        });
+        $(this.container).addClass('nav__tooltip--active');
+        $(navigation.navbar).addClass('nav--decorating');
+    }
+    hide() {
+        if (!navigation.navbar)
+            return;
+        if (!this.container)
+            return;
+        $(this.container).removeClass('nav__tooltip--active');
+        $(navigation.navbar).removeClass('nav--decorating');
+    }
+}
+export class Clicker {
+    constructor(container, onlyActive = false) {
+        this.container = container;
+        this.container.classList.add('nav__clicker');
+        if (onlyActive)
+            $(container).dataset('activated', '');
+        /** handle click event */
+        const clickBox = magicDOM.createElement('div', { classList: 'nav__clicker__box' });
+        this.container.append(clickBox);
+        $(clickBox).on('click', () => {
+            if (!this.container)
+                return;
+            if (onlyActive) {
+                for (let f of this.clickHandlers)
+                    f(true);
+                this.__activated = true;
+            }
+            else {
+                let isActive = this.container.dataset.activated === '';
+                for (let f of this.clickHandlers)
+                    f(!isActive);
+                this.toggle(isActive);
+            }
+        });
+    }
+    container = undefined;
+    clickHandlers = [];
+    __activated = false;
+    get activated() { return this.__activated; }
+    onClick(func) {
+        return this.clickHandlers.push(func);
+    }
+    offClick(index) {
+        if (this.clickHandlers[index])
+            this.clickHandlers[index] = () => { };
+    }
+    toggle(isActive = this.__activated) {
+        this.__activated = !isActive;
+        if (this.__activated)
+            this.show();
+        else
+            this.hide();
+    }
+    show() {
+        if (!this.container)
+            return;
+        if (!this.clickHandlers.length)
+            return;
+        this.container.dataset.activated = '';
+    }
+    hide() {
+        if (!this.container)
+            return;
+        delete this.container.dataset.activated;
+    }
+}
+export class SubWindow {
+    constructor(container, content = 'blank') {
+        /** initialize the html */
+        this.__container = container;
+        this.__windowNode = magicDOM.createElement('div', {
+            classList: [
+                'nav__sub-window',
+                'nav__sub-window--deactivated'
+            ],
+            attribute: { 'data-id': this.__id }
+        });
+        this.__overlayNode = magicDOM.createElement('div', {
+            classList: 'nav__sub-window__overlay',
+            children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
+        });
+        this.__contentNode = magicDOM.createElement('div', {
+            classList: 'nav__sub-window__content'
+        });
+        this.content = content;
+        this.__windowNode.append(this.__contentNode, this.__overlayNode);
+        this.__container.append(this.__windowNode);
+        /** list */
+        navigation.subWindowList.push(this);
+        /** observer */
+        new ResizeObserver(() => this.update()).observe(this.__contentNode);
+        new ResizeObserver(() => this.update()).observe(this.__container);
+        $(window).on('resize', () => this.update());
+    }
+    update() {
+        lib.cssFrame(() => {
+            if (!(this.__contentNode && this.__windowNode && navigation.container && this.__container))
+                return;
+            const { clientWidth } = navigation.container;
+            let height = this.__isShowing ? this.__contentNode.offsetHeight : 0;
+            $(this.__windowNode).css('--height', `${height}px`);
+            let rect = this.__container.getBoundingClientRect();
+            let width = this.__contentNode.offsetWidth;
+            if (width - rect.right < 0)
+                this.__windowNode.dataset.align = 'right';
+            else if (rect.left + width < clientWidth)
+                this.__windowNode.dataset.align = 'left';
+            else {
+                this.__windowNode.dataset.align = 'expanded';
+                $(this.__windowNode).css({
+                    '--width': `${clientWidth}px`,
+                    '--left': rect.left
+                });
+                return;
+            }
+            $(this.__windowNode).css('--width', `${width}px`);
+        });
+    }
+    show() {
+        if (!(this.__windowNode && this.__container))
+            return;
+        window.clearTimeout(this.__hideTimeoutId);
+        for (let item of navigation.subWindowList)
+            if (item.id !== this.__id)
+                item.hide(false);
+        navigation.setUnderlay(true);
+        this.update();
+        $(this.__windowNode)
+            .addClass('nav__sub-window--activated')
+            .removeClass('nav__sub-window--deactivated');
+        $(this.__container)
+            .dataset('swActivated', '');
+        this.__isShowing = true;
+        this.update();
+    }
+    hide(trusted = true) {
+        if (!(this.__windowNode && this.__container))
+            return;
+        window.clearTimeout(this.__hideTimeoutId);
+        if (trusted)
+            navigation.setUnderlay(false);
+        this.__windowNode.classList.remove('nav__sub-window--activated');
+        this.__container.classList.remove('nav__sub-window__container--activated');
+        $(this.__container)
+            .dataset('swActivated', null);
+        this.__isShowing = false;
+        this.update();
+        this.__hideTimeoutId = window.setTimeout(() => {
+            if (!this.__windowNode)
+                return;
+            this.__windowNode.classList.add('nav__sub-window--deactivated');
+        }, 300);
+    }
+    toggle() {
+        this.__isShowing ? this.hide() : this.show();
+        this.__toggleHandlers.forEach((handler) => {
+            handler(this.__isShowing);
+        });
+    }
+    onToggle(func) {
+        this.__toggleHandlers.push(func);
+    }
+    set loaded(loaded) {
+        if (!this.__overlayNode)
+            return;
+        $(this.__overlayNode).css('display', loaded ? 'none' : 'block');
+    }
+    set content(content) {
+        if (!this.__contentNode)
+            return;
+        magicDOM.emptyNode(this.__contentNode);
+        this.__contentNode.append(content);
+        this.update();
+    }
+    get isShowing() { return this.__isShowing; }
+    get id() { return this.__id; }
+    __id = lib.randomString(6);
+    __isShowing = false;
+    __hideTimeoutId = -1;
+    __toggleHandlers = [];
+    __container;
+    __contentNode;
+    __windowNode;
+    __overlayNode;
+}
 export default navigation;
 const or = (...args) => args.some((arg) => arg);

@@ -1,6 +1,7 @@
 export { $, $$ } from './jquery';
 export { default as Console } from './console';
 export { default as Glasium } from './glasium';
+export { default as ScrollBox } from './scrollbox';
 export { default as StopClock } from './stopclock';
 export { default as RecordAnimationFrame } from './record-animation-frame';
 export { default as cursor } from './cursor';

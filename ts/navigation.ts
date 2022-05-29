@@ -8,30 +8,30 @@ interface Component {
     container: HTMLElement,
     tooltip: Tooltip,
     clicker: Clicker,
-    subWindow?: SubWindow
+    subWindow: SubWindow
 }
 
 
 const navigation: {
     initialized: boolean,
-    container?: HTMLElement,
-    navbar?: HTMLElement,
+    container?: HTMLElement
+    navbar?: HTMLElement
     block: {
         left?: HTMLElement,
         right?: HTMLElement
-    },
+    }
     tooltip?: HTMLElement & {
         t?: HTMLElement,
         d?: HTMLElement
-    },
+    }
     underlay?: HTMLElement
-    subWindowList: SubWindow[],
-    init(containerQuery: string, contentQuery: string): void,
+    subWindowList: SubWindow[]
+    init(containerQuery: string, contentQuery: string): void
     insert(component: {
         container: HTMLElement,
         [key: string]: any
-    }, location: 'left' | 'right', order?: number): void,
-    setUnderlay(activate?: boolean): void,
+    }, location: 'left' | 'right', order?: number): void
+    setUnderlay(activate?: boolean): void
     set loading(loading: boolean)
     account: {
         userToken?: string,
@@ -65,22 +65,6 @@ const navigation: {
             set userName(userName: string)
             set background(colorName: string)
         }
-    },
-    Tooltip: {
-        new(target: HTMLElement): Tooltip,
-        prototype: Tooltip
-    },
-    Clicker: {
-        new(container: HTMLElement, onlyActive?: boolean): Clicker,
-        prototype: Clicker,
-    },
-    SubWindow: {
-        new(
-            container: HTMLElement,
-            content?: HTMLElement | string,
-            color?: string
-        ): SubWindow,
-        prototype: SubWindow
     }
 } = {
     initialized: false,
@@ -210,8 +194,8 @@ const navigation: {
 
     addComponent: {
         logo({ icon = 'favicon.png', title = 'app name', onlyActive = false }: {
-            icon?: string,
-            title?: string,
+            icon?: string
+            title?: string
             onlyActive?: boolean
         } = {}): Component {
             const container: HTMLDivElement & {
@@ -225,8 +209,10 @@ const navigation: {
                 },
                 t: { classList: 'nav__logo__title', children: title }
             })
-            const tooltip: Tooltip = new navigation.Tooltip(container)
-            const clicker: Clicker = new navigation.Clicker(container, onlyActive)
+
+            const tooltip: Tooltip = new Tooltip(container)
+            const clicker: Clicker = new Clicker(container, onlyActive)
+            const subWindow: SubWindow = new SubWindow(container)
 
 
             navigation.insert({ container }, 'left', 1)
@@ -235,7 +221,8 @@ const navigation: {
             return {
                 container,
                 tooltip,
-                clicker
+                clicker,
+                subWindow
             }
         },
 
@@ -313,7 +300,7 @@ const navigation: {
                         children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
                     })
 
-                new navigation.Tooltip(link).set(tooltip)
+                new Tooltip(link).set(tooltip)
 
 
                 /** link's events */
@@ -407,9 +394,9 @@ const navigation: {
                 ]
             })
 
-            const tooltip: Tooltip = new navigation.Tooltip(container)
-            const clicker: Clicker = new navigation.Clicker(container)
-
+            const tooltip: Tooltip = new Tooltip(container)
+            const clicker: Clicker = new Clicker(container)
+            const subWindow: SubWindow = new SubWindow(container)
 
             if (func) clicker.onClick(func)
 
@@ -420,7 +407,8 @@ const navigation: {
             return {
                 container,
                 tooltip,
-                clicker
+                clicker,
+                subWindow
             }
         },
 
@@ -449,9 +437,9 @@ const navigation: {
                 classList: ['nav__component', 'nav__button'],
             })
 
-            const tooltip: Tooltip = new navigation.Tooltip(container)
-
-            const clicker: Clicker = new navigation.Clicker(container, alwaysActive)
+            const tooltip: Tooltip = new Tooltip(container)
+            const clicker: Clicker = new Clicker(container, alwaysActive)
+            const subWindow: SubWindow = new SubWindow(container)
 
             if (func) clicker.onClick(func)
 
@@ -489,6 +477,7 @@ const navigation: {
                 container,
                 tooltip,
                 clicker,
+                subWindow,
 
 
                 set icon(iconName: string) {
@@ -530,7 +519,9 @@ const navigation: {
             })
 
             const { container, tooltip, clicker } = button
-            const subWindow: SubWindow = new navigation.SubWindow(container)
+            const subWindow: SubWindow = new SubWindow(container)
+
+            clicker.onClick((): void => subWindow.toggle())
 
 
             /** background color */
@@ -566,428 +557,379 @@ const navigation: {
             }
         }
     },
+}
 
 
-    Tooltip: class {
-        constructor(target: HTMLElement) {
-            if (lib.isMobile) return
-            if (!navigation.tooltip) return
 
+export class Tooltip {
+    constructor(target: HTMLElement) {
+        if (lib.isMobile) return
+        if (!navigation.tooltip) return
 
-            this.container = navigation.tooltip
-            if (!this.container) return
 
+        this.container = navigation.tooltip
+        if (!this.container) return
 
-            $(target)
-                .on('mouseenter', (event: MouseEvent): void => this.show(event))
-                .on('mouseleave', (): void => this.hide())
-                .on('mousedown', (): void => this.hide())
-        }
 
-
-        title?: string = ''
-        description?: string = ''
-        flip?: boolean = false
-
-        container?: HTMLElement & {
-            t?: HTMLElement,
-            d?: HTMLElement
-        } = undefined
-
-
-        set({
-            title = '',
-            description = '',
-            flip = false
-        }: {
-            title?: string,
-            description?: string,
-            flip?: boolean
-        } = {}): void {
-            this.title = title !== '' ? title : this.title
-            this.description = description !== '' ? description : this.description
-            this.flip = flip
-        }
-
-
-        show({ target }: MouseEvent): void {
-            if (
-                navigation.underlay &&
-                navigation.underlay.classList.contains('nav__underlay--active')
-            ) return
-
-            if (!navigation.navbar) return
-
-            if (!(
-                this.container &&
-                this.container.t &&
-                this.container.d
-            )) return
-
-            if (this.title === '' || typeof this.title === 'undefined') return
-
-
-            const { innerWidth } = window
-            const { left, right } = (target as HTMLElement).getBoundingClientRect()
-            const { width } = this.container.getBoundingClientRect()
-
-
-            this.container.t.innerText = this.title
-            this.container.d.innerText = this.description ? this.description : ''
-
-
-            $(this.container).css({
-                left: this.flip ? null : `${left}px`,
-                right: this.flip ? `${innerWidth - right}px` : null,
-                textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
-            })
-
-
-            $(this.container).addClass('nav__tooltip--active')
-            $(navigation.navbar).addClass('nav--decorating')
-        }
-
-
-        hide(): void {
-            if (!navigation.navbar) return
-            if (!this.container) return
-
-
-            $(this.container).removeClass('nav__tooltip--active')
-            $(navigation.navbar).removeClass('nav--decorating')
-        }
-    },
-
-
-    Clicker: class {
-        constructor(container: HTMLElement, onlyActive: boolean = false) {
-            this.container = container
-            this.container.classList.add('nav__clicker')
-
-
-            if (onlyActive) $(container).dataset('activated', '')
-
-
-            $(this.container).on('click', (): void => {
-                if (!this.container) return
-
-
-                if (onlyActive) {
-                    for (let f of this.clickHandlers)
-                        f(true)
-
-                    this.activated = true
-                } else {
-                    let isActive: boolean = this.container.dataset.activated === ''
-
-                    for (let f of this.clickHandlers)
-                        f(!isActive)
-
-                    this.toggle(isActive)
-                }
-            })
-        }
-
-
-        container?: HTMLElement = undefined
-
-        clickHandlers: ((...args: any[]) => any)[] = []
-
-        activated: boolean = false
-
-
-        onClick(func: (...args: any[]) => any): number {
-            return this.clickHandlers.push(func)
-        }
-
-
-        offClick(index: number): void {
-            if (this.clickHandlers[index])
-                this.clickHandlers[index] = (): void => { /** none */ }
-        }
-
-
-        toggle(isActive: boolean = this.activated): void {
-            this.activated = !isActive
-
-
-            if (this.activated) this.show()
-            else this.hide()
-        }
-
-
-        show(): void {
-            if (!this.container) return
-            if (!this.clickHandlers.length) return
-
-            this.container.dataset.activated = ''
-        }
-
-
-        hide(): void {
-            if (!this.container) return
-
-            delete this.container.dataset.activated
-        }
-    },
-
-
-    SubWindow: class {
-        constructor(
-            container: HTMLElement,
-            content: HTMLElement | string = 'blank'
-        ) {
-            /** initialize the html */
-            this.__container = container
-
-            this.__windowNode = magicDOM.createElement('div', {
-                classList: [
-                    'nav__sub-window',
-                    'nav__sub-window--deactivated'
-                ],
-                attribute: { 'data-id': this.__id }
-            })
-
-            this.__overlayNode = magicDOM.createElement('div', {
-                classList: 'nav__sub-window__overlay',
-                children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
-            })
-
-            this.__contentNode = magicDOM.createElement('div', {
-                classList: 'nav__sub-window__content'
-            })
-
-            this.content = content
-
-            this.__windowNode.append(this.__contentNode, this.__overlayNode)
-            this.__container.append(this.__windowNode)
-
-
-            /** list */
-            navigation.subWindowList.push(this)
-
-
-            /** observer */
-            new ResizeObserver((): void => this.update()).observe(this.__contentNode)
-            new ResizeObserver((): void => this.update()).observe(this.__container)
-
-            $(window).on('resize', (): void => this.update())
-
-
-            /** events */
-            $(this.__container).on('click', ({ target }: MouseEvent): void => {
-                if ((target as HTMLElement).matches('.nav__sub-window *')) return
-
-                this.toggle()
-            })
-        }
-
-
-        update(): void {
-            lib.cssFrame((): void => {
-                if (!(this.__contentNode && this.__windowNode && navigation.container)) return
-
-
-                const { clientWidth } = navigation.container
-
-
-                let height: number = this.__isShowing ? this.__contentNode.offsetHeight : 0
-                $(this.__windowNode).css('--height', `${height}px`)
-
-
-                if (this.__isShowing) {
-                    if (!(this.__container && this.__windowNode)) return
-
-
-                    let rect: DOMRect = this.__container.getBoundingClientRect()
-                    let width: number = this.__contentNode.offsetWidth
-
-
-                    if (width - rect.right < 0)
-                        this.__windowNode.dataset.align = 'right'
-                    else if (rect.left + width < clientWidth)
-                        this.__windowNode.dataset.align = 'left'
-                    else {
-                        this.__windowNode.dataset.align = 'expanded'
-                        $(this.__windowNode).css({
-                            '--width': `${clientWidth}px`,
-                            '--left': rect.left
-                        })
-                        return
-                    }
-
-
-                    $(this.__windowNode).css('--width', `${width}px`)
-                }
-            })
-        }
-
-
-        show(): void {
-            if (!(this.__windowNode && this.__container)) return
-
-
-            window.clearTimeout(this.__hideTimeoutId)
-
-
-            for (let item of navigation.subWindowList)
-                if (item.id !== this.__id)
-                    item.hide(false)
-
-
-            navigation.setUnderlay(true)
-
-
-            this.update()
-
-
-            $(this.__windowNode)
-                .addClass('nav__sub-window--activated')
-                .removeClass('nav__sub-window--deactivated')
-
-            $(this.__container)
-                .dataset('swActivated', '')
-
-
-            this.__isShowing = true
-
-
-            this.update()
-        }
-
-
-        hide(trusted: boolean = true): void {
-            if (!(this.__windowNode && this.__container)) return
-
-
-            window.clearTimeout(this.__hideTimeoutId)
-
-
-            if (trusted) navigation.setUnderlay(false)
-
-
-            this.__windowNode.classList.remove('nav__sub-window--activated')
-            this.__container.classList.remove('nav__sub-window__container--activated')
-
-            $(this.__container)
-                .dataset('swActivated', null)
-
-
-            this.__isShowing = false
-
-
-            this.update()
-
-
-            this.__hideTimeoutId = window.setTimeout((): void => {
-                if (!this.__windowNode) return
-
-                this.__windowNode.classList.add('nav__sub-window--deactivated')
-            }, 300)
-        }
-
-
-        toggle(): void {
-            this.__isShowing ? this.hide() : this.show()
-
-
-            this.__toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
-                handler(this.__isShowing)
-            })
-        }
-
-
-        onToggle(func: (...args: any[]) => any): void {
-            this.__toggleHandlers.push(func)
-        }
-
-
-        set loaded(loaded: boolean) {
-            if (!this.__overlayNode) return
-
-
-            $(this.__overlayNode).css('display', loaded ? 'none' : 'block')
-        }
-
-
-        set content(content: HTMLElement | string) {
-            if (!this.__contentNode) return
-
-
-            magicDOM.emptyNode(this.__contentNode)
-
-
-            this.__contentNode.append(content)
-
-
-            this.update()
-        }
-
-
-        get isShowing(): boolean { return this.__isShowing }
-
-
-        get id(): string { return this.__id }
-
-
-        __id: string = lib.randomString(6)
-        __isShowing: boolean = false
-        __hideTimeoutId: number = -1
-
-        __toggleHandlers: ((...args: any[]) => any)[] = []
-
-        __container?: HTMLElement
-        __contentNode?: HTMLElement
-        __windowNode?: HTMLElement
-        __overlayNode?: HTMLElement
+        $(target)
+            .on('mouseenter', (event: MouseEvent): void => this.show(event))
+            .on('mouseleave', (): void => this.hide())
+            .on('mousedown', (): void => this.hide())
     }
+
+
+    private title?: string = ''
+    private description?: string = ''
+    private flip?: boolean = false
+
+    private container?: HTMLElement & {
+        t?: HTMLElement,
+        d?: HTMLElement
+    } = undefined
+
+
+    set({
+        title = '',
+        description = '',
+        flip = false
+    }: {
+        title?: string,
+        description?: string,
+        flip?: boolean
+    } = {}): void {
+        this.title = title !== '' ? title : this.title
+        this.description = description !== '' ? description : this.description
+        this.flip = flip
+    }
+
+
+    show({ target }: MouseEvent): void {
+        if (
+            navigation.underlay &&
+            navigation.underlay.classList.contains('nav__underlay--active')
+        ) return
+
+        if (!navigation.navbar) return
+
+        if (!(
+            this.container &&
+            this.container.t &&
+            this.container.d
+        )) return
+
+        if (this.title === '' || typeof this.title === 'undefined') return
+
+
+        const { innerWidth } = window
+        const { left, right } = (target as HTMLElement).getBoundingClientRect()
+        const { width } = this.container.getBoundingClientRect()
+
+
+        this.container.t.innerText = this.title
+        this.container.d.innerText = this.description ? this.description : ''
+
+
+        $(this.container).css({
+            left: this.flip ? null : `${left}px`,
+            right: this.flip ? `${innerWidth - right}px` : null,
+            textAlign: this.flip || left + width >= innerWidth ? 'right' : 'left'
+        })
+
+
+        $(this.container).addClass('nav__tooltip--active')
+        $(navigation.navbar).addClass('nav--decorating')
+    }
+
+
+    hide(): void {
+        if (!navigation.navbar) return
+        if (!this.container) return
+
+
+        $(this.container).removeClass('nav__tooltip--active')
+        $(navigation.navbar).removeClass('nav--decorating')
+    }
+}
+
+
+export class Clicker {
+    constructor(container: HTMLElement, onlyActive: boolean = false) {
+        this.container = container
+        this.container.classList.add('nav__clicker')
+
+
+        if (onlyActive) $(container).dataset('activated', '')
+
+
+        /** handle click event */
+        const clickBox: HTMLElement = magicDOM.createElement('div', { classList: 'nav__clicker__box' })
+        this.container.append(clickBox)
+
+        $(clickBox).on('click', (): void => {
+            if (!this.container) return
+
+
+            if (onlyActive) {
+                for (let f of this.clickHandlers)
+                    f(true)
+
+                this.__activated = true
+            } else {
+                let isActive: boolean = this.container.dataset.activated === ''
+
+                for (let f of this.clickHandlers)
+                    f(!isActive)
+
+                this.toggle(isActive)
+            }
+        })
+    }
+
+
+    private container?: HTMLElement = undefined
+
+    private clickHandlers: ((...args: any[]) => any)[] = []
+
+    private __activated: boolean = false
+
+    get activated(): boolean { return this.__activated }
+
+
+    onClick(func: (...args: any[]) => any): number {
+        return this.clickHandlers.push(func)
+    }
+
+
+    offClick(index: number): void {
+        if (this.clickHandlers[index])
+            this.clickHandlers[index] = (): void => { /** none */ }
+    }
+
+
+    toggle(isActive: boolean = this.__activated): void {
+        this.__activated = !isActive
+
+
+        if (this.__activated) this.show()
+        else this.hide()
+    }
+
+
+    show(): void {
+        if (!this.container) return
+        if (!this.clickHandlers.length) return
+
+        this.container.dataset.activated = ''
+    }
+
+
+    hide(): void {
+        if (!this.container) return
+
+        delete this.container.dataset.activated
+    }
+}
+
+
+export class SubWindow {
+    constructor(
+        container: HTMLElement,
+        content: HTMLElement | string = 'blank'
+    ) {
+        /** initialize the html */
+        this.__container = container
+
+        this.__windowNode = magicDOM.createElement('div', {
+            classList: [
+                'nav__sub-window',
+                'nav__sub-window--deactivated'
+            ],
+            attribute: { 'data-id': this.__id }
+        })
+
+        this.__overlayNode = magicDOM.createElement('div', {
+            classList: 'nav__sub-window__overlay',
+            children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
+        })
+
+        this.__contentNode = magicDOM.createElement('div', {
+            classList: 'nav__sub-window__content'
+        })
+
+        this.content = content
+
+        this.__windowNode.append(this.__contentNode, this.__overlayNode)
+        this.__container.append(this.__windowNode)
+
+
+        /** list */
+        navigation.subWindowList.push(this)
+
+
+        /** observer */
+        new ResizeObserver((): void => this.update()).observe(this.__contentNode)
+        new ResizeObserver((): void => this.update()).observe(this.__container)
+
+        $(window).on('resize', (): void => this.update())
+    }
+
+
+    update(): void {
+        lib.cssFrame((): void => {
+            if (!(this.__contentNode && this.__windowNode && navigation.container && this.__container)) return
+
+
+            const { clientWidth } = navigation.container
+
+
+            let height: number = this.__isShowing ? this.__contentNode.offsetHeight : 0
+            $(this.__windowNode).css('--height', `${height}px`)
+
+
+            let rect: DOMRect = this.__container.getBoundingClientRect()
+            let width: number = this.__contentNode.offsetWidth
+
+
+            if (width - rect.right < 0)
+                this.__windowNode.dataset.align = 'right'
+            else if (rect.left + width < clientWidth)
+                this.__windowNode.dataset.align = 'left'
+            else {
+                this.__windowNode.dataset.align = 'expanded'
+                $(this.__windowNode).css({
+                    '--width': `${clientWidth}px`,
+                    '--left': rect.left
+                })
+
+                return
+            }
+
+
+            $(this.__windowNode).css('--width', `${width}px`)
+        })
+    }
+
+
+    show(): void {
+        if (!(this.__windowNode && this.__container)) return
+
+
+        window.clearTimeout(this.__hideTimeoutId)
+
+
+        for (let item of navigation.subWindowList)
+            if (item.id !== this.__id)
+                item.hide(false)
+
+
+        navigation.setUnderlay(true)
+
+
+        this.update()
+
+
+        $(this.__windowNode)
+            .addClass('nav__sub-window--activated')
+            .removeClass('nav__sub-window--deactivated')
+
+        $(this.__container)
+            .dataset('swActivated', '')
+
+
+        this.__isShowing = true
+
+
+        this.update()
+    }
+
+
+    hide(trusted: boolean = true): void {
+        if (!(this.__windowNode && this.__container)) return
+
+
+        window.clearTimeout(this.__hideTimeoutId)
+
+
+        if (trusted) navigation.setUnderlay(false)
+
+
+        this.__windowNode.classList.remove('nav__sub-window--activated')
+        this.__container.classList.remove('nav__sub-window__container--activated')
+
+        $(this.__container)
+            .dataset('swActivated', null)
+
+
+        this.__isShowing = false
+
+
+        this.update()
+
+
+        this.__hideTimeoutId = window.setTimeout((): void => {
+            if (!this.__windowNode) return
+
+            this.__windowNode.classList.add('nav__sub-window--deactivated')
+        }, 300)
+    }
+
+
+    toggle(): void {
+        this.__isShowing ? this.hide() : this.show()
+
+
+        this.__toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
+            handler(this.__isShowing)
+        })
+    }
+
+
+    onToggle(func: (...args: any[]) => any): void {
+        this.__toggleHandlers.push(func)
+    }
+
+
+    set loaded(loaded: boolean) {
+        if (!this.__overlayNode) return
+
+
+        $(this.__overlayNode).css('display', loaded ? 'none' : 'block')
+    }
+
+
+    set content(content: HTMLElement | string) {
+        if (!this.__contentNode) return
+
+
+        magicDOM.emptyNode(this.__contentNode)
+
+
+        this.__contentNode.append(content)
+
+        this.update()
+    }
+
+
+    get isShowing(): boolean { return this.__isShowing }
+
+
+    get id(): string { return this.__id }
+
+
+    private __id: string = lib.randomString(6)
+    private __isShowing: boolean = false
+    private __hideTimeoutId: number = -1
+
+    private __toggleHandlers: ((...args: any[]) => any)[] = []
+
+    private __container?: HTMLElement
+    private __contentNode?: HTMLElement
+    private __windowNode?: HTMLElement
+    private __overlayNode?: HTMLElement
 }
 
 
 export default navigation
-
-
-interface Tooltip {
-    title?: string
-    description?: string
-    flip?: boolean
-    container?: HTMLElement & {
-        t?: HTMLElement,
-        d?: HTMLElement
-    }
-    set({ title, description, flip }: {
-        title?: string,
-        description?: string,
-        flip?: boolean
-    }): void
-    show(event: MouseEvent): void
-    hide(): void
-}
-
-
-interface Clicker {
-    container?: HTMLElement
-    clickHandlers: ((...args: any[]) => any)[]
-    activated: boolean
-    onClick(func: (...args: any[]) => any): number
-    offClick(index: number): void
-    toggle(isActive?: boolean): void
-    show(): void
-    hide(): void
-}
-
-
-interface SubWindow {
-    readonly id: string
-    readonly isShowing: boolean
-    set loaded(loaded: boolean)
-    set content(content: HTMLElement | string)
-    show(): void
-    hide(trusted?: boolean): void
-    update(): void
-    toggle(): void
-    onToggle(func: (...args: any[]) => any): void
-}
 
 
 const or: (...args: any[]) => boolean = (...args: any[]): boolean => args.some((arg: any): any => arg)
