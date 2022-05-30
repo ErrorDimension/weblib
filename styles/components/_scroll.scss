@@ -1,14 +1,14 @@
 .scroll {
-    position: relative;
+    --scrollbar-size: 0.25vw;
 
-    scrollbar-width: none;
+    position: relative;
 
     width: 100%;
     height: 100%;
 
     overflow: hidden;
 
-    --scrollbar-size: 0.25vw;
+    scrollbar-width: none;
 
 
     * {
