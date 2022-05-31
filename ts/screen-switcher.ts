@@ -1,5 +1,6 @@
 import { $, $$ } from './jquery'
 import Glasium from './glasium'
+import ScrollBox from './scrollbox'
 import magicDOM from "./magic-dom"
 
 
@@ -173,6 +174,10 @@ const screenSwitcher: {
 
         /** init first screen */
         this.switch(this.switcherBtn.firstElementChild as HTMLElement, collection[0])
+
+
+        /** scroll box */
+        new ScrollBox(this.content).init()
     },
 
 

@@ -244,7 +244,7 @@ export default class ScrollBox {
         $(this.content)
             .on('scroll', (): void => this.updateThumb())
             .on('wheel', (event: WheelEvent): void => {
-                if (event.ctrlKey || event.shiftKey || event.altKey) return
+                if (event.ctrlKey || event.shiftKey || event.altKey || !this.scrollableY) return
 
 
                 /** @brief over scrolling effect */

@@ -151,7 +151,7 @@ export default class ScrollBox {
         $(this.content)
             .on('scroll', () => this.updateThumb())
             .on('wheel', (event) => {
-            if (event.ctrlKey || event.shiftKey || event.altKey)
+            if (event.ctrlKey || event.shiftKey || event.altKey || !this.scrollableY)
                 return;
             /** @brief over scrolling effect */
             if ((this.content.scrollTop >= this.scrollableY - 1 && event.deltaY > 0) || /** at bottom */
