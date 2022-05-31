@@ -25,6 +25,7 @@ body {
 
 
     --nav-box-shadow: hsla(0, 0%, 100%, 0.9);
+    --nav-box-shadow-initial: transparent;
 }
 
 
@@ -53,6 +54,7 @@ body[data-theme="dark"] {
 
 
     --nav-box-shadow: hsla(0, 0%, 6%, 0.9);
+    --nav-box-shadow-initial: transparent;
 }
 
 
@@ -72,9 +74,9 @@ body[data-theme="dark"] {
 
     background-color: var(--nav-bg);
 
-    box-shadow: rgba(0, 0, 0, 0) 0px 20px 120px 20px;
+    box-shadow: 0px 20px 120px 20px var(--nav-box-shadow-initial);
 
-    transition: box-shadow 200ms ease-out;
+    transition: 200ms box-shadow ease-out;
 
     z-index: 20;
 
@@ -540,7 +542,7 @@ body[data-theme="dark"] {
 
 
     &--decorating {
-        box-shadow: 0 40px 100px 30px var(--nav-box-shadow);
+        box-shadow: 0 40px 20px 40px var(--nav-box-shadow);
     }
 }
 
