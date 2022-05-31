@@ -206,6 +206,8 @@ body[data-theme='dark'] {
 
         &[data-dragging] {
             user-select: none;
+
+            transition: 0s all linear;
         }
     }
 }

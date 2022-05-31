@@ -1,6 +1,7 @@
 /**
  * @filename                    scrollbox.ts
  * @extension_files             _scroll.scss
+ * todo remake this
  */
 interface ScrollBoxOptions {
     horizontal?: boolean;
@@ -11,7 +12,10 @@ export default class ScrollBox {
     /**
      * {@linkcode ScrollBoxOptions}
      *
-     * @param container container to initialize custom scrollbar into
+     * @param           container                   container
+     * @param           options
+     * @param           options.horizontal          horizontal scrolling
+     * @param           options.velocity            over-scroll's velocity
      */
     constructor(container: HTMLElement, { horizontal, velocity }?: ScrollBoxOptions);
     /** components */
@@ -26,17 +30,21 @@ export default class ScrollBox {
     /** options */
     private horizontal;
     private velocity;
-    /** performance props */
-    private attachedEvents;
     init(): void;
     private __vDrag;
     private __hDrag;
+    private __vDown;
+    private __hDown;
     private verticalThumbDown;
     private horizontalThumbDown;
     private verticalDragging;
     private horizontalDragging;
     private attachEvents;
-    private updateThumb;
+    private __overScrolling;
+    private overScrolling;
+    deleteOverScrollingState: () => void;
+    private __renderComponents;
+    private renderComponents;
 }
 export {};
 //# sourceMappingURL=scrollbox.d.ts.map
