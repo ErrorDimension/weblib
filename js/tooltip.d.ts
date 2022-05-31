@@ -53,8 +53,8 @@ declare const tooltip: {
     attach(target: HTMLElement & {
         tooltipAttached?: boolean;
     }, hook: Hook): void;
-    mouseenter(target: HTMLElement, { on, key, handler, fit }: Hook): void;
-    mouseleave({ follower, fit }: Hook): void;
+    pointerenter(target: HTMLElement, { on, key, handler, fit }: Hook): void;
+    pointerleave({ follower, fit }: Hook): void;
     show(content: string | HTMLElement): void;
     hide(): void;
     move(_?: any): void;

@@ -120,22 +120,22 @@ const tooltip = {
             key = `data - ${modCase.camel.kebab(key)} `;
         /** observer */
         const observer = new MutationObserver(() => {
-            this.mouseenter(target, hook);
+            this.pointerenter(target, hook);
         });
         /** attach tooltip event */
         $(target)
-            .on('mouseenter', () => {
-            this.mouseenter(target, hook);
+            .on('pointerenter', () => {
+            this.pointerenter(target, hook);
             observer.observe(target, { attributeFilter: [key] });
         })
-            .on('mouseleave', () => {
-            this.mouseleave(hook);
+            .on('pointerleave', () => {
+            this.pointerleave(hook);
             observer.disconnect();
         });
         /** inform that the target is having a tooltip event attached */
         target.tooltipAttached = true;
     },
-    mouseenter(target, { on, key, handler, fit }) {
+    pointerenter(target, { on, key, handler, fit }) {
         if (!this.container)
             return;
         /** content of the tooltip */
@@ -152,7 +152,7 @@ const tooltip = {
         if (content)
             this.show(content);
     },
-    mouseleave({ follower, fit }) {
+    pointerleave({ follower, fit }) {
         if (!this.container)
             return;
         follower && follower();
@@ -170,7 +170,7 @@ const tooltip = {
         });
         this.update(content);
         this.move();
-        $(window).on('mousemove', tooltip.move);
+        $(window).on('pointermove', tooltip.move);
     },
     hide() {
         const { container, content } = tooltip;
@@ -180,7 +180,7 @@ const tooltip = {
             $(container).dataset('activated', null);
             tooltip.hideTimeoutId = window.setTimeout(() => {
                 $(container).dataset('deactivated', '');
-                $(window).off('mousemove', tooltip.move);
+                $(window).off('pointermove', tooltip.move);
             }, DEACTIVATE_DURATION);
         }, HIDE_DURATION);
     },

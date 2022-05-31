@@ -79,8 +79,8 @@ const tooltip: {
     addHook({ on, key, handler, follower, priority, fit }: Hook): void,
     process(target: HTMLElement, { on, key }: Hook): string | undefined,
     attach(target: HTMLElement & { tooltipAttached?: boolean }, hook: Hook): void,
-    mouseenter(target: HTMLElement, { on, key, handler, fit }: Hook): void,
-    mouseleave({ follower, fit }: Hook): void,
+    pointerenter(target: HTMLElement, { on, key, handler, fit }: Hook): void,
+    pointerleave({ follower, fit }: Hook): void,
     show(content: string | HTMLElement): void,
     hide(): void,
     move(_?: any): void,
@@ -233,18 +233,18 @@ const tooltip: {
 
         /** observer */
         const observer: MutationObserver = new MutationObserver((): void => {
-            this.mouseenter(target, hook)
+            this.pointerenter(target, hook)
         })
 
 
         /** attach tooltip event */
         $(target)
-            .on('mouseenter', (): void => {
-                this.mouseenter(target, hook)
+            .on('pointerenter', (): void => {
+                this.pointerenter(target, hook)
                 observer.observe(target, { attributeFilter: [key] })
             })
-            .on('mouseleave', (): void => {
-                this.mouseleave(hook)
+            .on('pointerleave', (): void => {
+                this.pointerleave(hook)
                 observer.disconnect()
             })
 
@@ -254,7 +254,7 @@ const tooltip: {
     },
 
 
-    mouseenter(target: HTMLElement, { on, key, handler, fit }: Hook): void {
+    pointerenter(target: HTMLElement, { on, key, handler, fit }: Hook): void {
         if (!this.container) return
 
 
@@ -276,7 +276,7 @@ const tooltip: {
     },
 
 
-    mouseleave({ follower, fit }: Hook): void {
+    pointerleave({ follower, fit }: Hook): void {
         if (!this.container) return
 
 
@@ -305,7 +305,7 @@ const tooltip: {
 
 
         this.move()
-        $(window).on('mousemove', tooltip.move)
+        $(window).on('pointermove', tooltip.move)
     },
 
 
@@ -319,7 +319,7 @@ const tooltip: {
 
             tooltip.hideTimeoutId = window.setTimeout((): void => {
                 $(container).dataset('deactivated', '')
-                $(window).off('mousemove', tooltip.move)
+                $(window).off('pointermove', tooltip.move)
             }, DEACTIVATE_DURATION)
         }, HIDE_DURATION)
     },
