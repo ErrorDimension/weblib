@@ -1,0 +1,35 @@
+#dummy {
+  position: fixed;
+  inset: 0;
+
+  margin: auto;
+
+  padding: 2em;
+
+  display: block;
+
+  width: 80vw;
+  height: 80vh;
+
+  background-color: #ff5f6d;
+  background-image: linear-gradient(to right, #ffc371, #ff5f6d);
+  /** nice color */
+
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+:is(body, body[data-theme="dark"]) .dummy {
+  color: rgb(28, 28, 28);
+}
+
+.dummy {
+  color: var(--global-color);
+
+  font-family: var(--font-primary);
+  font-size: 1.15rem;
+  font-weight: normal;
+
+  text-align: justify;
+
+  width: max-content;
+}

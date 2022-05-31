@@ -107,8 +107,13 @@ class Console {
         })
 
 
-        if (["info", "okay", "debug"].includes(id))
+        const logArray: string[] = typeof window !== 'undefined' && navigator.userAgent.toLowerCase().match(/firefox|fxios/i)
+            ? ["info", "okay", "debug", "warn"]
+            : ["info", "okay", "debug"]
+
+        if (logArray.includes(id))
             style[0] += `margin-inline-start: ${this.padding}px`
+
 
         return { text, style }
     }

@@ -1,5 +1,4 @@
 import { $ } from './jquery'
-import lib, { debounce } from './lib'
 
 
 interface DOMTreeNode {

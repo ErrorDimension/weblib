@@ -80,6 +80,8 @@ declare const lib: {
     min: (...args: number[]) => number;
     /** this function returns the biggest number */
     max: (...args: number[]) => number;
+    /** this function returns the absolute value of the number */
+    abs: (num: number) => number;
     /** this function returns the clamped number */
     clamp(min: number, dynamic: number, max: number): number;
     /** this function parses cookie */

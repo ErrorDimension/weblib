@@ -20,7 +20,7 @@ declare const magicDOM: {
         attribute?: Record<string, string | number> | undefined;
         children?: string | HTMLElement | HTMLElement[] | undefined;
     }): HTMLElementTagNameMap[K];
-    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[] | undefined, attribute?: Record<string, string | number> | undefined, children?: string | HTMLElement | HTMLElement[] | Record<string, HTMLElement | DOMTreeNode> | undefined): HTMLElementTagNameMap[K_1] & {
+    createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[], attribute?: Record<string, string | number>, children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode | HTMLElement>): HTMLElementTagNameMap[K_1] & {
         [key: string]: HTMLElement;
     };
     /**

@@ -137,9 +137,11 @@ const lib = {
     nextFrameAsync() {
         return new Promise((resolve) => { requestAnimationFrame(() => resolve()); });
     },
-    async cssFrame(fn) {
-        await this.nextFrameAsync();
-        requestAnimationFrame(fn);
+    cssFrame(fn) {
+        return new Promise(() => {
+            this.nextFrameAsync();
+            requestAnimationFrame(fn);
+        });
     },
     /**
      * Belibrary and ZaWorst 's color template
@@ -227,6 +229,8 @@ const lib = {
     min: (...args) => Math.min(...args),
     /** this function returns the biggest number */
     max: (...args) => Math.max(...args),
+    /** this function returns the absolute value of the number */
+    abs: (num) => Math.abs(num),
     /** this function returns the clamped number */
     clamp(min, dynamic, max) { return this.min(this.max(min, dynamic), max); },
     /** this function parses cookie */

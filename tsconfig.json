@@ -6,8 +6,8 @@
         // Libraries
         "lib": [
             "dom",
-            "es7",
-            "dom.iterable"
+            "dom.iterable",
+            "es2021"
         ],
         // Options
         "allowJs": false,

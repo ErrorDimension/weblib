@@ -72,7 +72,10 @@ class Console {
             text += `%c${arg.text}%c `;
             style.push(stylePallette.join(''), 'visibility: hidden');
         });
-        if (["info", "okay", "debug"].includes(id))
+        const logArray = typeof window !== 'undefined' && navigator.userAgent.toLowerCase().match(/firefox|fxios/i)
+            ? ["info", "okay", "debug", "warn"]
+            : ["info", "okay", "debug"];
+        if (logArray.includes(id))
             style[0] += `margin-inline-start: ${this.padding}px`;
         return { text, style };
     }

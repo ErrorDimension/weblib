@@ -1,22 +1,211 @@
+body {
+    --scrollbar-idle-color: transparent;
+    --scrollbar-show-color: rgba(140, 140, 140, 0.5);
+    --scrollbar-hover-color: rgba(90, 90, 90, 0.5);
+    --scrollbar-active-color: rgba(75, 75, 75, 0.6);
+}
+
+
+body[data-theme='dark'] {
+    --scrollbar-idle-color: transparent;
+    --scrollbar-show-color: rgba(213, 204, 204, 0.5);
+    --scrollbar-hover-color: rgba(235, 235, 235, 0.6);
+    --scrollbar-active-color: rgba(255, 255, 255, 0.8);
+}
+
+
 .scroll {
-    --scrollbar-size: 0.25vw;
+    --scrollbar-size-initial: max(4.5px, 0.27vw);
+    --scrollbar-margin: 0.07vw;
+    --scrollbar-offset: calc(var(--scrollbar-size-initial) + var(--scrollbar-margin));
 
     position: relative;
 
     width: 100%;
     height: 100%;
 
+    padding-block-start: 0 !important;
+    padding-block-end: 0 !important;
+
     overflow: hidden;
 
-    scrollbar-width: none;
+    scrollbar-width: none; // firefox problems
 
 
     * {
-        scrollbar-width: none;
+        scrollbar-width: none !important; // firefox problems
+
+
+        &::-webkit-scrollbar {
+            display: none !important;
+        }
     }
 
 
     &::-webkit-scrollbar {
-        display: none;
+        display: none !important;
+    }
+
+
+    &__bar {
+
+        &--vertical,
+        &--horizontal {
+            position: absolute;
+
+            background-color: transparent;
+
+            z-index: 90;
+
+            pointer-events: none;
+
+            transition: 200ms all ease-out;
+
+
+            &[data-hidden] {
+                display: none;
+            }
+
+
+            .scroll__thumb {
+                pointer-events: all;
+            }
+        }
+
+
+        &--vertical {
+            inset-inline: 0;
+            inset-block: var(--scrollbar-offset); // doesn't touch the other bar
+
+            margin-inline-start: auto;
+            margin-inline-end: var(--scrollbar-margin);
+
+            width: var(--scrollbar-size, var(--scrollbar-size-initial));
+
+
+            .scroll__thumb {
+                inset-block-start: calc(var(--scrollbar-thumb-pos, 0) * 1%);
+                inset-inline: 0;
+
+                width: 100%;
+                height: calc(var(--scrollbar-thumb-percent, 100) * 1%);
+
+                transform-origin: right;
+            }
+
+
+            @media (hover: hover) {
+                &:hover {
+                    width: calc(2 * var(--scrollbar-size, var(--scrollbar-size-initial)));
+                }
+            }
+        }
+
+
+        &--horizontal {
+            inset-block: 0;
+            inset-inline: var(--scrollbar-offset); // doesn't touch the other bar
+
+            margin-block-start: auto;
+            margin-block-end: var(--scrollbar-margin);
+
+            height: var(--scrollbar-size, var(--scrollbar-size-initial));
+
+
+            .scroll__thumb {
+                inset-inline-start: calc(var(--scrollbar-thumb-pos, 0) * 1%);
+                inset-block: 0;
+
+                height: 100%;
+                width: calc(var(--scrollbar-thumb-percent, 100) * 1%);
+
+                transform-origin: bottom;
+            }
+
+
+            @media (hover: hover) {
+                &:hover {
+                    height: calc(2 * var(--scrollbar-size, var(--scrollbar-size-initial)));
+                }
+            }
+        }
+    }
+
+
+    @media (hover: hover) {
+        &:hover {
+            .scroll__bar {
+                transition: 200ms all ease-out;
+            }
+
+
+            .scroll__thumb {
+                background-color: var(--scrollbar-show-color);
+
+                transition: 200ms all ease-out;
+
+
+                @media(hover:hover) {
+                    &:hover {
+                        background-color: var(--scrollbar-hover-color);
+                    }
+                }
+
+
+                &:active {
+                    background-color: var(--scrollbar-active-color);
+                }
+            }
+        }
+    }
+
+
+    .scroll__thumb {
+        position: absolute;
+
+        background-color: var(--scrollbar-show-color);
+
+
+        @media (hover: hover) {
+            background-color: var(--scrollbar-idle-color);
+        }
+
+
+        border-radius: 100px;
+
+        user-select: none;
+
+        transition: 800ms all ease-out 200ms;
+
+
+        @media(hover:hover) {
+            &:hover {
+                background-color: var(--scrollbar-hover-color);
+            }
+        }
+
+
+        &:active {
+            background-color: var(--scrollbar-active-color);
+
+            transition: 1ms all linear;
+        }
+    }
+
+
+    &__box {
+        width: 100%;
+        height: 100%;
+
+        overflow: auto;
+
+        z-index: 0;
+
+        transition: 100ms transform linear;
+
+
+        &[data-dragging] {
+            user-select: none;
+        }
     }
 }

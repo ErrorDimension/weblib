@@ -167,9 +167,11 @@ const lib = {
     },
 
 
-    async cssFrame(fn: FrameRequestCallback) {
-        await this.nextFrameAsync()
-        requestAnimationFrame(fn)
+    cssFrame(fn: FrameRequestCallback): Promise<void> {
+        return new Promise<void>((): void => {
+            this.nextFrameAsync()
+            requestAnimationFrame(fn)
+        })
     },
 
 
@@ -294,6 +296,10 @@ const lib = {
 
     /** this function returns the biggest number */
     max: (...args: number[]): number => Math.max(...args),
+
+
+    /** this function returns the absolute value of the number */
+    abs: (num: number): number => Math.abs(num),
 
 
     /** this function returns the clamped number */

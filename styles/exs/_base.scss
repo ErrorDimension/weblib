@@ -6,20 +6,15 @@
 *:visited {
     -webkit-tap-highlight-color: transparent;
 
+    scroll-behavior: smooth;
+
     outline: none;
 }
 
 
 body {
-    --scrollbar-idle-color: transparent;
-    --scrollbar-show-color: rgba(140, 140, 140, 0.5);
-    --scrollbar-hover-color: rgba(90, 90, 90, 0.5);
-    --scrollbar-active-color: rgba(75, 75, 75, 0.6);
-
     background-color: whitesmoke;
     --global-bg: whitesmoke;
-
-    scroll-behavior: smooth;
 
     min-height: 100vh;
     min-width: 100vw;
@@ -30,11 +25,6 @@ body {
 
 body.dark,
 body[data-theme="dark"] {
-    --scrollbar-idle-color: transparent;
-    --scrollbar-show-color: rgba(213, 204, 204, 0.5);
-    --scrollbar-hover-color: rgba(235, 235, 235, 0.6);
-    --scrollbar-active-color: rgba(255, 255, 255, 0.8);
-
     color: whitesmoke;
     --global-color: whitesmoke;
 
@@ -43,7 +33,8 @@ body[data-theme="dark"] {
 }
 
 *::-webkit-scrollbar {
-    width: 0.85vw;
+    width: 0.5vw;
+    height: 0.5vw;
 }
 
 *::-webkit-scrollbar-thumb {
