@@ -174,10 +174,6 @@ const screenSwitcher: {
 
         /** init first screen */
         this.switch(this.switcherBtn.firstElementChild as HTMLElement, collection[0])
-
-
-        /** scroll box */
-        new ScrollBox(this.content).init()
     },
 
 

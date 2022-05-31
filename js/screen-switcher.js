@@ -1,6 +1,5 @@
 import { $, $$ } from './jquery';
 import Glasium from './glasium';
-import ScrollBox from './scrollbox';
 import magicDOM from "./magic-dom";
 const screenSwitcher = {
     init({ query, collection, width = 1200, buttons = [] }) {
@@ -88,8 +87,6 @@ const screenSwitcher = {
         });
         /** init first screen */
         this.switch(this.switcherBtn.firstElementChild, collection[0]);
-        /** scroll box */
-        new ScrollBox(this.content).init();
     },
     switch(btn, { icon, element, description }) {
         if (!(this.icon && this.content && this.container && this.switcherDes))

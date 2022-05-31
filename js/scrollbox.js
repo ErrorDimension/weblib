@@ -18,8 +18,8 @@ export default class ScrollBox {
         /** append components into container */
         this.container.append(this.vBar, this.hBar, this.content);
         /** after initialization, all append made gonna flow into scrollbox instead */
-        this.container.append = this.content.append;
-        this.container.appendChild = this.content.appendChild;
+        this.container.append = (...nodes) => this.content.append(...nodes);
+        this.container.appendChild = (node) => this.content.appendChild(node);
         /** classlist */
         this.container.classList.add('scroll');
         /** options fetching */
