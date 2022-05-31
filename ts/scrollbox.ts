@@ -142,7 +142,7 @@ export default class ScrollBox {
 
 
         /** dataset */
-        $(this.content).dataset('dragging', '')
+        $(this.container).dataset('dragging', '')
 
 
         // Calculate cursor position relative to selected
@@ -158,12 +158,16 @@ export default class ScrollBox {
 
 
                 /** remove dataset */
-                $(this.content).dataset('dragging', null)
+                $(this.container).dataset('dragging', null)
             })
     }
 
 
     private horizontalThumbDown(event: PointerEvent): void {
+        event.preventDefault()
+
+
+        /** dataset */
         $(this.content).dataset('dragging', '')
 
 
@@ -178,48 +182,54 @@ export default class ScrollBox {
             .on('pointerup', (): void => {
                 $(window).off("pointermove", this.__hDrag)
 
-                $(this.content).dataset('dragging', null)
+
+                /** remove dataset */
+                $(this.container).dataset('dragging', null)
             })
     }
 
 
     private verticalDragging(event: PointerEvent): void {
-        if (!(this.vBar.thumb)) return
+        lib.cssFrame((): void => {
+            if (!(this.vBar.thumb)) return
 
 
-        let barRect: DOMRect = this.vBar.getBoundingClientRect()
-        let thumbRect: DOMRect = this.vBar.thumb.getBoundingClientRect()
+            let barRect: DOMRect = this.vBar.getBoundingClientRect()
+            let thumbRect: DOMRect = this.vBar.thumb.getBoundingClientRect()
 
-        let top: number = barRect.top + this.cursorStartPoint.y
-        let bottom: number = (barRect.top + barRect.height) - (thumbRect.height - this.cursorStartPoint.y)
+            let top: number = barRect.top + this.cursorStartPoint.y
+            let bottom: number = (barRect.top + barRect.height) - (thumbRect.height - this.cursorStartPoint.y)
 
-        // since those scroll function clamped set themselves, more calculations are not needed
-        let scrollPercentage: number = (event.clientY - top) / (bottom - top)
+            // since those scroll function clamped set themselves, more calculations are not needed
+            let scrollPercentage: number = (event.clientY - top) / (bottom - top)
 
-        let scrollDistance: number = this.scrollableY * scrollPercentage
+            let scrollDistance: number = this.scrollableY * scrollPercentage
 
 
-        this.content.scrollTop = scrollDistance
+            this.content.scrollTop = scrollDistance
+        })
     }
 
 
     private horizontalDragging(event: PointerEvent): void {
-        if (!(this.hBar.thumb)) return
+        lib.cssFrame((): void => {
+            if (!(this.hBar.thumb)) return
 
 
-        let barRect: DOMRect = this.hBar.getBoundingClientRect()
-        let thumbRect: DOMRect = this.hBar.thumb.getBoundingClientRect()
+            let barRect: DOMRect = this.hBar.getBoundingClientRect()
+            let thumbRect: DOMRect = this.hBar.thumb.getBoundingClientRect()
 
-        let left: number = barRect.left + this.cursorStartPoint.x
-        let right: number = (barRect.left + barRect.width) - (thumbRect.width - this.cursorStartPoint.x)
+            let left: number = barRect.left + this.cursorStartPoint.x
+            let right: number = (barRect.left + barRect.width) - (thumbRect.width - this.cursorStartPoint.x)
 
-        // since those scroll function clamped set themselves, more calculations are not needed
-        let scrollPercentage: number = (event.clientX - left) / (right - left)
+            // since those scroll function clamped set themselves, more calculations are not needed
+            let scrollPercentage: number = (event.clientX - left) / (right - left)
 
-        let scrollDistance: number = this.scrollableX * scrollPercentage
+            let scrollDistance: number = this.scrollableX * scrollPercentage
 
 
-        this.content.scrollLeft = scrollDistance
+            this.content.scrollLeft = scrollDistance
+        })
     }
 
 

@@ -85,7 +85,7 @@ export default class ScrollBox {
     verticalThumbDown(event) {
         event.preventDefault();
         /** dataset */
-        $(this.content).dataset('dragging', '');
+        $(this.container).dataset('dragging', '');
         // Calculate cursor position relative to selected
         let r = event.target.getBoundingClientRect();
         this.cursorStartPoint.y = event.clientY - r.top;
@@ -94,10 +94,12 @@ export default class ScrollBox {
             .on('pointerup', () => {
             $(window).off("pointermove", this.__vDrag);
             /** remove dataset */
-            $(this.content).dataset('dragging', null);
+            $(this.container).dataset('dragging', null);
         });
     }
     horizontalThumbDown(event) {
+        event.preventDefault();
+        /** dataset */
         $(this.content).dataset('dragging', '');
         // Calculate cursor position relative to selected
         let r = event.target.getBoundingClientRect();
@@ -106,32 +108,37 @@ export default class ScrollBox {
             .on('pointermove', this.__hDrag)
             .on('pointerup', () => {
             $(window).off("pointermove", this.__hDrag);
-            $(this.content).dataset('dragging', null);
+            /** remove dataset */
+            $(this.container).dataset('dragging', null);
         });
     }
     verticalDragging(event) {
-        if (!(this.vBar.thumb))
-            return;
-        let barRect = this.vBar.getBoundingClientRect();
-        let thumbRect = this.vBar.thumb.getBoundingClientRect();
-        let top = barRect.top + this.cursorStartPoint.y;
-        let bottom = (barRect.top + barRect.height) - (thumbRect.height - this.cursorStartPoint.y);
-        // since those scroll function clamped set themselves, more calculations are not needed
-        let scrollPercentage = (event.clientY - top) / (bottom - top);
-        let scrollDistance = this.scrollableY * scrollPercentage;
-        this.content.scrollTop = scrollDistance;
+        lib.cssFrame(() => {
+            if (!(this.vBar.thumb))
+                return;
+            let barRect = this.vBar.getBoundingClientRect();
+            let thumbRect = this.vBar.thumb.getBoundingClientRect();
+            let top = barRect.top + this.cursorStartPoint.y;
+            let bottom = (barRect.top + barRect.height) - (thumbRect.height - this.cursorStartPoint.y);
+            // since those scroll function clamped set themselves, more calculations are not needed
+            let scrollPercentage = (event.clientY - top) / (bottom - top);
+            let scrollDistance = this.scrollableY * scrollPercentage;
+            this.content.scrollTop = scrollDistance;
+        });
     }
     horizontalDragging(event) {
-        if (!(this.hBar.thumb))
-            return;
-        let barRect = this.hBar.getBoundingClientRect();
-        let thumbRect = this.hBar.thumb.getBoundingClientRect();
-        let left = barRect.left + this.cursorStartPoint.x;
-        let right = (barRect.left + barRect.width) - (thumbRect.width - this.cursorStartPoint.x);
-        // since those scroll function clamped set themselves, more calculations are not needed
-        let scrollPercentage = (event.clientX - left) / (right - left);
-        let scrollDistance = this.scrollableX * scrollPercentage;
-        this.content.scrollLeft = scrollDistance;
+        lib.cssFrame(() => {
+            if (!(this.hBar.thumb))
+                return;
+            let barRect = this.hBar.getBoundingClientRect();
+            let thumbRect = this.hBar.thumb.getBoundingClientRect();
+            let left = barRect.left + this.cursorStartPoint.x;
+            let right = (barRect.left + barRect.width) - (thumbRect.width - this.cursorStartPoint.x);
+            // since those scroll function clamped set themselves, more calculations are not needed
+            let scrollPercentage = (event.clientX - left) / (right - left);
+            let scrollDistance = this.scrollableX * scrollPercentage;
+            this.content.scrollLeft = scrollDistance;
+        });
     }
     attachEvents() {
         if (!(this.hBar.thumb && this.vBar.thumb))

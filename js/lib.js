@@ -135,12 +135,16 @@ const lib = {
         return new Promise(function (resolve) { window.setTimeout(() => resolve(), time); });
     },
     nextFrameAsync() {
-        return new Promise((resolve) => { requestAnimationFrame(() => resolve()); });
+        return new Promise((resolve) => {
+            requestAnimationFrame(() => resolve());
+        });
     },
     cssFrame(fn) {
-        return new Promise(() => {
-            this.nextFrameAsync();
-            requestAnimationFrame(fn);
+        return new Promise((resolve) => {
+            this.nextFrameAsync().then(() => {
+                requestAnimationFrame(fn);
+            });
+            resolve();
         });
     },
     /**

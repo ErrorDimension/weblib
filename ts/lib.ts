@@ -163,14 +163,18 @@ const lib = {
 
 
     nextFrameAsync(): Promise<void> {
-        return new Promise((resolve) => { requestAnimationFrame(() => resolve()) })
+        return new Promise((resolve: (value: void | PromiseLike<void>) => void): void => {
+            requestAnimationFrame((): void => resolve())
+        })
     },
 
 
     cssFrame(fn: FrameRequestCallback): Promise<void> {
-        return new Promise<void>((): void => {
-            this.nextFrameAsync()
-            requestAnimationFrame(fn)
+        return new Promise<void>((resolve: (value: void | PromiseLike<void>) => void): void => {
+            this.nextFrameAsync().then((): void => {
+                requestAnimationFrame(fn)
+            })
+            resolve()
         })
     },
 

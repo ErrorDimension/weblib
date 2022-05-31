@@ -33,3 +33,7 @@
 
   width: max-content;
 }
+
+*::selection {
+  background-color: hsl(35, 80%, 72%);
+}

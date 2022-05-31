@@ -4,17 +4,10 @@ import type { NextPage } from 'next'
 import { ScrollBox, Console } from '../../js/index'
 
 
-let initialized: boolean = false
+Console.init()
 
-const Home: NextPage = () => {
-    useEffect(() => {
-        if (initialized) return
-        initialized = true
-
-
-        Console.init()
-
-
+const Home: NextPage = (): JSX.Element => {
+    useEffect((): void => {
         new ScrollBox(document.getElementById('dummy')!).init()
     }, [])
 

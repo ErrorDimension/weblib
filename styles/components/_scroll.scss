@@ -31,9 +31,13 @@ body[data-theme='dark'] {
 
     scrollbar-width: none; // firefox problems
 
+    scroll-behavior: unset;
+
 
     * {
         scrollbar-width: none !important; // firefox problems
+
+        scroll-behavior: unset;
 
 
         &::-webkit-scrollbar {
@@ -187,8 +191,6 @@ body[data-theme='dark'] {
 
         &:active {
             background-color: var(--scrollbar-active-color);
-
-            transition: 1ms all linear;
         }
     }
 
@@ -202,12 +204,12 @@ body[data-theme='dark'] {
         z-index: 0;
 
         transition: 100ms transform linear;
+    }
 
 
-        &[data-dragging] {
-            user-select: none;
-
-            transition: 0s all linear;
+    &[data-dragging] {
+        .scroll__thumb {
+            transition: 1ms all linear;
         }
     }
 }
