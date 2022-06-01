@@ -4,7 +4,7 @@ interface Component {
     clicker: Clicker;
     subWindow: SubWindow;
 }
-declare const navigation: {
+interface Navigation {
     initialized: boolean;
     container: HTMLElement | undefined;
     navbar: HTMLElement | undefined;
@@ -62,7 +62,9 @@ declare const navigation: {
             set background(colorName: string);
         };
     };
-};
+}
+/** {@linkcode Navigation} */
+declare const navigation: Navigation;
 export declare class Tooltip {
     constructor(target: HTMLElement);
     /** props */

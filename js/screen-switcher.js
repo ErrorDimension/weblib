@@ -7,7 +7,10 @@ const screenSwitcher = {
             return;
         this.initialized = true;
         /** init container */
-        this.container = $$(query);
+        const container = $$(query);
+        if (!container)
+            return;
+        this.container = container;
         /** initial stylesheet */
         let stylesheet = magicDOM.createElement('style', {
             children: `

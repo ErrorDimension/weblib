@@ -120,27 +120,15 @@ class JHTMLElement extends Array {
     }
 }
 export function $$(a, b) {
-    if (a === undefined)
-        throw new Error(`'jqueryy()' : 'query' is not defined`);
     if (typeof a === 'string' && typeof b === 'string') {
         const container = document.querySelector(b);
         if (container === null)
-            throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`);
-        const element = container.querySelector(a);
-        if (element === null)
-            throw new Error(`'jqueryy()' : 'query' returned null (string)`);
-        return element;
+            return null;
+        return container.querySelector(a);
     }
-    if (typeof a === 'string' && b instanceof HTMLElement) {
-        const element = b.querySelector(a);
-        if (element === null)
-            throw new Error(`'jqueryy()' : 'query' returned null (html)`);
-        return element;
-    }
-    const el = document.querySelector(a);
-    if (el === null)
-        throw new Error(`'jqueryy()' : 'query' returned null (o string)`);
-    return el;
+    if (typeof a === 'string' && b instanceof HTMLElement)
+        return b.querySelector(a);
+    return document.querySelector(a);
 }
 export function $(a, b) {
     if (typeof a === 'string' && typeof b === 'string') {

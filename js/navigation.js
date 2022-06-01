@@ -2,6 +2,7 @@ import Glasium from './glasium';
 import { $, $$ } from './jquery';
 import lib from './lib';
 import magicDOM from './magic-dom';
+/** {@linkcode Navigation} */
 const navigation = {
     initialized: false,
     container: undefined,
@@ -161,16 +162,7 @@ const navigation = {
                 icon = icon ? icon : 'home';
                 tooltip = tooltip ? tooltip : { title: '', description: '' };
                 /** link */
-                const link = spa
-                    ? $(`a[data-href='${href}']`)
-                        .addClass('nav__link')
-                        .append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`))[0]
-                    : magicDOM.createElement('div', {
-                        classList: 'nav__link',
-                        attribute: { 'data-href': href },
-                        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
-                    });
-                new Tooltip(link).set(tooltip);
+                const link = makeLink(href, icon, spa);
                 /** link's events */
                 $(link).on('click', () => {
                     /** 404 and 500 handler */
@@ -199,6 +191,8 @@ const navigation = {
                         window.location.pathname = link.dataset.href;
                     });
                 });
+                /** link tooltip */
+                new Tooltip(link).set(tooltip);
                 /** append link */
                 component.container.append(link);
             }
@@ -284,8 +278,9 @@ const navigation = {
                 },
                 set image(src) {
                     $('i', this.container).remove();
-                    if (this.container.querySelector('img')) {
-                        $$('img', this.container).src = src;
+                    let image = $$('img', this.container);
+                    if (image) {
+                        image.src = src;
                         return;
                     }
                     this.container.append(magicDOM.toHTMLElement(`<img src='${src}' loading='lazy'></img>`));
@@ -546,3 +541,18 @@ export class SubWindow {
 }
 export default navigation;
 const or = (...args) => args.some((arg) => arg);
+function makeLink(href, icon, spa = false) {
+    if (spa) {
+        let anchor = document.querySelector(`a[data-href='${href}']`);
+        if (!anchor)
+            throw new Error('navigation.addComponent.route()');
+        anchor.classList.add('nav__link');
+        anchor.append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`));
+        return anchor;
+    }
+    return magicDOM.createElement('div', {
+        classList: 'nav__link',
+        attribute: { 'data-href': href },
+        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
+    });
+}

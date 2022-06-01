@@ -39,9 +39,9 @@ declare class JHTMLElement<Type extends Window | Document | HTMLElement | Node> 
     removeClass(...className: string[]): JHTMLElement<Type>;
     toggleClass(className: string): JHTMLElement<Type>;
 }
-export declare function $$<T extends HTMLElement>(query: string): T;
-export declare function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T;
-export declare function $$<T extends HTMLElement>(query: string, fromQuery?: string): T;
+export declare function $$<T extends HTMLElement>(query: string): T | null;
+export declare function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T | null;
+export declare function $$<T extends HTMLElement>(query: string, fromQuery?: string): T | null;
 export declare function $(doc: Document): JHTMLElement<Document>;
 export declare function $(win: Window): JHTMLElement<Window>;
 export declare function $<T extends HTMLElement>(query: string, fromQuery: string): JHTMLElement<T>;

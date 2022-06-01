@@ -52,7 +52,10 @@ const screenSwitcher: {
 
 
         /** init container */
-        this.container = $$(query)
+        const container: HTMLElement | null = $$(query)
+
+        if (!container) return
+        this.container = container
 
 
         /** initial stylesheet */
