@@ -12,12 +12,13 @@
         // Options
         "allowJs": false,
         "alwaysStrict": true,
+        "exactOptionalPropertyTypes": true,
         "strict": true,
         // Module
         "allowSyntheticDefaultImports": true,
         "module": "es2020",
         "moduleResolution": "node",
-        "target": "es2022",
+        "target": "es6",
         // Declaration
         "declaration": true,
         "declarationMap": true

@@ -5,9 +5,6 @@ import { $, $$ } from './jquery';
 import Glasium from './glasium';
 const starterSC = new StopClock();
 class Console {
-    text;
-    color;
-    background;
     constructor(text, { color = 'white', background = 'rgb(255, 255, 255)', opacity = 0.55 } = {}) {
         function toRgba(clr) {
             if (clr.startsWith('rgba'))
@@ -25,7 +22,6 @@ class Console {
         this.color = color;
         this.background = toRgba(background);
     }
-    static initialized = false;
     static get padding() {
         if (typeof window === 'undefined')
             return;
@@ -118,36 +114,6 @@ class Console {
                 return console.error.call(console, text, ...style, ...other);
         }
     }
-    static infoLog = new Console('info', {
-        color: 'white',
-        background: 'rgb(196, 24, 196)',
-        opacity: 0.95
-    });
-    static debugLog = new Console('debug', {
-        color: 'white',
-        background: zalib.hexCodeColor('gray'),
-        opacity: 0.55
-    });
-    static okayLog = new Console('okay', {
-        color: 'white',
-        background: 'rgb(16, 186, 16)',
-        opacity: 0.85
-    });
-    static warnLog = new Console('warn', {
-        color: 'white',
-        background: '#ffc400',
-        opacity: 0.8
-    });
-    static errorLog = new Console('error', {
-        color: 'white',
-        background: '#c40000',
-        opacity: 0.9
-    });
-    static critLog = new Console('crit', {
-        color: 'white',
-        background: '#2b2a2a',
-        opacity: 1
-    });
     /**
      * display the error and callback buttons to the selected
      * @param   { String | HTMLElement }    queryOrElement      selected query or element
@@ -210,4 +176,35 @@ class Console {
         this.initialized = true;
     }
 }
+Console.initialized = false;
+Console.infoLog = new Console('info', {
+    color: 'white',
+    background: 'rgb(196, 24, 196)',
+    opacity: 0.95
+});
+Console.debugLog = new Console('debug', {
+    color: 'white',
+    background: zalib.hexCodeColor('gray'),
+    opacity: 0.55
+});
+Console.okayLog = new Console('okay', {
+    color: 'white',
+    background: 'rgb(16, 186, 16)',
+    opacity: 0.85
+});
+Console.warnLog = new Console('warn', {
+    color: 'white',
+    background: '#ffc400',
+    opacity: 0.8
+});
+Console.errorLog = new Console('error', {
+    color: 'white',
+    background: '#c40000',
+    opacity: 0.9
+});
+Console.critLog = new Console('crit', {
+    color: 'white',
+    background: '#2b2a2a',
+    opacity: 1
+});
 export default Console;

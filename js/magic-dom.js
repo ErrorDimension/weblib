@@ -9,12 +9,8 @@ const magicDOM = {
      * @param       prop.attribute      HTMLElement attribute
      * @param       prop.child          HTMLElement child
      */
-    createElement(tagName, { id, classList, attribute, children } = {
-        id: undefined,
-        classList: undefined,
-        attribute: undefined,
-        children: undefined
-    }) {
+    createElement(tagName, { id, classList, attribute, children } = {}) {
+        var _a;
         const container = document.createElement(tagName);
         /** add id to the container */
         if (id)
@@ -27,7 +23,7 @@ const magicDOM = {
         /** add attribute to the container */
         if (attribute)
             for (let value in attribute)
-                container.setAttribute(value, attribute[value]?.toString());
+                container.setAttribute(value, (_a = attribute[value]) === null || _a === void 0 ? void 0 : _a.toString());
         /** append child to the container */
         if (typeof children === 'string')
             container.textContent = children;
@@ -37,7 +33,7 @@ const magicDOM = {
             container.append(...children);
         return container;
     },
-    createTree(tag, classList, attribute, children) {
+    createTree(tag, classList = [], attribute = {}, children = []) {
         let container = magicDOM.createElement(tag, { classList, attribute });
         if (children === undefined)
             return container;
@@ -89,6 +85,7 @@ const magicDOM = {
         return fin;
     },
 };
+export default magicDOM;
 export class Slider {
     /**
     * @param           option                               option for the slider
@@ -99,16 +96,16 @@ export class Slider {
     * @param           option.step                          slider's step
     * @param           option.comfortablePercentage         percentage
     */
-    constructor({ color = 'pink', startValue = 0, min = 0, max = 10, step = 1, comfortablePct = 0 } = {
-        color: 'pink',
-        startValue: 0,
-        min: 0,
-        max: 10,
-        step: 1,
-        comfortablePct: 0
-    }) {
+    constructor({ color = 'pink', startValue = 0, min = 0, max = 10, step = 1, comfortablePct = 0 } = {}) {
+        /** handler collection */
+        this.inputHandlers = [];
+        this.changeHandlers = [];
+        /** render utilities */
+        this.slideTick = -1;
+        /** tooltip events */
+        this.__usingTooltip = false;
         /** initialize the components */
-        this.container = magicDOM.createTree('div', 'slider', {
+        this.component = magicDOM.createTree('div', 'slider', {
             'data-color': color
         }, {
             input: { tag: 'input', attribute: { type: 'range', placeholder: 'none', min, max, step } },
@@ -116,10 +113,10 @@ export class Slider {
             thumb: { classList: 'slider__thumb' },
             right: { classList: 'slider__track--right' },
         });
-        this.input = this.container.input;
-        this.left = this.container.left;
-        this.thumb = this.container.thumb;
-        this.right = this.container.right;
+        this.input = this.component.input;
+        this.left = this.component.left;
+        this.thumb = this.component.thumb;
+        this.right = this.component.right;
         this.min = min;
         this.max = max;
         this.comfortablePct = comfortablePct;
@@ -134,16 +131,10 @@ export class Slider {
             .on('input', handleInputEvent)
             .on('change', handleChangeEvent);
         /** initialize the initial value */
-        this.input.value = startValue?.toString();
+        this.input.value = startValue === null || startValue === void 0 ? void 0 : startValue.toString();
         this.input.dispatchEvent(new Event("input"));
     }
-    container;
-    input;
-    left;
-    thumb;
-    right;
-    inputHandlers = [];
-    changeHandlers = [];
+    /** public functions */
     onInput(func) {
         this.inputHandlers.push(func);
     }
@@ -152,72 +143,81 @@ export class Slider {
     }
     removeDragState() {
         this.slideTick = 0;
-        this.container.classList.remove('slider--dragging');
+        this.component.classList.remove('slider--dragging');
     }
     handleInputEvent(event) {
         this.inputHandlers.forEach((handler) => {
             handler(this.input.value, event);
         });
-        this.reRender();
+        this.render();
     }
     handleChangeEvent(event) {
         this.changeHandlers.forEach((handler) => {
             handler(this.input.value, event);
         });
     }
-    min;
-    max;
-    comfortablePct;
-    slideTick = -1;
-    reRender() {
+    render() {
+        /** dragging state */
         ++this.slideTick;
         if (this.slideTick > 1)
-            this.container.classList.add('slider--dragging');
+            this.component.classList.add('slider--dragging');
+        /** fetch value of the input */
         let value = parseInt(this.input.value);
+        /** render */
         let position = (value - this.min) / (this.max - this.min);
         this.thumb.style.left = `calc(20px + (100% - 40px) * ${position})`;
         this.left.style.width = `calc(10px + (100% - 40px) * ${position})`;
         this.right.style.width = `calc(100% - (30px + (100% - 40px) * ${position}))`;
+        /** handle uncomfortable values */
         if (this.comfortablePct)
-            $(this.container)
-                .dataset('uncomfortable', (value / this.max) >= this.comfortablePct ? '' : null);
+            $(this.component)
+                .dataset({ 'uncomfortable': (value / this.max) >= this.comfortablePct ? '' : null });
     }
-    __usingTooltip = false;
     get usingTooltip() { return this.__usingTooltip; }
-    tooltip(decorationCallback = (value) => value) {
-        if (typeof decorationCallback !== "function")
-            throw new Error("magicDOM().Slider().tooltip() : `decorationCallback` is not valid");
-        let isHidden = true;
+    tooltip({ handler = (value) => value } = {}) {
+        if (typeof handler !== "function")
+            throw new Error("Slider().tooltip() : `handler` is not valid function");
+        /** self */
+        const self = this;
         import('./tooltip').then(module => {
             const tooltip = module.default;
-            const handleMousedownEvent = () => {
+            /** specifier for the tooltip */
+            let isHidden = true;
+            function pointerDown() {
                 if (!isHidden)
                     return;
-                tooltip.show(decorationCallback(this.input.value));
                 isHidden = false;
-            };
-            const handleMousemoveEvent = () => {
+                tooltip.show(handler(self.input.value));
+            }
+            function pointerMove() {
                 if (isHidden)
                     return;
                 tooltip.move();
-            };
-            const handleMouseleaveEvent = () => {
+            }
+            function pointerLeave() {
                 isHidden = true;
                 tooltip.hide();
-            };
-            $(this.container)
-                .on('mousedown', handleMousedownEvent)
-                .on('mousemove', handleMousemoveEvent)
-                .on('mouseleave', handleMouseleaveEvent);
-            const handleInputEvent = () => {
+            }
+            $(this.component)
+                .on('pointerdown', pointerDown)
+                .on('pointermove', pointerMove)
+                .on('pointerleave', pointerLeave);
+            /** element's events */
+            function input() {
                 if (isHidden)
                     return;
-                tooltip.update(decorationCallback(this.input.value));
-            };
-            $(this.input).on('input', handleInputEvent);
+                tooltip.update(handler(self.input.value));
+            }
+            $(this.input).on('input', input);
         });
         this.__usingTooltip = true;
         return this;
     }
 }
-export default magicDOM;
+export class Select {
+    constructor() {
+        this.component = magicDOM.createTree('div', 'select');
+        this.selectBox = magicDOM.createTree('div', 'select');
+        this.component.append(this.selectBox);
+    }
+}

@@ -6,7 +6,6 @@
 import { $, magicDOM } from './index';
 import lib, { debounce } from './lib';
 export default class ScrollBox {
-    container;
     /**
      * {@linkcode ScrollBoxOptions}
      *
@@ -15,8 +14,40 @@ export default class ScrollBox {
      * @param           options.horizontal          horizontal scrolling
      * @param           options.velocity            over-scroll's velocity
      */
-    constructor(container, { horizontal = false, velocity = 0.2 } = {}) {
+    constructor(container, { velocity = 0.2 } = {}) {
         this.container = container;
+        /** components */
+        this.content = magicDOM.createElement('div', {
+            classList: 'scroll__box'
+        });
+        this.vBar = magicDOM.createTree('div', 'scroll__bar--vertical', {
+            'data-hidden': ''
+        }, {
+            thumb: { classList: 'scroll__thumb' }
+        });
+        this.hBar = magicDOM.createTree('div', 'scroll__bar--horizontal', {
+            'data-hidden': ''
+        }, {
+            thumb: { classList: 'scroll__thumb' }
+        });
+        /** properties */
+        this.scrollableX = 0;
+        this.scrollableY = 0;
+        this.delta = 0;
+        this.cursorStartPoint = { x: 0, y: 0 };
+        /** options */
+        this.velocity = 0;
+        this.__vDrag = (e) => this.verticalDragging(e);
+        this.__hDrag = (e) => this.horizontalDragging(e);
+        this.__vDown = (e) => this.verticalThumbDown(e);
+        this.__hDown = (e) => this.horizontalThumbDown(e);
+        this.__overScrolling = (e) => this.overScrolling(e);
+        this.deleteOverScrollingState = debounce(() => {
+            this.delta = 0; // todo delta decreasing slowly
+            this.renderComponents();
+            $(this.content).css('transform', null);
+        }, 150);
+        this.__renderComponents = () => this.renderComponents();
         if (this.container.querySelector('.scroll__box'))
             return;
         /** append all children from the container into the scrollbox */
@@ -29,7 +60,6 @@ export default class ScrollBox {
         /** classlist */
         this.container.classList.add('scroll');
         /** options fetching */
-        this.horizontal = horizontal || this.content.scrollWidth - this.content.offsetWidth > 0;
         this.velocity = velocity;
         /** properties */
         this.scrollableX = this.content.scrollWidth - this.content.offsetWidth;
@@ -38,8 +68,6 @@ export default class ScrollBox {
         this.attachEvents();
         /** resize observer */
         new ResizeObserver(() => {
-            /** options */
-            this.horizontal = this.horizontal || this.content.scrollWidth - this.content.offsetWidth > 0;
             /** properties */
             this.scrollableX = this.content.scrollWidth - this.content.offsetWidth;
             this.scrollableY = this.content.scrollHeight - this.content.offsetHeight;
@@ -47,28 +75,6 @@ export default class ScrollBox {
             this.init();
         }).observe(this.content);
     }
-    /** components */
-    content = magicDOM.createElement('div', {
-        classList: 'scroll__box'
-    });
-    vBar = magicDOM.createTree('div', 'scroll__bar--vertical', {
-        'data-hidden': ''
-    }, {
-        thumb: { classList: 'scroll__thumb' }
-    });
-    hBar = magicDOM.createTree('div', 'scroll__bar--horizontal', {
-        'data-hidden': ''
-    }, {
-        thumb: { classList: 'scroll__thumb' }
-    });
-    /** properties */
-    scrollableX = 0;
-    scrollableY = 0;
-    delta = 0;
-    cursorStartPoint = { x: 0, y: 0 };
-    /** options */
-    horizontal = false;
-    velocity = 0;
     init() {
         /** specify the presence of scrollbars */
         if (this.scrollableY > 0)
@@ -78,10 +84,6 @@ export default class ScrollBox {
         /** initial render */
         this.renderComponents();
     }
-    __vDrag = (e) => this.verticalDragging(e);
-    __hDrag = (e) => this.horizontalDragging(e);
-    __vDown = (e) => this.verticalThumbDown(e);
-    __hDown = (e) => this.horizontalThumbDown(e);
     verticalThumbDown(event) {
         event.preventDefault();
         /** dataset */
@@ -100,7 +102,7 @@ export default class ScrollBox {
     horizontalThumbDown(event) {
         event.preventDefault();
         /** dataset */
-        $(this.content).dataset('dragging', '');
+        $(this.container).dataset('dragging', '');
         // Calculate cursor position relative to selected
         let r = event.target.getBoundingClientRect();
         this.cursorStartPoint.x = event.clientX - r.left;
@@ -153,7 +155,6 @@ export default class ScrollBox {
             .on('scroll', this.__renderComponents)
             .on('wheel', this.__overScrolling, { passive: false });
     }
-    __overScrolling = (e) => this.overScrolling(e);
     overScrolling(event) {
         if (event.ctrlKey ||
             event.shiftKey ||
@@ -174,12 +175,6 @@ export default class ScrollBox {
         /** remove over scroll effect */
         this.deleteOverScrollingState();
     }
-    deleteOverScrollingState = debounce(() => {
-        this.delta = 0; // todo delta decreasing slowly
-        this.renderComponents();
-        $(this.content).css('transform', null);
-    }, 150);
-    __renderComponents = () => this.renderComponents();
     renderComponents() {
         lib.cssFrame(() => {
             /** calculate content's visible percentage */

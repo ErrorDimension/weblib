@@ -242,6 +242,8 @@ tooltip.addHook({
     on: 'attribute',
     key: 'title',
     handler({ target, value }) {
+        if (!value)
+            return;
         if (target.tooltipTitle)
             return target.tooltipTitle;
         target.tooltipTitle = value;

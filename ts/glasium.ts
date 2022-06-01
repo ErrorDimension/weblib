@@ -118,6 +118,8 @@ class Glasium {
 
 
     /**
+     * {@linkcode GBackground}
+     * 
      * @param       element                     element
      * @param       options.shape               shape inside the background
      * @param       options.color               color for the background

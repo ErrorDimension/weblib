@@ -1,6 +1,6 @@
 declare const setting: {
-    initialized?: boolean;
-    container?: HTMLElement;
+    initialized: boolean;
+    container: HTMLElement | undefined;
     init(query: string, { title, description }?: {
         title?: string;
         description?: string;

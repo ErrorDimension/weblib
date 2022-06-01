@@ -14,7 +14,7 @@ declare const screenSwitcher: {
         query: string;
         collection: {
             name: string;
-            icon: string;
+            icon?: string;
             element: HTMLElement;
             description?: string;
         }[];
@@ -27,7 +27,7 @@ declare const screenSwitcher: {
         }[];
     }): void;
     switch(btn: HTMLElement, { icon, element, description }: {
-        icon: string;
+        icon?: string;
         description?: string;
         element: HTMLElement;
     }): void;

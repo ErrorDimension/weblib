@@ -5,6 +5,8 @@ declare class Glasium {
     private static shape;
     private static background;
     /**
+     * {@linkcode GBackground}
+     *
      * @param       element                     element
      * @param       options.shape               shape inside the background
      * @param       options.color               color for the background

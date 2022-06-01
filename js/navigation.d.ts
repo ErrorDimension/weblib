@@ -6,17 +6,17 @@ interface Component {
 }
 declare const navigation: {
     initialized: boolean;
-    container?: HTMLElement;
-    navbar?: HTMLElement;
+    container: HTMLElement | undefined;
+    navbar: HTMLElement | undefined;
     block: {
-        left?: HTMLElement;
-        right?: HTMLElement;
+        left: HTMLElement | undefined;
+        right: HTMLElement | undefined;
     };
-    tooltip?: HTMLElement & {
+    tooltip: (HTMLElement & {
         t?: HTMLElement;
         d?: HTMLElement;
-    };
-    underlay?: HTMLElement;
+    }) | undefined;
+    underlay: HTMLElement | undefined;
     subWindowList: SubWindow[];
     init(containerQuery: string, contentQuery: string): void;
     insert(component: {
@@ -26,7 +26,7 @@ declare const navigation: {
     setUnderlay(activate?: boolean): void;
     set loading(loading: boolean);
     account: {
-        userToken?: string;
+        userToken: string | undefined;
         [key: string]: any;
     };
     addComponent: {
@@ -44,9 +44,9 @@ declare const navigation: {
             };
         }>, spa?: boolean): void;
         hamburger(func?: () => void): Component;
-        button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
+        button({ icon, imageSrc, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string;
-            image?: string;
+            imageSrc?: string;
             colorName?: string;
             alwaysActive?: boolean;
             brightnessLevel?: string;
@@ -65,9 +65,11 @@ declare const navigation: {
 };
 export declare class Tooltip {
     constructor(target: HTMLElement);
-    private title?;
-    private description?;
-    private flip?;
+    /** props */
+    private title;
+    private description;
+    private flip;
+    /** component */
     private container?;
     set({ title, description, flip }?: {
         title?: string;
@@ -79,10 +81,15 @@ export declare class Tooltip {
 }
 export declare class Clicker {
     constructor(container: HTMLElement, onlyActive?: boolean);
-    private container?;
+    /** component */
+    private container;
+    /** handler collection */
     private clickHandlers;
+    /** props */
     private __activated;
+    /** prop getters */
     get activated(): boolean;
+    /** public functions */
     onClick(func: (...args: any[]) => any): number;
     offClick(index: number): void;
     toggle(isActive?: boolean): void;
@@ -91,23 +98,30 @@ export declare class Clicker {
 }
 export declare class SubWindow {
     constructor(container: HTMLElement, content?: HTMLElement | string);
+    /** public functions */
     update(): void;
     show(): void;
     hide(trusted?: boolean): void;
     toggle(): void;
     onToggle(func: (...args: any[]) => any): void;
+    /** setters */
     set loaded(loaded: boolean);
     set content(content: HTMLElement | string);
-    get isShowing(): boolean;
+    /** props getters */
     get id(): string;
+    get isShowing(): boolean;
+    /** props */
     private __id;
     private __isShowing;
     private __hideTimeoutId;
-    private __toggleHandlers;
-    private __container?;
-    private __contentNode?;
-    private __windowNode?;
-    private __overlayNode?;
+    /** handlers collection */
+    private toggleHandlers;
+    /** component */
+    private container;
+    /** component nodes */
+    private contentNode;
+    private windowNode;
+    private overlayNode;
 }
 export default navigation;
 //# sourceMappingURL=navigation.d.ts.map

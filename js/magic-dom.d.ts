@@ -15,10 +15,10 @@ declare const magicDOM: {
      * @param       prop.child          HTMLElement child
      */
     createElement<K extends keyof HTMLElementTagNameMap>(tagName: K, { id, classList, attribute, children }?: {
-        id?: string | undefined;
-        classList?: string | string[] | undefined;
-        attribute?: Record<string, string | number> | undefined;
-        children?: string | HTMLElement | HTMLElement[] | undefined;
+        id?: string;
+        classList?: string | string[];
+        attribute?: Record<string, string | number>;
+        children?: string | HTMLElement | HTMLElement[];
     }): HTMLElementTagNameMap[K];
     createTree<K_1 extends keyof HTMLElementTagNameMap>(tag: K_1, classList?: string | string[], attribute?: Record<string, string | number>, children?: string | HTMLElement | HTMLElement[] | Record<string, DOMTreeNode | HTMLElement>): HTMLElementTagNameMap[K_1] & {
         [key: string]: HTMLElement;
@@ -31,6 +31,7 @@ declare const magicDOM: {
     /** this function only return the first child */
     toHTMLElement<T extends HTMLElement>(htmlString: string): T;
 };
+export default magicDOM;
 export declare class Slider {
     /**
     * @param           option                               option for the slider
@@ -42,38 +43,52 @@ export declare class Slider {
     * @param           option.comfortablePercentage         percentage
     */
     constructor({ color, startValue, min, max, step, comfortablePct }?: {
-        color: 'pink' | 'blue';
-        startValue: number;
-        min: number;
-        max: number;
-        step: number;
-        comfortablePct: number;
+        color?: 'pink' | 'blue';
+        startValue?: number;
+        min?: number;
+        max?: number;
+        step?: number;
+        comfortablePct?: number;
     });
-    container: HTMLDivElement & {
+    /** component */
+    component: HTMLDivElement & {
         input?: HTMLInputElement;
         left?: HTMLDivElement;
         thumb?: HTMLDivElement;
         right?: HTMLDivElement;
     };
     input: HTMLInputElement;
+    /** component assets */
     private left;
     private thumb;
     private right;
+    /** handler collection */
     private inputHandlers;
     private changeHandlers;
+    /** public functions */
     onInput(func: (value: string, event: Event) => void): void;
     onChange(func: (value: string, event: Event) => void): void;
     private removeDragState;
     private handleInputEvent;
     private handleChangeEvent;
+    /** properties */
     private min;
     private max;
     private comfortablePct;
+    /** render utilities */
     private slideTick;
-    private reRender;
+    private render;
+    /** tooltip events */
     private __usingTooltip;
     get usingTooltip(): boolean;
-    tooltip(decorationCallback?: (value: string) => string): this;
+    tooltip({ handler }?: {
+        handler?: (value: string) => string;
+    }): this;
 }
-export default magicDOM;
+export declare class Select {
+    constructor();
+    /** component */
+    component: HTMLElement;
+    selectBox: HTMLElement;
+}
 //# sourceMappingURL=magic-dom.d.ts.map

@@ -4,7 +4,6 @@
  * todo remake this
  */
 interface ScrollBoxOptions {
-    horizontal?: boolean;
     velocity?: number;
 }
 export default class ScrollBox {
@@ -17,7 +16,7 @@ export default class ScrollBox {
      * @param           options.horizontal          horizontal scrolling
      * @param           options.velocity            over-scroll's velocity
      */
-    constructor(container: HTMLElement, { horizontal, velocity }?: ScrollBoxOptions);
+    constructor(container: HTMLElement, { velocity }?: ScrollBoxOptions);
     /** components */
     private content;
     private vBar;
@@ -28,7 +27,6 @@ export default class ScrollBox {
     private delta;
     private cursorStartPoint;
     /** options */
-    private horizontal;
     private velocity;
     init(): void;
     private __vDrag;

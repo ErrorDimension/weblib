@@ -53,10 +53,11 @@ const screenSwitcher = {
         this.header.append(this.icon, this.switcher, this.buttons);
         /** iterate */
         collection.forEach((item) => {
+            var _a, _b;
             /** get info */
             item.name = item.name.toLowerCase();
             item.icon = item.icon ? item.icon : 'home';
-            item.description = item.description ? item.description.toLowerCase() : undefined;
+            item.description = (_b = (_a = item.description) === null || _a === void 0 ? void 0 : _a.toLowerCase()) !== null && _b !== void 0 ? _b : '';
             let { name, icon, element, description } = item;
             /** btn */
             let btn = magicDOM.createElement('button', { children: name });
@@ -67,6 +68,7 @@ const screenSwitcher = {
         });
         /** buttons */
         buttons.forEach((buttonProps) => {
+            var _a, _b;
             if (!this.buttons)
                 return;
             /** make button */
@@ -80,7 +82,7 @@ const screenSwitcher = {
             /** background */
             Glasium.init(button, {
                 count: 8,
-                color: Glasium.COLOR[buttonProps.color?.toUpperCase() ?? 'BLUE']
+                color: Glasium.COLOR[(_b = (_a = buttonProps.color) === null || _a === void 0 ? void 0 : _a.toUpperCase()) !== null && _b !== void 0 ? _b : 'BLUE']
             });
             /** insert */
             this.buttons.append(button);

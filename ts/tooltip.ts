@@ -27,12 +27,12 @@ const DEACTIVATE_DURATION: number = 300
 interface Hook {
     on: 'attribute' | 'dataset',
     key: string,
-    handler?({ target, value, update }: {
+    handler?: ({ target, value, update }: {
         target: HTMLElement,
-        value?: string,
-        update(content: string | HTMLElement): void
-    }): undefined | string | HTMLElement,
-    follower?(): void,
+        value: string | undefined,
+        update: (content: string | HTMLElement) => void
+    }) => undefined | string | HTMLElement,
+    follower?: () => void,
     priority?: number,
     fit?: boolean
 }
@@ -40,8 +40,8 @@ interface Hook {
 
 const tooltip: {
     readonly initialized: boolean,
-    container?: HTMLElement,
-    content?: HTMLElement,
+    container: HTMLElement | undefined,
+    content: HTMLElement | undefined,
     hideTimeoutId: number,
     glowing: boolean,
     hooks: Hook[],
@@ -184,8 +184,8 @@ const tooltip: {
         key,
         handler = ({ target, value, update }: {
             target: HTMLElement,
-            value?: string,
-            update(): void
+            value: string | undefined,
+            update: (content: string | HTMLElement) => void
         }): undefined | string | HTMLElement => value,
         follower = (): void => { /** logic here */ },
         priority = 1,
@@ -319,6 +319,7 @@ const tooltip: {
 
             tooltip.hideTimeoutId = window.setTimeout((): void => {
                 $(container).dataset('deactivated', '')
+
                 $(window).off('pointermove', tooltip.move)
             }, DEACTIVATE_DURATION)
         }, HIDE_DURATION)
@@ -407,8 +408,11 @@ tooltip.addHook({
     key: 'title',
     handler({ target, value }: {
         target: HTMLElement & { tooltipTitle?: string },
-        value?: string
+        value: string | undefined
     }): string | undefined {
+        if (!value) return
+
+
         if (target.tooltipTitle) return target.tooltipTitle
 
 

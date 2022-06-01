@@ -1,11 +1,10 @@
 export default class RecordAnimationFrame {
     constructor(callback) {
+        this.raf = -1;
+        this.__running = false;
         this.callback = callback;
     }
-    raf = -1;
-    __running = false;
     get running() { return this.__running; }
-    callback;
     /** start the callback */
     start(timeout) {
         if (this.__running)

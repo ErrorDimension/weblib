@@ -31,13 +31,9 @@ body[data-theme='dark'] {
 
     scrollbar-width: none; // firefox problems
 
-    scroll-behavior: unset;
-
 
     * {
         scrollbar-width: none !important; // firefox problems
-
-        scroll-behavior: unset;
 
 
         &::-webkit-scrollbar {
@@ -208,8 +204,19 @@ body[data-theme='dark'] {
 
 
     &[data-dragging] {
-        .scroll__thumb {
-            transition: 1ms all linear;
+        .scroll__box {
+            scroll-behavior: unset;
+        }
+
+
+        .scroll__bar {
+
+            &--vertical,
+            &--horizontal {
+                .scroll__thumb {
+                    transition: 1ms all linear;
+                }
+            }
         }
     }
 }

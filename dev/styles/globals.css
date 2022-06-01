@@ -6,13 +6,16 @@
 
   padding: 2em;
 
-  display: block;
+  display: flex;
+
+  place-items: center;
+  place-content: center;
 
   width: 80vw;
   height: 80vh;
 
-  background-color: #ff5f6d;
-  background-image: linear-gradient(to right, #ffc371, #ff5f6d);
+  /* background-color: #ff5f6d;
+  background-image: linear-gradient(to right, #ffc371, #ff5f6d); */
   /** nice color */
 
   box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;

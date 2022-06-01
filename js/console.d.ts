@@ -3,9 +3,9 @@ declare class Console {
     color?: string;
     background?: string;
     constructor(text: string, { color, background, opacity }?: {
-        color?: string | undefined;
-        background?: string | undefined;
-        opacity?: number | undefined;
+        color?: string;
+        background?: string;
+        opacity?: number;
     });
     private static initialized;
     private static get padding();

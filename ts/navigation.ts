@@ -12,19 +12,32 @@ interface Component {
 }
 
 
+interface AccountComponent extends Component {
+    set avatar(src: string)
+    set userName(userName: string)
+    set background(colorName: string)
+}
+
+
+interface ButtonComponent extends Component {
+    set icon(icon: string)
+    set image(src: string)
+}
+
+
 const navigation: {
     initialized: boolean,
-    container?: HTMLElement
-    navbar?: HTMLElement
+    container: HTMLElement | undefined
+    navbar: HTMLElement | undefined
     block: {
-        left?: HTMLElement,
-        right?: HTMLElement
+        left: HTMLElement | undefined,
+        right: HTMLElement | undefined
     }
-    tooltip?: HTMLElement & {
+    tooltip: (HTMLElement & {
         t?: HTMLElement,
         d?: HTMLElement
-    }
-    underlay?: HTMLElement
+    }) | undefined
+    underlay: HTMLElement | undefined
     subWindowList: SubWindow[]
     init(containerQuery: string, contentQuery: string): void
     insert(component: {
@@ -34,7 +47,7 @@ const navigation: {
     setUnderlay(activate?: boolean): void
     set loading(loading: boolean)
     account: {
-        userToken?: string,
+        userToken: string | undefined,
         [key: string]: any
     }
     addComponent: {
@@ -48,9 +61,9 @@ const navigation: {
             }
         }>, spa?: boolean): void,
         hamburger(func?: () => void): Component,
-        button({ icon, image, colorName, alwaysActive, brightnessLevel, func, text }: {
+        button({ icon, imageSrc, colorName, alwaysActive, brightnessLevel, func, text }: {
             icon?: string,
-            image?: string,
+            imageSrc?: string,
             colorName?: string,
             alwaysActive?: boolean,
             brightnessLevel?: string,
@@ -193,6 +206,7 @@ const navigation: {
 
 
     addComponent: {
+        /** {@linkcode Component} */
         logo({ icon = 'favicon.png', title = 'app name', onlyActive = false }: {
             icon?: string
             title?: string
@@ -379,6 +393,7 @@ const navigation: {
         },
 
 
+        /** {@linkcode Component} */
         hamburger(func: (() => void) | undefined = undefined): Component {
             const container: HTMLDivElement = magicDOM.createElement('div', {
                 classList: 'nav__hamburger', children: [
@@ -413,9 +428,10 @@ const navigation: {
         },
 
 
+        /** {@linkcode ButtonComponent} */
         button({
             icon = 'code',
-            image = undefined,
+            imageSrc = undefined,
             colorName = 'BLUE',
             brightnessLevel = 'OTHER',
             alwaysActive = false,
@@ -423,16 +439,13 @@ const navigation: {
             func = undefined
         }: {
             icon?: string,
-            image?: string,
+            imageSrc?: string,
             colorName?: string,
             brightnessLevel?: string,
             alwaysActive?: boolean,
             text?: string,
             func?: (...args: any[]) => any
-        } = {}): Component & {
-            set icon(icon: string)
-            set image(src: string)
-        } {
+        } = {}): ButtonComponent {
             const container: HTMLSpanElement = magicDOM.createElement('span', {
                 classList: ['nav__component', 'nav__button'],
             })
@@ -449,20 +462,16 @@ const navigation: {
 
             Glasium.init(container, {
                 count: 8,
-                color: Glasium.COLOR[colorName], brightness: Glasium.BRIGHTNESS[brightnessLevel]
+                color: Glasium.COLOR[colorName.toUpperCase()],
+                brightness: Glasium.BRIGHTNESS[brightnessLevel.toUpperCase()]
             })
 
 
-            if (!image)
-                container.append(magicDOM.toHTMLElement(
-                    `<i class='fa-solid fa-${icon}'></i>`
-                ))
-
-
-            if (image)
-                container.append(magicDOM.toHTMLElement(
-                    `<img src='${image}' loading='lazy'></img>`
-                ))
+            container.append(magicDOM.toHTMLElement(
+                imageSrc
+                    ? `<img src='${imageSrc}' loading='lazy'></img>`
+                    : `<i class='fa-solid fa-${icon}'></i>`
+            ))
 
 
             if (text) {
@@ -483,6 +492,8 @@ const navigation: {
                 set icon(iconName: string) {
                     $('i', this.container).remove()
                     $('img', this.container).remove()
+
+
                     this.container.append(magicDOM.toHTMLElement(
                         `<i class='fa-solid fa-${iconName}'></i>`)
                     )
@@ -492,10 +503,12 @@ const navigation: {
                 set image(src: string) {
                     $('i', this.container).remove()
 
+
                     if (this.container.querySelector('img')) {
                         $$<HTMLImageElement>('img', this.container).src = src
                         return
                     }
+
 
                     this.container.append(magicDOM.toHTMLElement(
                         `<img src='${src}' loading='lazy'></img>`)
@@ -505,29 +518,21 @@ const navigation: {
         },
 
 
-        account(): Component & {
-            set avatar(src: string)
-            set userName(userName: string)
-            set background(colorName: string)
-        } {
+        /** {@linkcode AccountComponent} */
+        account(): AccountComponent {
             const button: Component & {
                 set icon(iconName: string)
                 set image(src: string)
             } = this.button({
                 text: 'guest',
-                image: 'guest.png'
+                imageSrc: 'guest.png',
+                colorName: 'red'
             })
 
             const { container, tooltip, clicker } = button
             const subWindow: SubWindow = new SubWindow(container)
 
             clicker.onClick((): void => subWindow.toggle())
-
-
-            /** background color */
-            Glasium.change(container, {
-                color: Glasium.COLOR.RED // because initially button is whitesmoke
-            })
 
 
             return {
@@ -548,10 +553,8 @@ const navigation: {
 
 
                 set background(colorName: string) {
-                    colorName = colorName.toUpperCase()
-
                     Glasium.change(this.container, {
-                        color: Glasium.COLOR[colorName]
+                        color: Glasium.COLOR[colorName.toUpperCase()]
                     })
                 }
             }
@@ -578,14 +581,17 @@ export class Tooltip {
     }
 
 
-    private title?: string = ''
-    private description?: string = ''
-    private flip?: boolean = false
+    /** props */
+    private title: string = ''
+    private description: string = ''
+    private flip: boolean = false
 
+
+    /** component */
     private container?: HTMLElement & {
         t?: HTMLElement,
         d?: HTMLElement
-    } = undefined
+    }
 
 
     set({
@@ -597,8 +603,8 @@ export class Tooltip {
         description?: string,
         flip?: boolean
     } = {}): void {
-        this.title = title !== '' ? title : this.title
-        this.description = description !== '' ? description : this.description
+        this.title = title
+        this.description = description
         this.flip = flip
     }
 
@@ -617,7 +623,7 @@ export class Tooltip {
             this.container.d
         )) return
 
-        if (this.title === '' || typeof this.title === 'undefined') return
+        if (this.title === '') return
 
 
         const { innerWidth } = window
@@ -642,8 +648,7 @@ export class Tooltip {
 
 
     hide(): void {
-        if (!navigation.navbar) return
-        if (!this.container) return
+        if (!(navigation.navbar && this.container)) return
 
 
         $(this.container).removeClass('nav__tooltip--active')
@@ -686,15 +691,23 @@ export class Clicker {
     }
 
 
-    private container?: HTMLElement = undefined
+    /** component */
+    private container: HTMLElement
 
+
+    /** handler collection */
     private clickHandlers: ((...args: any[]) => any)[] = []
 
+
+    /** props */
     private __activated: boolean = false
 
+
+    /** prop getters */
     get activated(): boolean { return this.__activated }
 
 
+    /** public functions */
     onClick(func: (...args: any[]) => any): number {
         return this.clickHandlers.push(func)
     }
@@ -716,16 +729,13 @@ export class Clicker {
 
 
     show(): void {
-        if (!this.container) return
-        if (!this.clickHandlers.length) return
+        if (this.clickHandlers.length === 0) return
 
         this.container.dataset.activated = ''
     }
 
 
     hide(): void {
-        if (!this.container) return
-
         delete this.container.dataset.activated
     }
 }
@@ -737,9 +747,9 @@ export class SubWindow {
         content: HTMLElement | string = 'blank'
     ) {
         /** initialize the html */
-        this.__container = container
+        this.container = container
 
-        this.__windowNode = magicDOM.createElement('div', {
+        this.windowNode = magicDOM.createElement('div', {
             classList: [
                 'nav__sub-window',
                 'nav__sub-window--deactivated'
@@ -747,19 +757,19 @@ export class SubWindow {
             attribute: { 'data-id': this.__id }
         })
 
-        this.__overlayNode = magicDOM.createElement('div', {
+        this.overlayNode = magicDOM.createElement('div', {
             classList: 'nav__sub-window__overlay',
             children: magicDOM.toHTMLElement(`<div class="loading--cover"></div>`)
         })
 
-        this.__contentNode = magicDOM.createElement('div', {
+        this.contentNode = magicDOM.createElement('div', {
             classList: 'nav__sub-window__content'
         })
 
         this.content = content
 
-        this.__windowNode.append(this.__contentNode, this.__overlayNode)
-        this.__container.append(this.__windowNode)
+        this.windowNode.append(this.contentNode, this.overlayNode)
+        this.container.append(this.windowNode)
 
 
         /** list */
@@ -767,36 +777,37 @@ export class SubWindow {
 
 
         /** observer */
-        new ResizeObserver((): void => this.update()).observe(this.__contentNode)
-        new ResizeObserver((): void => this.update()).observe(this.__container)
+        new ResizeObserver((): void => this.update()).observe(this.contentNode)
+        new ResizeObserver((): void => this.update()).observe(this.container)
 
         $(window).on('resize', (): void => this.update())
     }
 
 
+    /** public functions */
     update(): void {
         lib.cssFrame((): void => {
-            if (!(this.__contentNode && this.__windowNode && navigation.container && this.__container)) return
+            if (!navigation.container) return
 
 
             const { clientWidth } = navigation.container
 
 
-            let height: number = this.__isShowing ? this.__contentNode.offsetHeight : 0
-            $(this.__windowNode).css('--height', `${height}px`)
+            let height: number = this.__isShowing ? this.contentNode.offsetHeight : 0
+            $(this.windowNode).css('--height', `${height}px`)
 
 
-            let rect: DOMRect = this.__container.getBoundingClientRect()
-            let width: number = this.__contentNode.offsetWidth
+            let rect: DOMRect = this.container.getBoundingClientRect()
+            let width: number = this.contentNode.offsetWidth
 
 
             if (width - rect.right < 0)
-                this.__windowNode.dataset.align = 'right'
+                this.windowNode.dataset.align = 'right'
             else if (rect.left + width < clientWidth)
-                this.__windowNode.dataset.align = 'left'
+                this.windowNode.dataset.align = 'left'
             else {
-                this.__windowNode.dataset.align = 'expanded'
-                $(this.__windowNode).css({
+                this.windowNode.dataset.align = 'expanded'
+                $(this.windowNode).css({
                     '--width': `${clientWidth}px`,
                     '--left': rect.left
                 })
@@ -805,15 +816,12 @@ export class SubWindow {
             }
 
 
-            $(this.__windowNode).css('--width', `${width}px`)
+            $(this.windowNode).css('--width', `${width}px`)
         })
     }
 
 
     show(): void {
-        if (!(this.__windowNode && this.__container)) return
-
-
         window.clearTimeout(this.__hideTimeoutId)
 
 
@@ -828,11 +836,11 @@ export class SubWindow {
         this.update()
 
 
-        $(this.__windowNode)
+        $(this.windowNode)
             .addClass('nav__sub-window--activated')
             .removeClass('nav__sub-window--deactivated')
 
-        $(this.__container)
+        $(this.container)
             .dataset('swActivated', '')
 
 
@@ -844,19 +852,16 @@ export class SubWindow {
 
 
     hide(trusted: boolean = true): void {
-        if (!(this.__windowNode && this.__container)) return
-
-
         window.clearTimeout(this.__hideTimeoutId)
 
 
         if (trusted) navigation.setUnderlay(false)
 
 
-        this.__windowNode.classList.remove('nav__sub-window--activated')
-        this.__container.classList.remove('nav__sub-window__container--activated')
+        this.windowNode.classList.remove('nav__sub-window--activated')
+        this.container.classList.remove('nav__sub-window__container--activated')
 
-        $(this.__container)
+        $(this.container)
             .dataset('swActivated', null)
 
 
@@ -867,9 +872,9 @@ export class SubWindow {
 
 
         this.__hideTimeoutId = window.setTimeout((): void => {
-            if (!this.__windowNode) return
+            if (!this.windowNode) return
 
-            this.__windowNode.classList.add('nav__sub-window--deactivated')
+            this.windowNode.classList.add('nav__sub-window--deactivated')
         }, 300)
     }
 
@@ -878,54 +883,55 @@ export class SubWindow {
         this.__isShowing ? this.hide() : this.show()
 
 
-        this.__toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
+        this.toggleHandlers.forEach((handler: (...args: any[]) => any): void => {
             handler(this.__isShowing)
         })
     }
 
 
     onToggle(func: (...args: any[]) => any): void {
-        this.__toggleHandlers.push(func)
+        this.toggleHandlers.push(func)
     }
 
 
+    /** setters */
     set loaded(loaded: boolean) {
-        if (!this.__overlayNode) return
-
-
-        $(this.__overlayNode).css('display', loaded ? 'none' : 'block')
+        $(this.overlayNode).css('display', loaded ? 'none' : 'block')
     }
 
 
     set content(content: HTMLElement | string) {
-        if (!this.__contentNode) return
+        magicDOM.emptyNode(this.contentNode)
 
-
-        magicDOM.emptyNode(this.__contentNode)
-
-
-        this.__contentNode.append(content)
+        this.contentNode.append(content)
 
         this.update()
     }
 
 
+    /** props getters */
+    get id(): string { return this.__id }
     get isShowing(): boolean { return this.__isShowing }
 
 
-    get id(): string { return this.__id }
-
-
+    /** props */
     private __id: string = lib.randomString(6)
     private __isShowing: boolean = false
     private __hideTimeoutId: number = -1
 
-    private __toggleHandlers: ((...args: any[]) => any)[] = []
 
-    private __container?: HTMLElement
-    private __contentNode?: HTMLElement
-    private __windowNode?: HTMLElement
-    private __overlayNode?: HTMLElement
+    /** handlers collection */
+    private toggleHandlers: ((...args: any[]) => any)[] = []
+
+
+    /** component */
+    private container: HTMLElement
+
+
+    /** component nodes */
+    private contentNode: HTMLElement
+    private windowNode: HTMLElement
+    private overlayNode: HTMLElement
 }
 
 

@@ -1,6 +1,5 @@
 import { $, $$ } from './jquery'
 import Glasium from './glasium'
-import ScrollBox from './scrollbox'
 import magicDOM from "./magic-dom"
 
 
@@ -19,7 +18,7 @@ const screenSwitcher: {
     init({ query, collection, width, buttons }: {
         query: string
         collection: {
-            name: string; icon: string; element: HTMLElement; description?: string
+            name: string; icon?: string; element: HTMLElement; description?: string
         }[]
         width?: number,
         buttons?: {
@@ -30,7 +29,7 @@ const screenSwitcher: {
         }[]
     }): void
     switch(btn: HTMLElement, { icon, element, description }: {
-        icon: string,
+        icon?: string,
         description?: string,
         element: HTMLElement
     }): void
@@ -38,7 +37,7 @@ const screenSwitcher: {
     init({ query, collection, width = 1200, buttons = [] }: {
         query: string
         collection: {
-            name: string; icon: string; element: HTMLElement; description?: string
+            name: string; icon?: string; element: HTMLElement; description?: string
         }[]
         width?: number
         buttons?: {
@@ -119,7 +118,7 @@ const screenSwitcher: {
             /** get info */
             item.name = item.name.toLowerCase()
             item.icon = item.icon ? item.icon : 'home'
-            item.description = item.description ? item.description.toLowerCase() : undefined
+            item.description = item.description?.toLowerCase() ?? ''
 
             let { name, icon, element, description } = item
 
@@ -178,7 +177,7 @@ const screenSwitcher: {
 
 
     switch(btn: HTMLElement, { icon, element, description }: {
-        icon: string,
+        icon?: string,
         description?: string,
         element: HTMLElement
     }): void {

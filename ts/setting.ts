@@ -2,13 +2,15 @@ import { $$ } from './jquery'
 
 
 const setting: {
-    initialized?: boolean
-    container?: HTMLElement,
+    initialized: boolean
+    container: HTMLElement | undefined,
     init(query: string, { title, description }?: {
         title?: string,
         description?: string
     }): void
 } = {
+    initialized: false,
+
     container: undefined,
 
 

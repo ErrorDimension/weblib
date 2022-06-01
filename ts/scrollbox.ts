@@ -10,7 +10,6 @@ import lib, { debounce } from './lib'
 
 
 interface ScrollBoxOptions {
-    horizontal?: boolean
     velocity?: number
 }
 
@@ -25,7 +24,6 @@ export default class ScrollBox {
      * @param           options.velocity            over-scroll's velocity
      */
     constructor(private container: HTMLElement, {
-        horizontal = false,
         velocity = 0.2
     }: ScrollBoxOptions = {}) {
         if (this.container.querySelector('.scroll__box')) return
@@ -49,7 +47,6 @@ export default class ScrollBox {
 
 
         /** options fetching */
-        this.horizontal = horizontal || this.content.scrollWidth - this.content.offsetWidth > 0
         this.velocity = velocity
 
 
@@ -64,10 +61,6 @@ export default class ScrollBox {
 
         /** resize observer */
         new ResizeObserver((): void => {
-            /** options */
-            this.horizontal = this.horizontal || this.content.scrollWidth - this.content.offsetWidth > 0
-
-
             /** properties */
             this.scrollableX = this.content.scrollWidth - this.content.offsetWidth
             this.scrollableY = this.content.scrollHeight - this.content.offsetHeight
@@ -114,7 +107,6 @@ export default class ScrollBox {
 
 
     /** options */
-    private horizontal: boolean = false
     private velocity: number = 0
 
 
@@ -168,7 +160,7 @@ export default class ScrollBox {
 
 
         /** dataset */
-        $(this.content).dataset('dragging', '')
+        $(this.container).dataset('dragging', '')
 
 
         // Calculate cursor position relative to selected

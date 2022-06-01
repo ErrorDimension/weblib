@@ -2,33 +2,6 @@ import { $ } from './jquery';
 import lib from './lib';
 import magicDOM from './magic-dom';
 class Glasium {
-    static SHAPES = [
-        'triangle',
-        'square',
-        'hexagon',
-        'circle',
-        'all'
-    ];
-    static BRIGHTNESS = {
-        DARK: [1.14, 1.3],
-        LIGHT: [0.94, 1.05],
-        OTHER: [0.9, 1.2],
-    };
-    static COLOR = {
-        BLUE: { background: '#44aadd', shape: '#44aadd', invertContrast: false },
-        RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)', invertContrast: false },
-        GREY: { background: '#485e74', shape: '#485e74', invertContrast: false },
-        GREEN: { background: '#38e538', shape: '#38e538', invertContrast: false },
-        PINK: { background: '#ff66aa', shape: '#ff66aa', invertContrast: false },
-        DARKRED: { background: '#c52339', shape: '#c52339', invertContrast: false },
-        ORANGE: { background: '#ffa502', shape: '#ffa502', invertContrast: false },
-        NAVYBLUE: { background: '#333d79', shape: '#333d79', invertContrast: false },
-        WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6', invertContrast: true },
-        LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd', invertContrast: true },
-        DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
-        YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false },
-        PURPLE: { background: 'rgb(95, 57, 155)', shape: 'rgb(95, 57, 155)', invertContrast: false },
-    };
     static shape(background, { shape = 'triangle', count = 10, brightness = Glasium.BRIGHTNESS.OTHER, scale = 2, speed = 2 }) {
         for (let i = 0; i < count; ++i) {
             /** insert shape */
@@ -77,6 +50,8 @@ class Glasium {
         this.shape(background, { shape, brightness, scale, speed, count });
     }
     /**
+     * {@linkcode GBackground}
+     *
      * @param       element                     element
      * @param       options.shape               shape inside the background
      * @param       options.color               color for the background
@@ -91,10 +66,7 @@ class Glasium {
             new MutationObserver(() => {
                 Glasium.change(element, onMutation[onMutation.callback() ? 'true' : 'false']);
             }).observe(onMutation.observing, onMutation.options);
-            Glasium.init(element, {
-                shape, color, brightness, scale, speed, count, rotate,
-                ...onMutation[onMutation.callback() ? 'true' : 'false'],
-            });
+            Glasium.init(element, Object.assign({ shape, color, brightness, scale, speed, count, rotate }, onMutation[onMutation.callback() ? 'true' : 'false']));
             return;
         }
         /** remove current background */
@@ -145,4 +117,31 @@ class Glasium {
         });
     }
 }
+Glasium.SHAPES = [
+    'triangle',
+    'square',
+    'hexagon',
+    'circle',
+    'all'
+];
+Glasium.BRIGHTNESS = {
+    DARK: [1.14, 1.3],
+    LIGHT: [0.94, 1.05],
+    OTHER: [0.9, 1.2],
+};
+Glasium.COLOR = {
+    BLUE: { background: '#44aadd', shape: '#44aadd', invertContrast: false },
+    RED: { background: '#fb3852', shape: 'hsl(352, 85%, 50%)', invertContrast: false },
+    GREY: { background: '#485e74', shape: '#485e74', invertContrast: false },
+    GREEN: { background: '#38e538', shape: '#38e538', invertContrast: false },
+    PINK: { background: '#ff66aa', shape: '#ff66aa', invertContrast: false },
+    DARKRED: { background: '#c52339', shape: '#c52339', invertContrast: false },
+    ORANGE: { background: '#ffa502', shape: '#ffa502', invertContrast: false },
+    NAVYBLUE: { background: '#333d79', shape: '#333d79', invertContrast: false },
+    WHITESMOKE: { background: '#f6f6f6', shape: '#f6f6f6', invertContrast: true },
+    LIGHTBLUE: { background: '#b9e8fd', shape: '#b9e8fd', invertContrast: true },
+    DARK: { background: '#1e1e1e', shape: '#242424', invertContrast: false },
+    YELLOW: { background: '#ffc414', shape: '#fccc3de6', invertContrast: false },
+    PURPLE: { background: 'rgb(95, 57, 155)', shape: 'rgb(95, 57, 155)', invertContrast: false },
+};
 export default Glasium;

@@ -145,7 +145,7 @@ export function $$(a, b) {
 export function $(a, b) {
     if (typeof a === 'string' && typeof b === 'string') {
         const container = document.querySelector(b);
-        const qsa = container?.querySelectorAll(a);
+        const qsa = container === null || container === void 0 ? void 0 : container.querySelectorAll(a);
         const elements = qsa ? qsa : [];
         return new JHTMLElement(...elements);
     }

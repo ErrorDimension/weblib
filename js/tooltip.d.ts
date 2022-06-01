@@ -1,19 +1,19 @@
 interface Hook {
     on: 'attribute' | 'dataset';
     key: string;
-    handler?({ target, value, update }: {
+    handler?: ({ target, value, update }: {
         target: HTMLElement;
-        value?: string;
-        update(content: string | HTMLElement): void;
-    }): undefined | string | HTMLElement;
-    follower?(): void;
+        value: string | undefined;
+        update: (content: string | HTMLElement) => void;
+    }) => undefined | string | HTMLElement;
+    follower?: () => void;
     priority?: number;
     fit?: boolean;
 }
 declare const tooltip: {
     readonly initialized: boolean;
-    container?: HTMLElement;
-    content?: HTMLElement;
+    container: HTMLElement | undefined;
+    content: HTMLElement | undefined;
     hideTimeoutId: number;
     glowing: boolean;
     hooks: Hook[];

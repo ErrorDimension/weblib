@@ -22,6 +22,10 @@ class Console {
         color = 'white',
         background = 'rgb(255, 255, 255)',
         opacity = 0.55
+    }: {
+        color?: string
+        background?: string
+        opacity?: number
     } = {}) {
         function toRgba(clr: string) {
             if (clr.startsWith('rgba')) return clr
