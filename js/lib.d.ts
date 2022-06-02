@@ -32,8 +32,8 @@ declare const lib: {
     * @param        { string }      data.format     format for the return
     */
     prettyTime({ time, format }?: {
-        time?: Date | undefined;
-        format?: string | undefined;
+        time?: Date;
+        format?: string;
     }): string;
     urlExists(url: string): boolean;
     readonly isMobile: boolean;
@@ -71,7 +71,7 @@ declare const lib: {
      */
     randomBetween(min: number, max: number, toInt?: boolean, outRange?: number[]): number;
     truncate(str: string, length?: number, { suffix }?: {
-        suffix?: string | undefined;
+        suffix?: string;
     }): string;
     randomStringList: string[];
     randomString(len?: number, CHAR_SET?: string): string;

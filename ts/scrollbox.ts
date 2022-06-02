@@ -20,7 +20,6 @@ export default class ScrollBox {
      * 
      * @param           container                   container 
      * @param           options
-     * @param           options.horizontal          horizontal scrolling
      * @param           options.velocity            over-scroll's velocity
      */
     constructor(private container: HTMLElement, {
@@ -261,10 +260,10 @@ export default class ScrollBox {
             (this.content.scrollTop >= this.scrollableY - 1 && event.deltaY > 0) ||  /** at bottom */
             (this.content.scrollTop === 0 && event.deltaY < 0)                      /** at top */
         ) {
-            event.stopImmediatePropagation()
+            lib.nextFrameAsync().then((): void => {
+                event.stopImmediatePropagation()
 
 
-            lib.cssFrame((): void => {
                 /** update thumb */
                 this.renderComponents()
 
@@ -281,7 +280,7 @@ export default class ScrollBox {
 
 
     deleteOverScrollingState: () => void = debounce((): void => {
-        this.delta = 0 // todo delta decreasing slowly
+        this.delta = 0
         this.renderComponents()
 
 

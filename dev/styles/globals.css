@@ -14,11 +14,17 @@
   width: 80vw;
   height: 80vh;
 
-  /* background-color: #ff5f6d;
-  background-image: linear-gradient(to right, #ffc371, #ff5f6d); */
+  background-color: #ff5f6d;
+  background-image: linear-gradient(to right, #ffc371, #ff5f6d);
   /** nice color */
 
-  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 2px;
+
+  border-radius: 6px;
+}
+
+.select {
+  max-width: 180px;
 }
 
 :is(body, body[data-theme="dark"]) .dummy {

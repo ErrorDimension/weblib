@@ -25,7 +25,10 @@ const setting: {
         this.initialized = true
 
 
-        this.container = $$(query)
+        let con: HTMLElement | null = $$(query)
+        if (!con) return
+
+        this.container = con
     }
 }
 

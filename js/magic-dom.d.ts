@@ -86,9 +86,38 @@ export declare class Slider {
     }): this;
 }
 export declare class Select {
-    constructor();
+    constructor({ color, options, icon, searchTime }?: {
+        color?: 'blue' | 'pink';
+        options?: Array<{
+            display: string;
+            value?: string;
+        }>;
+        icon?: string;
+        searchTime?: number;
+    });
     /** component */
     component: HTMLElement;
-    selectBox: HTMLElement;
+    private selectBox;
+    private currentHolder;
+    /** props */
+    private activated;
+    private options;
+    private currentOption;
+    private changeHandlers;
+    private inputHandlers;
+    private searchTime;
+    /** getters */
+    get value(): string;
+    /** events */
+    private attachEvents;
+    private handleChangeEvent;
+    private handleInputEvent;
+    /** funcs */
+    private createOptions;
+    private select;
+    /** public funcs */
+    toggle(): void;
+    onChange(func: (value: string) => any): this;
+    onInput(func: (value: string) => any): this;
 }
 //# sourceMappingURL=magic-dom.d.ts.map

@@ -7,10 +7,6 @@ import magicDOM from './magic-dom'
 import modCase from './modcase'
 
 
-const logger: Console | undefined = typeof window === 'undefined'
-    ? undefined
-    : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' })
-
 const OFFSET: number = 135
 const LARGE_X_AXIS: number = 3 / 4
 const LARGE_Y_AXIS: number = 77 / 100
@@ -169,7 +165,10 @@ const tooltip: {
 
 
         /** inform success */
-        Console.okay(logger, 'Successfully initialized')
+        Console.okay(
+            new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' }),
+            'Successfully initialized'
+        )
     },
 
 
@@ -410,10 +409,7 @@ tooltip.addHook({
         target: HTMLElement & { tooltipTitle?: string },
         value: string | undefined
     }): string | undefined {
-        if (!value) return
-
-
-        if (target.tooltipTitle) return target.tooltipTitle
+        if (!value) return target.tooltipTitle
 
 
         target.tooltipTitle = value

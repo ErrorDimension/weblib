@@ -19,7 +19,12 @@ const navigation = {
         this.initialized = true;
         /** get container */
         const container = $$(containerQuery);
-        this.container = $$(contentQuery);
+        if (!container)
+            return;
+        const con = $$(contentQuery);
+        if (!con)
+            return;
+        this.container = con;
         /** stylesheet */
         const style = document.createElement('style');
         style.textContent = `
@@ -285,7 +290,10 @@ const navigation = {
                 set image(src) {
                     $('i', this.container).remove();
                     if (this.container.querySelector('img')) {
-                        $$('img', this.container).src = src;
+                        const currentImage = $$('img', this.container);
+                        if (!currentImage)
+                            return;
+                        currentImage.src = src;
                         return;
                     }
                     this.container.append(magicDOM.toHTMLElement(`<img src='${src}' loading='lazy'></img>`));

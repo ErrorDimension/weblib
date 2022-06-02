@@ -13,7 +13,6 @@ export default class ScrollBox {
      *
      * @param           container                   container
      * @param           options
-     * @param           options.horizontal          horizontal scrolling
      * @param           options.velocity            over-scroll's velocity
      */
     constructor(container: HTMLElement, { velocity }?: ScrollBoxOptions);

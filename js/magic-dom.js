@@ -1,4 +1,6 @@
-import { $ } from './jquery';
+import { $, $$ } from './jquery';
+import ScrollBox from './scrollbox';
+import { debounce } from './lib';
 const magicDOM = {
     /**
      * Create a HTMLElement the easy way
@@ -215,9 +217,159 @@ export class Slider {
     }
 }
 export class Select {
-    constructor() {
-        this.component = magicDOM.createTree('div', 'select');
-        this.selectBox = magicDOM.createTree('div', 'select');
+    constructor({ color = 'pink', options = [], icon = 'list', searchTime = 500 } = {}) {
+        /** props */
+        this.activated = true;
+        this.changeHandlers = [];
+        this.inputHandlers = [];
+        /** fetch props */
+        this.options = options.length == 0
+            ? [{ display: 'not initialized', value: 'undefined' }]
+            : options.reduce((acc, val) => {
+                let option = {
+                    display: val.display,
+                    value: val.value ? val.value : val.display
+                };
+                acc.push(option);
+                return acc;
+            }, []);
+        this.searchTime = searchTime;
+        /** init options box */
+        this.currentHolder = magicDOM.createElement('div', {
+            classList: 'select__text',
+        });
+        this.selectBox = magicDOM.createElement('div', {
+            classList: 'select__box',
+            children: this.createOptions()
+        });
+        /** select box is a scroll box */
+        new ScrollBox(this.selectBox).init();
+        /** init component */
+        this.component = magicDOM.createTree('div', 'select', {
+            'data-color': color,
+            'tabindex': 0
+        }, {
+            icon: { tag: 'i', classList: ['fa-solid', `fa-${icon}`] },
+            text: this.currentHolder,
+            arrow: { tag: 'i', classList: ['fa-solid', `fa-angle-left`, 'select__arrow'] }
+        });
+        /** attaching events */
+        this.attachEvents();
+        /** appending */
         this.component.append(this.selectBox);
+        /** initial selection */
+        this.select(this.options[0]);
+        this.currentOption = this.options[0];
+    }
+    /** getters */
+    get value() {
+        return this.currentOption.value;
+    }
+    /** events */
+    attachEvents() {
+        /** activate options box */
+        const expander = magicDOM.createElement('div', {
+            classList: 'expander'
+        });
+        $(expander).on('click', () => this.toggle());
+        this.component.append(expander);
+        /** event props */
+        let searchQuery = '';
+        const clearSearchQuery = debounce(() => searchQuery = '', this.searchTime);
+        /** key events */
+        $(this.component)
+            .on('keydown', (event) => {
+            switch (event.key.toLowerCase()) {
+                case 'arrowdown': {
+                    const index = (this.options.indexOf(this.currentOption) + 1) % this.options.length;
+                    const nextOption = this.options[index];
+                    this.select(nextOption, false);
+                    break;
+                }
+                case 'arrowup': {
+                    const index = this.options.indexOf(this.currentOption) - 1 == -1
+                        ? this.options.length - 1
+                        : this.options.indexOf(this.currentOption) - 1;
+                    const prevOption = this.options[index];
+                    this.select(prevOption, false);
+                    break;
+                }
+                case ' ':
+                case 'enter': {
+                    this.toggle();
+                    break;
+                }
+                default: {
+                    if (event.key.length === 1)
+                        searchQuery += event.key.toLowerCase();
+                    clearSearchQuery();
+                    const option = this.options.find((opt) => {
+                        if (opt.display.toLowerCase().startsWith(searchQuery))
+                            return opt;
+                        return undefined;
+                    });
+                    if (option)
+                        this.select(option, false);
+                    break;
+                }
+            }
+        });
+    }
+    handleChangeEvent() {
+        this.changeHandlers.forEach((handler) => handler(this.value));
+    }
+    handleInputEvent() {
+        if (this.activated)
+            return;
+        this.inputHandlers.forEach((handler) => handler(this.value));
+    }
+    /** funcs */
+    createOptions() {
+        const options = [];
+        this.options.forEach((option) => {
+            if (!option.value)
+                option.value = option.display;
+            let optEl = magicDOM.createElement('div', {
+                classList: 'select__option',
+                children: option.display,
+                attribute: { 'data-value': option.value }
+            });
+            /** events */
+            optEl.onclick = () => {
+                this.currentOption = option;
+                this.select(option);
+            };
+            options.push(optEl);
+        });
+        return options;
+    }
+    select(option, toToggle = true) {
+        toToggle && this.toggle();
+        $('[data-current]', this.selectBox).dataset('current', null);
+        this.currentHolder.textContent = option.display;
+        this.currentOption = option;
+        const currentElement = $$(`[data-value='${option.value}']`, this.selectBox);
+        currentElement.dataset.current = '';
+        if (this.activated)
+            currentElement.scrollIntoView({
+                block: 'nearest'
+            });
+        this.handleChangeEvent();
+    }
+    /** public funcs */
+    toggle() {
+        /** activation */
+        this.activated = !this.activated;
+        $(this.component).dataset('activated', this.activated ? '' : null);
+        if (this.activated === false)
+            this.handleInputEvent();
+    }
+    onChange(func) {
+        this.changeHandlers.push(func);
+        return this;
+    }
+    onInput(func) {
+        this.inputHandlers.push(func);
+        return this;
     }
 }

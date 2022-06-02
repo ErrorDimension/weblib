@@ -11,7 +11,6 @@ export default class ScrollBox {
      *
      * @param           container                   container
      * @param           options
-     * @param           options.horizontal          horizontal scrolling
      * @param           options.velocity            over-scroll's velocity
      */
     constructor(container, { velocity = 0.2 } = {}) {
@@ -43,7 +42,7 @@ export default class ScrollBox {
         this.__hDown = (e) => this.horizontalThumbDown(e);
         this.__overScrolling = (e) => this.overScrolling(e);
         this.deleteOverScrollingState = debounce(() => {
-            this.delta = 0; // todo delta decreasing slowly
+            this.delta = 0;
             this.renderComponents();
             $(this.content).css('transform', null);
         }, 150);
@@ -164,8 +163,8 @@ export default class ScrollBox {
         /** @brief over scrolling effect */
         if ((this.content.scrollTop >= this.scrollableY - 1 && event.deltaY > 0) || /** at bottom */
             (this.content.scrollTop === 0 && event.deltaY < 0) /** at top */) {
-            event.stopImmediatePropagation();
-            lib.cssFrame(() => {
+            lib.nextFrameAsync().then(() => {
+                event.stopImmediatePropagation();
                 /** update thumb */
                 this.renderComponents();
                 /** calculate delta */

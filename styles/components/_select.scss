@@ -1,0 +1,165 @@
+body {
+    .select {
+        --background: white;
+        --color: black;
+        --color-hover: white;
+        --option-color: black;
+
+
+        &[data-color='pink'] {
+            --background-active: var(--osc-color-pink);
+        }
+
+
+        &[data-color='blue'] {
+            --background-active: var(--osc-color-blue);
+        }
+    }
+}
+
+
+body[data-theme='dark'] {
+    .select {
+        --background: #242424;
+        --color: rgb(235, 235, 235);
+        --color-hover: white;
+        --option-color: white;
+    }
+}
+
+
+.select {
+    flex-grow: 1;
+
+    position: relative;
+
+    display: inline-flex;
+
+    min-width: fit-content;
+
+    margin: 0 2.5em;
+
+    padding: 0.5em;
+
+    background-color: var(--background);
+
+    border-radius: 4px;
+
+    font-family: 'Open Sans';
+    font-size: 0.85em;
+    font-weight: 500;
+
+    color: var(--color);
+
+    text-align: right;
+
+    overflow: visible;
+
+    user-select: none;
+
+    transition:
+        100ms background-color ease-out,
+        100ms color ease-out;
+
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: var(--background-active);
+
+            color: var(--color-hover);
+        }
+    }
+
+
+    &__arrow {
+        transition: 100ms transform cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+
+    &__text {
+        display: inline-block;
+
+        padding: 0 0.8em;
+
+        margin-inline-start: auto;
+    }
+
+
+    &__box {
+        position: absolute;
+
+        inset-block-start: 100%;
+        inset-inline: 0;
+
+        margin-top: 0.5em;
+
+        width: 100%;
+        height: 0px;
+
+        background-color: var(--background);
+
+        border-radius: 4px;
+
+        transition:
+            100ms height cubic-bezier(0.19, 1, 0.22, 1);
+    }
+
+
+    &__option {
+        color: var(--option-color);
+
+        border-radius: 4px;
+
+        margin: 0.1em;
+
+        padding: 0.2em 1.85em;
+
+        font-size: 0.93em;
+
+        transition:
+            100ms background-color ease-out,
+            100ms color ease-out;
+
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--color-hover);
+
+                background-color: var(--background-active);
+            }
+        }
+
+
+        &[data-current] {
+            color: var(--color-hover);
+
+            background-color: var(--background-active);
+        }
+    }
+
+
+    &[data-activated] {
+        background-color: var(--background-active);
+
+        color: var(--color-hover);
+
+
+        .select__arrow {
+            transform: rotate(-90deg);
+        }
+
+
+        .select__box {
+            height: 80px;
+        }
+    }
+
+
+    @media (hover: hover) {
+        &:focus {
+            background-color: var(--background-active);
+
+            color: var(--color-hover);
+        }
+    }
+}

@@ -1,4 +1,6 @@
-import { $ } from './jquery'
+import { $, $$ } from './jquery'
+import ScrollBox from './scrollbox'
+import { debounce } from './lib'
 
 
 interface DOMTreeNode {
@@ -366,18 +368,276 @@ export class Slider {
 }
 
 
+interface SelectOption {
+    display: string
+    value: string
+}
+
 export class Select {
-    constructor() {
-        this.component = magicDOM.createTree('div', 'select')
-        this.selectBox = magicDOM.createTree('div', 'select')
+    constructor({
+        color = 'pink',
+        options = [],
+        icon = 'list',
+        searchTime = 500
+    }: {
+        color?: 'blue' | 'pink'
+        options?: Array<{ display: string; value?: string }>
+        icon?: string
+        searchTime?: number
+    } = {}) {
+        /** fetch props */
+        this.options = options.length == 0
+            ? [{ display: 'not initialized', value: 'undefined' }]
+            : options.reduce((
+                acc: { display: string; value: string }[],
+                val: { display: string; value?: string }
+            ): { display: string; value: string }[] => {
+                let option: { display: string; value: string } = {
+                    display: val.display,
+                    value: val.value ? val.value : val.display
+                }
+
+                acc.push(option)
+
+                return acc
+            }, [])
+
+        this.searchTime = searchTime
 
 
+        /** init options box */
+        this.currentHolder = magicDOM.createElement('div', {
+            classList: 'select__text',
+        })
+
+        this.selectBox = magicDOM.createElement('div', {
+            classList: 'select__box',
+            children: this.createOptions()
+        })
+
+
+        /** select box is a scroll box */
+        new ScrollBox(this.selectBox).init()
+
+
+        /** init component */
+        this.component = magicDOM.createTree('div', 'select', {
+            'data-color': color,
+            'tabindex': 0
+        }, {
+            icon: { tag: 'i', classList: ['fa-solid', `fa-${icon}`] },
+            text: this.currentHolder,
+            arrow: { tag: 'i', classList: ['fa-solid', `fa-angle-left`, 'select__arrow'] }
+        })
+
+
+        /** attaching events */
+        this.attachEvents()
+
+
+        /** appending */
         this.component.append(this.selectBox)
+
+
+        /** initial selection */
+        this.select(this.options[0])
+        this.currentOption = this.options[0]
     }
 
 
     /** component */
     component: HTMLElement
 
-    selectBox: HTMLElement
+    private selectBox: HTMLElement
+
+    private currentHolder: HTMLElement
+
+
+    /** props */
+    private activated: boolean = true
+
+    private options: Array<{ display: string; value: string }>
+    private currentOption: { display: string; value: string }
+
+    private changeHandlers: ((value: string) => any)[] = []
+    private inputHandlers: ((value: string) => any)[] = []
+
+    private searchTime: number
+
+
+    /** getters */
+    get value(): string {
+        return this.currentOption.value
+    }
+
+
+    /** events */
+    private attachEvents(): void {
+        /** activate options box */
+        const expander: HTMLElement = magicDOM.createElement('div', {
+            classList: 'expander'
+        })
+
+        $(expander).on('click', (): void => this.toggle())
+
+        this.component.append(expander)
+
+
+        /** event props */
+        let searchQuery: string = ''
+
+        const clearSearchQuery: () => void = debounce((): string => searchQuery = '', this.searchTime)
+
+
+        /** key events */
+        $(this.component)
+            .on('keydown', (event: KeyboardEvent): void => {
+                switch (event.key.toLowerCase()) {
+                    case 'arrowdown': {
+                        const index: number = (this.options.indexOf(this.currentOption) + 1) % this.options.length
+
+                        const nextOption: {
+                            display: string
+                            value: string
+                        } = this.options[index]
+
+                        this.select(nextOption, false)
+
+                        break
+                    }
+
+
+                    case 'arrowup': {
+                        const index: number = this.options.indexOf(this.currentOption) - 1 == -1
+                            ? this.options.length - 1
+                            : this.options.indexOf(this.currentOption) - 1
+
+                        const prevOption: {
+                            display: string
+                            value: string
+                        } = this.options[index]
+
+                        this.select(prevOption, false)
+
+                        break
+                    }
+
+
+                    case ' ':
+                    case 'enter': {
+                        this.toggle()
+                        break
+                    }
+
+
+                    default: {
+                        if (event.key.length === 1) searchQuery += event.key.toLowerCase()
+                        clearSearchQuery()
+
+                        const option: SelectOption | undefined = this.options.find((opt: {
+                            display: string
+                            value: string
+                        }): SelectOption | undefined => {
+                            if (opt.display.toLowerCase().startsWith(searchQuery)) return opt
+                            return undefined
+                        })
+
+                        if (option) this.select(option, false)
+
+                        break
+                    }
+                }
+            })
+    }
+
+
+    private handleChangeEvent(): void {
+        this.changeHandlers.forEach((handler: (value: string) => any): void => handler(this.value))
+    }
+
+
+    private handleInputEvent(): void {
+        if (this.activated) return
+        this.inputHandlers.forEach((handler: (value: string) => any): void => handler(this.value))
+    }
+
+
+    /** funcs */
+    private createOptions(): Array<HTMLElement> {
+        const options: Array<HTMLElement> = []
+
+
+        this.options.forEach((option: { display: string; value: string }): void => {
+            if (!option.value) option.value = option.display
+
+
+            let optEl: HTMLElement = magicDOM.createElement('div', {
+                classList: 'select__option',
+                children: option.display,
+                attribute: { 'data-value': option.value }
+            })
+
+
+            /** events */
+            optEl.onclick = (): void => {
+                this.currentOption = option
+                this.select(option)
+            }
+
+
+            options.push(optEl)
+        })
+
+
+        return options
+    }
+
+
+    private select(option: { display: string; value: string }, toToggle: boolean = true): void {
+        toToggle && this.toggle()
+
+        $('[data-current]', this.selectBox).dataset('current', null)
+
+        this.currentHolder.textContent = option.display
+
+        this.currentOption = option
+
+        const currentElement: HTMLElement = $$(
+            `[data-value='${option.value}']`,
+            this.selectBox
+        )!
+
+        currentElement.dataset.current = ''
+
+        if (this.activated) currentElement.scrollIntoView({
+            block: 'nearest'
+        })
+
+        this.handleChangeEvent()
+    }
+
+
+    /** public funcs */
+    toggle(): void {
+        /** activation */
+        this.activated = !this.activated
+        $(this.component).dataset('activated', this.activated ? '' : null)
+
+
+        if (this.activated === false) this.handleInputEvent()
+    }
+
+
+    onChange(func: (value: string) => any): this {
+        this.changeHandlers.push(func)
+
+        return this
+    }
+
+
+    onInput(func: (value: string) => any): this {
+        this.inputHandlers.push(func)
+
+        return this
+    }
 }

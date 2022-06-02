@@ -5,9 +5,6 @@ import cursor from './cursor';
 import lib, { throttled } from './lib';
 import magicDOM from './magic-dom';
 import modCase from './modcase';
-const logger = typeof window === 'undefined'
-    ? undefined
-    : new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' });
 const OFFSET = 135;
 const LARGE_X_AXIS = 3 / 4;
 const LARGE_Y_AXIS = 77 / 100;
@@ -83,7 +80,7 @@ const tooltip = {
             tooltip.glowing = false;
         });
         /** inform success */
-        Console.okay(logger, 'Successfully initialized');
+        Console.okay(new Console('tooltip', { background: 'rgba(92, 92, 92, 0.4)' }), 'Successfully initialized');
     },
     scan() {
         /** scan for new elements in the document and attach tooltip events onto them */
@@ -243,8 +240,6 @@ tooltip.addHook({
     key: 'title',
     handler({ target, value }) {
         if (!value)
-            return;
-        if (target.tooltipTitle)
             return target.tooltipTitle;
         target.tooltipTitle = value;
         target.removeAttribute('title');

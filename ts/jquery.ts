@@ -197,38 +197,23 @@ class JHTMLElement<Type extends Window | Document | HTMLElement | Node> extends 
 }
 
 
-export function $$<T extends HTMLElement>(query: string): T
-export function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T
-export function $$<T extends HTMLElement>(query: string, fromQuery?: string): T
-export function $$<T extends HTMLElement>(a: string, b?: string | HTMLElement): T {
-    if (a === undefined)
-        throw new Error(`'jqueryy()' : 'query' is not defined`)
-
-
+export function $$<T extends HTMLElement>(query: string): T | null
+export function $$<T extends HTMLElement>(query: string, element?: HTMLElement): T | null
+export function $$<T extends HTMLElement>(query: string, fromQuery?: string): T | null
+export function $$<T extends HTMLElement>(a: string, b?: string | HTMLElement): T | null {
     if (typeof a === 'string' && typeof b === 'string') {
         const container: T | null = document.querySelector<T>(b)
-        if (container === null) throw new Error(`'jqueryy()' : 'queryOrContainer' returned null`)
+        if (container === null) return null
 
-        const element: T | null = container.querySelector<T>(a)
-        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (string)`)
-
-        return element
+        return container.querySelector<T>(a)
     }
 
 
-    if (typeof a === 'string' && b instanceof HTMLElement) {
-        const element: T | null = b.querySelector<T>(a)
-        if (element === null) throw new Error(`'jqueryy()' : 'query' returned null (html)`)
-
-        return element
-    }
+    if (typeof a === 'string' && b instanceof HTMLElement)
+        return b.querySelector<T>(a)
 
 
-    const el: T | null = document.querySelector<T>(a)
-    if (el === null) throw new Error(`'jqueryy()' : 'query' returned null (o string)`)
-
-
-    return el
+    return document.querySelector<T>(a)
 }
 
 

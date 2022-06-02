@@ -15,7 +15,7 @@ body[data-theme='dark'] {
 
 
 .scroll {
-    --scrollbar-size-initial: max(4.5px, 0.27vw);
+    --scrollbar-size-initial: max(4.25px, 0.25vw);
     --scrollbar-margin: 0.07vw;
     --scrollbar-offset: calc(var(--scrollbar-size-initial) + var(--scrollbar-margin));
 

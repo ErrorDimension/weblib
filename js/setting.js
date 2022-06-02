@@ -6,7 +6,10 @@ const setting = {
         if (typeof window === 'undefined' || this.initialized)
             return;
         this.initialized = true;
-        this.container = $$(query);
+        let con = $$(query);
+        if (!con)
+            return;
+        this.container = con;
     }
 };
 export default setting;

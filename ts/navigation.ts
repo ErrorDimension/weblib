@@ -104,8 +104,13 @@ const navigation: {
 
 
         /** get container */
-        const container: HTMLElement = $$(containerQuery)
-        this.container = $$(contentQuery)
+        const container: HTMLElement | null = $$(containerQuery)
+        if (!container) return
+
+        const con: HTMLElement | null = $$(contentQuery)
+        if (!con) return
+
+        this.container = con
 
 
         /** stylesheet */
@@ -505,7 +510,10 @@ const navigation: {
 
 
                     if (this.container.querySelector('img')) {
-                        $$<HTMLImageElement>('img', this.container).src = src
+                        const currentImage: HTMLImageElement | null = $$<HTMLImageElement>('img', this.container)
+                        if (!currentImage) return
+
+                        currentImage.src = src
                         return
                     }
 
@@ -548,7 +556,7 @@ const navigation: {
 
 
                 set userName(userName: string) {
-                    $$('.nav__button__text').innerText = userName
+                    $$('.nav__button__text')!.innerText = userName
                 },
 
 

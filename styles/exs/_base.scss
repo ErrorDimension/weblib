@@ -150,3 +150,13 @@ button {
         height: 100%;
     }
 }
+
+
+.expander {
+    position: absolute;
+    inset: 0;
+
+    border-radius: inherit;
+
+    z-index: 50;
+}
