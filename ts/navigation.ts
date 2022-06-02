@@ -25,8 +25,8 @@ interface ButtonComponent extends Component {
 }
 
 
-const navigation: {
-    initialized: boolean,
+interface Navigation {
+    initialized: boolean
     container: HTMLElement | undefined
     navbar: HTMLElement | undefined
     block: {
@@ -79,7 +79,11 @@ const navigation: {
             set background(colorName: string)
         }
     }
-} = {
+}
+
+
+/** {@linkcode Navigation} */
+const navigation: Navigation = {
     initialized: false,
 
     container: undefined,
@@ -253,7 +257,7 @@ const navigation: {
 
 
             /** indicator */
-            const indicator = magicDOM.createElement('div', {
+            const indicator: HTMLDivElement = magicDOM.createElement('div', {
                 classList: 'nav__indicator'
             })
 
@@ -309,17 +313,7 @@ const navigation: {
 
 
                 /** link */
-                const link: HTMLElement = spa
-                    ? $(`a[data-href='${href}']`)
-                        .addClass('nav__link')
-                        .append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`))[0]
-                    : magicDOM.createElement('div', {
-                        classList: 'nav__link',
-                        attribute: { 'data-href': href },
-                        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
-                    })
-
-                new Tooltip(link).set(tooltip)
+                const link: HTMLElement = makeLink(href, icon, spa)
 
 
                 /** link's events */
@@ -331,7 +325,7 @@ const navigation: {
                         navigation.loading = true
                         indicate(link).then((): void => {
                             // the code said it
-                            window.location.pathname = link.dataset.href as string
+                            window.location.pathname = link.dataset.href!
                         })
 
                         return
@@ -356,9 +350,13 @@ const navigation: {
                     navigation.loading = true
                     indicate(link).then((): void => {
                         /** the code said it */
-                        window.location.pathname = link.dataset.href as string
+                        window.location.pathname = link.dataset.href!
                     })
                 })
+
+
+                /** link tooltip */
+                new Tooltip(link).set(tooltip)
 
 
                 /** append link */
@@ -947,3 +945,27 @@ export default navigation
 
 
 const or: (...args: any[]) => boolean = (...args: any[]): boolean => args.some((arg: any): any => arg)
+
+
+function makeLink(href: string, icon: string, spa: boolean = false): HTMLElement {
+    if (spa) {
+        let anchor: HTMLElement | null = document.querySelector(`a[data-href='${href}']`)
+
+        if (!anchor)
+            throw new Error('navigation.addComponent.route()')
+
+
+        anchor.classList.add('nav__link')
+        anchor.append(magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`))
+
+
+        return anchor
+    }
+
+
+    return magicDOM.createElement('div', {
+        classList: 'nav__link',
+        attribute: { 'data-href': href },
+        children: magicDOM.toHTMLElement(`<i class="fa-solid fa-${icon}"></i>`)
+    })
+}
