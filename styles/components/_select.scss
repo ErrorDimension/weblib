@@ -39,14 +39,14 @@ body[data-theme='dark'] {
 
     margin: 0 2.5em;
 
-    padding: 0.5em;
+    padding: 0.8em 1em;
 
     background-color: var(--background);
 
     border-radius: 4px;
 
     font-family: 'Open Sans';
-    font-size: 0.85em;
+    font-size: 0.9em;
     font-weight: 500;
 
     color: var(--color);
@@ -71,6 +71,11 @@ body[data-theme='dark'] {
     }
 
 
+    i {
+        font-size: 1.2em;
+    }
+
+
     &__arrow {
         transition: 100ms transform cubic-bezier(0.165, 0.84, 0.44, 1);
     }
@@ -82,6 +87,8 @@ body[data-theme='dark'] {
         padding: 0 0.8em;
 
         margin-inline-start: auto;
+
+        vertical-align: bottom;
     }
 
 
@@ -112,9 +119,10 @@ body[data-theme='dark'] {
 
         margin: 0.1em;
 
-        padding: 0.2em 1.85em;
+        padding-block: 0.3em;
+        padding-inline-end: 1.95em;
 
-        font-size: 0.93em;
+        font-size: 0.98em;
 
         transition:
             100ms background-color ease-out,
