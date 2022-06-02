@@ -1,6 +1,7 @@
 import { $, $$ } from './jquery'
 import ScrollBox from './scrollbox'
 import { debounce } from './lib'
+import Glasium from './glasium'
 
 
 interface DOMTreeNode {
@@ -146,6 +147,26 @@ const magicDOM = {
 
 
 export default magicDOM
+
+
+class MagicDOMEventInput {
+    protected inputHandlers: Array<(value: string) => any> = []
+
+    public onInput(func: (value: string) => any): this {
+        this.inputHandlers.push(func)
+        return this
+    }
+}
+
+
+class MagicDOMEventChange extends MagicDOMEventInput {
+    protected changeHandlers: Array<(value: string) => any> = []
+
+    public onChange(func: (value: string) => any): this {
+        this.changeHandlers.push(func)
+        return this
+    }
+}
 
 
 export class Slider {
@@ -373,7 +394,7 @@ interface SelectOption {
     value: string
 }
 
-export class Select {
+export class Select extends MagicDOMEventInput {
     constructor({
         color = 'pink',
         options = [],
@@ -385,6 +406,9 @@ export class Select {
         icon?: string
         searchTime?: number
     } = {}) {
+        super()
+
+
         /** fetch props */
         this.options = options.length == 0
             ? [{ display: 'not initialized', value: 'undefined' }]
@@ -458,9 +482,6 @@ export class Select {
 
     private options: Array<{ display: string; value: string }>
     private currentOption: { display: string; value: string }
-
-    private changeHandlers: ((value: string) => any)[] = []
-    private inputHandlers: ((value: string) => any)[] = []
 
     private searchTime: number
 
@@ -551,11 +572,6 @@ export class Select {
     }
 
 
-    private handleChangeEvent(): void {
-        this.changeHandlers.forEach((handler: (value: string) => any): void => handler(this.value))
-    }
-
-
     private handleInputEvent(): void {
         if (this.activated) return
         this.inputHandlers.forEach((handler: (value: string) => any): void => handler(this.value))
@@ -613,7 +629,7 @@ export class Select {
             block: 'nearest'
         })
 
-        this.handleChangeEvent()
+        this.handleInputEvent()
     }
 
 
@@ -622,22 +638,116 @@ export class Select {
         /** activation */
         this.activated = !this.activated
         $(this.component).dataset('activated', this.activated ? '' : null)
+    }
+}
 
 
-        if (this.activated === false) this.handleInputEvent()
+export class Radio extends MagicDOMEventInput {
+    constructor({
+        color = 'pink',
+        options = []
+    }: {
+        color?: 'pink' | 'blue'
+        options?: Array<{ display: string; icon: string; value?: string }>
+    } = {}) {
+        super()
+
+
+        /** init component */
+        this.component = magicDOM.createElement('div', {
+            classList: 'radio',
+            attribute: {
+                'data-color': color,
+                'tabindex': 0
+            }
+        })
+
+
+        /** background */
+        Glasium.init(this.component, {
+            color: Glasium.COLOR[color.toUpperCase()],
+            count: 8,
+            scale: 3
+        })
+
+
+        /** get props */
+        this.options = options.length == 0
+            ? [{ display: 'not initialized', value: 'undefined', icon: 'border-none' }]
+            : options.reduce((
+                acc: { display: string; value: string; icon: string }[],
+                val: { display: string; value?: string; icon: string }
+            ): { display: string; value: string; icon: string }[] => {
+                let option: { display: string; value: string; icon: string } = {
+                    display: val.display,
+                    value: val.value ? val.value : val.display,
+                    icon: val.icon
+                }
+
+                acc.push(option)
+
+                return acc
+            }, [])
+
+
+        /** options init */
+        this.makeOptions()
     }
 
 
-    onChange(func: (value: string) => any): this {
-        this.changeHandlers.push(func)
+    /** component */
+    component: HTMLElement
 
-        return this
+
+    /** assets  */
+    private handleInputEvent(): void {
+        this.inputHandlers.forEach((handler: (value: string) => any): any => {
+            handler(this.value)
+        })
     }
 
 
-    onInput(func: (value: string) => any): this {
-        this.inputHandlers.push(func)
+    private makeOptions(): void {
+        this.options.forEach((option: { display: string; value: string; icon: string }): any => {
+            const optEl: HTMLElement = magicDOM.createElement('span', {
+                classList: 'radio__option',
+                attribute: {
+                    title: option.display,
+                    'data-value': option.value
+                },
+                children: magicDOM.createElement('i', {
+                    classList: ['fa-solid', `fa-${option.icon}`]
+                })
+            })
 
-        return this
+
+            optEl.onclick = (): void => {
+                this.__value = option.value
+
+                this.select(optEl)
+            }
+
+
+            this.component.append(optEl)
+        })
+    }
+
+
+    /** props */
+    private options: Array<{ display: string; value: string; icon: string }>
+
+    private __value: string = ''
+
+
+    /** getters */
+    get value(): string { return this.__value }
+
+
+    /** public funcs */
+    select(el: HTMLElement): void {
+        $('[data-current]', this.component).dataset('current', null)
+        $(el).dataset('current', '')
+
+        this.handleInputEvent()
     }
 }

@@ -1,6 +1,7 @@
 import { $, $$ } from './jquery';
 import ScrollBox from './scrollbox';
 import { debounce } from './lib';
+import Glasium from './glasium';
 const magicDOM = {
     /**
      * Create a HTMLElement the easy way
@@ -88,6 +89,25 @@ const magicDOM = {
     },
 };
 export default magicDOM;
+class MagicDOMEventInput {
+    constructor() {
+        this.inputHandlers = [];
+    }
+    onInput(func) {
+        this.inputHandlers.push(func);
+        return this;
+    }
+}
+class MagicDOMEventChange extends MagicDOMEventInput {
+    constructor() {
+        super(...arguments);
+        this.changeHandlers = [];
+    }
+    onChange(func) {
+        this.changeHandlers.push(func);
+        return this;
+    }
+}
 export class Slider {
     /**
     * @param           option                               option for the slider
@@ -216,12 +236,11 @@ export class Slider {
         return this;
     }
 }
-export class Select {
+export class Select extends MagicDOMEventInput {
     constructor({ color = 'pink', options = [], icon = 'list', searchTime = 500 } = {}) {
+        super();
         /** props */
         this.activated = true;
-        this.changeHandlers = [];
-        this.inputHandlers = [];
         /** fetch props */
         this.options = options.length == 0
             ? [{ display: 'not initialized', value: 'undefined' }]
@@ -315,9 +334,6 @@ export class Select {
             }
         });
     }
-    handleChangeEvent() {
-        this.changeHandlers.forEach((handler) => handler(this.value));
-    }
     handleInputEvent() {
         if (this.activated)
             return;
@@ -354,22 +370,79 @@ export class Select {
             currentElement.scrollIntoView({
                 block: 'nearest'
             });
-        this.handleChangeEvent();
+        this.handleInputEvent();
     }
     /** public funcs */
     toggle() {
         /** activation */
         this.activated = !this.activated;
         $(this.component).dataset('activated', this.activated ? '' : null);
-        if (this.activated === false)
-            this.handleInputEvent();
     }
-    onChange(func) {
-        this.changeHandlers.push(func);
-        return this;
+}
+export class Radio extends MagicDOMEventInput {
+    constructor({ color = 'pink', options = [] } = {}) {
+        super();
+        this.__value = '';
+        /** init component */
+        this.component = magicDOM.createElement('div', {
+            classList: 'radio',
+            attribute: {
+                'data-color': color,
+                'tabindex': 0
+            }
+        });
+        /** background */
+        Glasium.init(this.component, {
+            color: Glasium.COLOR[color.toUpperCase()],
+            count: 8,
+            scale: 3
+        });
+        /** get props */
+        this.options = options.length == 0
+            ? [{ display: 'not initialized', value: 'undefined', icon: 'border-none' }]
+            : options.reduce((acc, val) => {
+                let option = {
+                    display: val.display,
+                    value: val.value ? val.value : val.display,
+                    icon: val.icon
+                };
+                acc.push(option);
+                return acc;
+            }, []);
+        /** options init */
+        this.makeOptions();
     }
-    onInput(func) {
-        this.inputHandlers.push(func);
-        return this;
+    /** assets  */
+    handleInputEvent() {
+        this.inputHandlers.forEach((handler) => {
+            handler(this.value);
+        });
+    }
+    makeOptions() {
+        this.options.forEach((option) => {
+            const optEl = magicDOM.createElement('span', {
+                classList: 'radio__option',
+                attribute: {
+                    title: option.display,
+                    'data-value': option.value
+                },
+                children: magicDOM.createElement('i', {
+                    classList: ['fa-solid', `fa-${option.icon}`]
+                })
+            });
+            optEl.onclick = () => {
+                this.__value = option.value;
+                this.select(optEl);
+            };
+            this.component.append(optEl);
+        });
+    }
+    /** getters */
+    get value() { return this.__value; }
+    /** public funcs */
+    select(el) {
+        $('[data-current]', this.component).dataset('current', null);
+        $(el).dataset('current', '');
+        this.handleInputEvent();
     }
 }

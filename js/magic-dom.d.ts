@@ -32,6 +32,10 @@ declare const magicDOM: {
     toHTMLElement<T extends HTMLElement>(htmlString: string): T;
 };
 export default magicDOM;
+declare class MagicDOMEventInput {
+    protected inputHandlers: Array<(value: string) => any>;
+    onInput(func: (value: string) => any): this;
+}
 export declare class Slider {
     /**
     * @param           option                               option for the slider
@@ -85,7 +89,7 @@ export declare class Slider {
         handler?: (value: string) => string;
     }): this;
 }
-export declare class Select {
+export declare class Select extends MagicDOMEventInput {
     constructor({ color, options, icon, searchTime }?: {
         color?: 'blue' | 'pink';
         options?: Array<{
@@ -103,21 +107,38 @@ export declare class Select {
     private activated;
     private options;
     private currentOption;
-    private changeHandlers;
-    private inputHandlers;
     private searchTime;
     /** getters */
     get value(): string;
     /** events */
     private attachEvents;
-    private handleChangeEvent;
     private handleInputEvent;
     /** funcs */
     private createOptions;
     private select;
     /** public funcs */
     toggle(): void;
-    onChange(func: (value: string) => any): this;
-    onInput(func: (value: string) => any): this;
+}
+export declare class Radio extends MagicDOMEventInput {
+    constructor({ color, options }?: {
+        color?: 'pink' | 'blue';
+        options?: Array<{
+            display: string;
+            icon: string;
+            value?: string;
+        }>;
+    });
+    /** component */
+    component: HTMLElement;
+    /** assets  */
+    private handleInputEvent;
+    private makeOptions;
+    /** props */
+    private options;
+    private __value;
+    /** getters */
+    get value(): string;
+    /** public funcs */
+    select(el: HTMLElement): void;
 }
 //# sourceMappingURL=magic-dom.d.ts.map

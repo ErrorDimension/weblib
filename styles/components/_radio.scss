@@ -1,0 +1,81 @@
+body {
+    .radio {
+        --background: white;
+        --color: rgb(42, 42, 42);
+    }
+}
+
+
+body[data-theme='dark'] {
+    .radio {
+        --background: rgb(28, 28, 28);
+        --color: white;
+    }
+}
+
+
+.radio {
+    display: inline-flex;
+    flex-wrap: wrap;
+
+    border-radius: 4px;
+
+    overflow: hidden;
+
+
+    &__option {
+        height: 2.8125em;
+        min-width: 2.8125em;
+
+        flex-grow: 1;
+
+        border-style: solid;
+        border-width: 3px;
+        border-color: var(--background);
+
+
+        &:first-of-type {
+            border-top-left-radius: inherit;
+            border-bottom-left-radius: inherit;
+        }
+
+
+        &:last-of-type {
+            border-top-right-radius: inherit;
+            border-bottom-right-radius: inherit;
+        }
+
+
+        i {
+            width: 100%;
+            height: 100%;
+
+            background-color: var(--background);
+
+            font-size: 1.4em;
+
+            color: var(--color);
+
+            border-radius: 0.5px;
+        }
+
+
+        @media (hover: hover) {
+            &:hover {
+                border-color: transparent;
+            }
+        }
+
+
+        &[data-current] {
+            border-color: transparent;
+
+
+            i {
+                background-color: transparent;
+
+                color: unset;
+            }
+        }
+    }
+}
